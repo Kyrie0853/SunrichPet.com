@@ -3,29 +3,24 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton } from "./LogoutButton";
 
 export default async function Navbar() {
-  const supabase = await createClient();
-
   let user = null;
   let isAdmin = false;
 
   try {
+    const supabase = await createClient();
     const { data } = await supabase.auth.getUser();
     user = data.user;
-  } catch {
-    // Supabase 不可达时跳过认证，不阻塞页面
-  }
 
-  if (user) {
-    try {
+    if (user) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
         .eq("id", user.id)
         .single();
       isAdmin = profile?.role === "admin";
-    } catch {
-      // 忽略 profiles 查询失败
     }
+  } catch {
+    // Supabase 不可达时跳过认证
   }
 
   return (
