@@ -4,18 +4,28 @@ import { LogoutButton } from "./LogoutButton";
 
 export default async function Navbar() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
+  let user = null;
   let isAdmin = false;
+
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Supabase 不可达时跳过认证，不阻塞页面
+  }
+
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isAdmin = profile?.role === "admin";
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      isAdmin = profile?.role === "admin";
+    } catch {
+      // 忽略 profiles 查询失败
+    }
   }
 
   return (
