@@ -3,10 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
-  // 由调用方确保已登录
-}
-
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -92,8 +88,11 @@ export async function createProduct(formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     try {
       imageUrl = await uploadImage(imageFile);
-    } catch (e: any) {
-      return { success: false, message: e.message };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        message: e instanceof Error ? e.message : "图片上传失败",
+      };
     }
   }
 
@@ -148,7 +147,7 @@ export async function updateProduct(formData: FormData) {
     return { success: false, message: "请填写所有必填字段" };
   }
 
-  const updates: Record<string, any> = {
+  const updates: Record<string, string | number | null> = {
     name,
     category_id,
     description,
@@ -161,8 +160,11 @@ export async function updateProduct(formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     try {
       updates.image_url = await uploadImage(imageFile);
-    } catch (e: any) {
-      return { success: false, message: e.message };
+    } catch (e: unknown) {
+      return {
+        success: false,
+        message: e instanceof Error ? e.message : "图片上传失败",
+      };
     }
   } else if (!keepExistingImage) {
     updates.image_url = null;

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { CartContent } from "@/components/CartContent";
 
@@ -23,9 +24,9 @@ export default async function CartPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">
         <p className="text-lg text-gray-400">购物车是空的</p>
-        <a href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
+        <Link href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
           去逛逛
-        </a>
+        </Link>
       </div>
     );
   }
@@ -59,9 +60,9 @@ export default async function CartPage() {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">
         <p className="text-lg text-gray-400">购物车是空的</p>
-        <a href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
+        <Link href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
           去逛逛
-        </a>
+        </Link>
       </div>
     );
   }
