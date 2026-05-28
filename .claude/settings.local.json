@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "Bash(npx create-next-app@latest *)",
+      "Bash(mv pet-store-temp/* .)",
+      "Bash(mv pet-store-temp/.gitignore .)",
+      "Bash(mv pet-store-temp/.eslintrc.json .)",
+      "Bash(mv pet-store-temp/.* .)",
+      "Bash(rmdir pet-store-temp *)",
+      "Bash(npm install *)",
+      "Bash(node *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(npx vitest *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
