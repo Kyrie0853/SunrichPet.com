@@ -1,0 +1,36 @@
+"use client";
+
+import { CommunityPost, CATEGORY_LABELS } from "@/lib/supabase/community-types";
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+function timeFormat(d: string) { return new Date(d).toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}); }
+
+export default function PostDetail({ post }: { post: CommunityPost }) {
+  const [liked, setLiked] = useState(false);
+  const [favorited, setFavorited] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.like_count);
+  const supabase = createClient();
+
+  useEffect(() => { supabase.auth.getUser().then(({data:{user}}) => { if(user){ supabase.from("community_likes").select("id").eq("user_id",user.id).eq("post_id",post.id).single().then(({data})=>{if(data)setLiked(true)}); supabase.from("community_favorites").select("id").eq("user_id",user.id).eq("post_id",post.id).single().then(({data})=>{if(data)setFavorited(true)}); } }); }, [post.id, supabase]);
+
+  const toggleLike = async () => {
+    const {data:{user}} = await supabase.auth.getUser();
+    if(!user) return;
+    if(liked) { await supabase.from("community_likes").delete().eq("user_id",user.id).eq("post_id",post.id); setLiked(false); setLikeCount(c=>c-1); }
+    else { await supabase.from("community_likes").insert({user_id:user.id,post_id:post.id}); setLiked(true); setLikeCount(c=>c+1); }
+  };
+
+  const toggleFav = async () => {
+    const {data:{user}} = await supabase.auth.getUser();
+    if(!user) return;
+    if(favorited) { await supabase.from("community_favorites").delete().eq("user_id",user.id).eq("post_id",post.id); setFavorited(false); }
+    else { await supabase.from("community_favorites").insert({user_id:user.id,post_id:post.id}); setFavorited(true); }
+  };
+
+  const shareLink = () => { if(navigator.share) navigator.share({title:post.title,url:window.location.href}); else { navigator.clipboard.writeText(window.location.href); alert("链接已复制"); } };
+
+  const label = CATEGORY_LABELS[post.category as keyof typeof CATEGORY_LABELS]||post.category;
+
+  return (<article><div className="flex items-center gap-3"><div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-600">{!post.author?.avatar_url?(post.author?.display_name||"U").charAt(0):<img src={post.author.avatar_url} className="h-full w-full rounded-full object-cover" alt="" />}</div><div><p className="font-semibold text-gray-900">{post.author?.display_name||"匿名用户"}</p><p className="text-sm text-gray-400">{timeFormat(post.created_at)} · {post.view_count} 次浏览 · <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{label}</span></p></div></div><h1 className="mt-6 text-3xl font-bold text-gray-900">{post.title}</h1><div className="mt-4 leading-relaxed text-gray-700 whitespace-pre-wrap">{post.content}</div>{post.images?.length>0&&(<div className="mt-6 grid grid-cols-2 gap-2">{post.images.map((url,i)=>(<img key={i} src={url} className="rounded-xl object-cover w-full" alt="" />))}</div>)}{post.tags?.length>0&&(<div className="mt-4 flex flex-wrap gap-1.5">{post.tags.map(t=>(<span key={t.id} className="rounded-full px-2 py-0.5 text-xs font-medium" style={{backgroundColor:t.color+"20",color:t.color}}>{t.name}</span>))}</div>)}<div className="mt-8 flex items-center gap-4 border-t border-b border-gray-100 py-4"><button onClick={toggleLike} className={"flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition "+(liked?"bg-red-50 text-red-600":"bg-gray-50 text-gray-600 hover:bg-gray-100")}><svg className="h-4 w-4" fill={liked?"currentColor":"none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{likeCount}</button><button onClick={toggleFav} className={"flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition "+(favorited?"bg-amber-50 text-amber-600":"bg-gray-50 text-gray-600 hover:bg-gray-100")}><svg className="h-4 w-4" fill={favorited?"currentColor":"none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>{favorited?"已收藏":"收藏"}</button><button onClick={shareLink} className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100"><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>分享</button></div></article>);
+}
