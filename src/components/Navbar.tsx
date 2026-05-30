@@ -8,6 +8,7 @@ export default async function Navbar() {
   let user = null;
   let isAdmin = false;
   let unreadCount = 0;
+  let unreadMsgCount = 0;
   let profile: any = null;
 
   try {
@@ -40,6 +41,14 @@ export default async function Navbar() {
     } catch {
       // notifications 表可能尚未创建，忽略
     }
+    try {
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .eq("receiver_id", user.id)
+        .eq("is_read", false);
+      unreadMsgCount = count || 0;
+    } catch {}
   }
 
   return (
@@ -82,7 +91,7 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} profile={profile} />
+            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} />
           ) : (
             <Link
               href="/auth"
