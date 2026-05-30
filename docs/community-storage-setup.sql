@@ -17,6 +17,12 @@ CREATE POLICY "authenticated_upload_community_images"
 ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (bucket_id = 'community-images' AND auth.uid() = owner);
 
+DROP POLICY IF EXISTS "owner_update_community_images" ON storage.objects;
+CREATE POLICY "owner_update_community_images"
+ON storage.objects FOR UPDATE TO authenticated
+USING (bucket_id = 'community-images' AND auth.uid() = owner)
+WITH CHECK (bucket_id = 'community-images' AND auth.uid() = owner);
+
 DROP POLICY IF EXISTS "owner_delete_community_images" ON storage.objects;
 CREATE POLICY "owner_delete_community_images"
 ON storage.objects FOR DELETE TO authenticated

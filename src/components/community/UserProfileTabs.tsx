@@ -51,7 +51,7 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
         <p className="mt-2 text-xs text-gray-400">加入于 {timeFormat(profile.created_at||profile.id)}</p>
         <div className="mt-3 flex items-center gap-4 text-sm"><span className="text-gray-600"><strong className="text-gray-900">{profile.following_count}</strong> 关注</span><span className="text-gray-600"><strong className="text-gray-900">{fCount}</strong> 粉丝</span></div>
       </div>
-      {!isOwn&&(<button onClick={toggleFollow} className={"rounded-xl px-5 py-2.5 text-sm font-semibold transition "+(following?"border border-gray-200 text-gray-600 hover:bg-gray-50":"bg-emerald-600 text-white hover:bg-emerald-700")}>{following?"已关注":"+ 关注"}</button>)}
+      {isOwn?(<button onClick={()=>router.push("/profile/edit")} className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50">编辑资料</button>):(<button onClick={toggleFollow} className={"rounded-xl px-5 py-2.5 text-sm font-semibold transition "+(following?"border border-gray-200 text-gray-600 hover:bg-gray-50":"bg-emerald-600 text-white hover:bg-emerald-700")}>{following?"已关注":"+ 关注"}</button>)}
     </div>
 
     {/* Tabs */}
