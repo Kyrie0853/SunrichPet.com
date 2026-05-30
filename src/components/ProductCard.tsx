@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import ProductFavoriteButton from "./ProductFavoriteButton";
 
 type Product = {
   id: string;
@@ -7,14 +9,35 @@ type Product = {
   price: number;
   image_url: string | null;
   stock: number;
+  avg_rating?: number;
+  review_count?: number;
 };
 
-export function ProductCard({ product }: { product: Product }) {
+export async function ProductCard({ product, showFavorite = false }: { product: Product; showFavorite?: boolean }) {
+  let userId: string | null = null;
+  let favorited = false;
+  if (showFavorite) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      userId = user.id;
+      const { data: fav } = await supabase.from("product_favorites").select("id").eq("user_id", user.id).eq("product_id", product.id).maybeSingle();
+      favorited = !!fav;
+    }
+  }
+
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group overflow-hidden rounded-xl border border-gray-100 bg-white transition-all hover:shadow-md"
+      className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white transition-all hover:shadow-md"
     >
+      {/* 收藏按钮 */}
+      {showFavorite && (
+        <div className="absolute top-2 right-2 z-10">
+          <ProductFavoriteButton productId={product.id} initialFavorited={favorited} userId={userId} size="sm" />
+        </div>
+      )}
+
       {/* 商品图片 */}
       <div className="aspect-square overflow-hidden bg-gray-100">
         {product.image_url ? (
@@ -39,11 +62,16 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="text-base font-bold text-emerald-600">
             ¥{product.price}
           </span>
-          {product.stock === 0 && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
-              已售罄
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            {product.avg_rating && product.avg_rating > 0 && (
+              <span className="text-xs text-amber-500">⭐ {product.avg_rating}</span>
+            )}
+            {product.stock === 0 && (
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                已售罄
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

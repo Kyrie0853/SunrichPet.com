@@ -42,7 +42,6 @@ export default function ReviewSection({ sellerId, reviews, currentUserId, hasRev
 
   return (
     <div>
-      {/* 评价表单 */}
       {currentUserId && currentUserId !== sellerId && !hasReviewed && (
         <div className="mb-6">
           {!showForm ? (
@@ -69,8 +68,6 @@ export default function ReviewSection({ sellerId, reviews, currentUserId, hasRev
           )}
         </div>
       )}
-
-      {/* 评价列表 */}
       {reviews.length === 0 ? (
         <p className="py-8 text-center text-sm text-gray-400">暂无评价</p>
       ) : (

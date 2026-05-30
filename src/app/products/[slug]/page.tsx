@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { getProductReviews, getProductRating } from "@/app/actions/reviews";
+import ProductReviewSection from "@/components/ProductReviewSection";
+import ProductFavoriteButton from "@/components/ProductFavoriteButton";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -24,14 +27,28 @@ export default async function ProductDetailPage({ params }: Props) {
   // 商家评分
   let sellerRating = { avg: 0, count: 0 };
   if (product.seller_id) {
-    const { data: reviews } = await supabase.from("seller_reviews").select("rating").eq("seller_id", product.seller_id);
-    if (reviews && reviews.length > 0) {
-      sellerRating.avg = +(reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length).toFixed(1);
-      sellerRating.count = reviews.length;
+    const { data: sellerReviews } = await supabase.from("seller_reviews").select("rating").eq("seller_id", product.seller_id);
+    if (sellerReviews && sellerReviews.length > 0) {
+      sellerRating.avg = +(sellerReviews.reduce((s: number, r: any) => s + r.rating, 0) / sellerReviews.length).toFixed(1);
+      sellerRating.count = sellerReviews.length;
     }
     const { data: seller } = await supabase.from("profiles").select("display_name").eq("id", product.seller_id).single();
     product._seller = seller;
   }
+
+  // 商品收藏状态
+  let isFav = false;
+  let currentUserId: string | null = null;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    currentUserId = user.id;
+    const { data: fav } = await supabase.from("product_favorites").select("id").eq("user_id", user.id).eq("product_id", product.id).maybeSingle();
+    isFav = !!fav;
+  }
+
+  // 加载评价
+  const { reviews: prodReviews } = await getProductReviews(product.id, { filter: "all" });
+  const { avg, count: reviewCount } = await getProductRating(product.id);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
@@ -53,10 +70,18 @@ export default async function ProductDetailPage({ params }: Props) {
 
         {/* 详情区域 */}
         <div className="flex flex-col">
-          <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
-          <p className="mt-4 text-3xl font-bold text-emerald-600">
-            ¥{product.price}
-          </p>
+          <div className="flex items-start gap-3">
+            <h1 className="text-2xl font-bold text-gray-800 flex-1">{product.name}</h1>
+            <ProductFavoriteButton productId={product.id} initialFavorited={isFav} userId={currentUserId} />
+          </div>
+          <div className="mt-2 flex items-center gap-3">
+            <p className="text-3xl font-bold text-emerald-600">
+              ¥{product.price}
+            </p>
+            {(product.avg_rating && product.avg_rating > 0) && (
+              <span className="text-sm text-amber-600">⭐ {product.avg_rating} ({product.review_count || reviewCount})</span>
+            )}
+          </div>
 
           {/* 库存状态 */}
           <div className="mt-4">
@@ -100,6 +125,9 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {/* 商品评价 */}
+      <ProductReviewSection productId={product.id} initialReviews={prodReviews} initialAvg={avg} initialCount={reviewCount} />
     </div>
   );
 }

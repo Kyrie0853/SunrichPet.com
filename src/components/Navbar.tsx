@@ -72,6 +72,12 @@ export default async function Navbar() {
             论坛
           </Link>
           <Link
+            href="/b"
+            className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          >
+            吧
+          </Link>
+          <Link
             href="/shop"
             className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
           >
