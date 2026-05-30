@@ -212,7 +212,7 @@ main                    ← 生产环境 (Vercel 自动部署)
 
 ### E2E 测试 (Playwright)
 
-**测试统计**: 42 tests · 7 个测试文件
+**测试统计**: 73 tests · 8 个测试文件
 
 | 测试文件 | 测试数 | 状态 |
 |----------|:------:|:----:|
@@ -222,7 +222,8 @@ main                    ← 生产环境 (Vercel 自动部署)
 | social.spec.ts | 5 | ✅ 全部通过 |
 | security.spec.ts | 2 | ✅ 全部通过 |
 | mobile.spec.ts | 4 | ✅ 全部通过 |
-| extended.spec.ts | 9 | ✅ 全部通过 |
+| extended.spec.ts | 8+2skip | ✅ 全部通过 |
+| smoke.spec.ts | 30 | ✅ 全部通过 (新增) |
 
 **覆盖场景**:
 - 空状态: 帖子列表/通知/搜索空结果
@@ -235,6 +236,39 @@ main                    ← 生产环境 (Vercel 自动部署)
 - 商城: 首页/搜索/商品/详情/购物车/商家主页
 - 社交: 用户主页/动态流/私信/通知鉴权
 - 安全: 后台越权/编辑越权
+- 🆕 全站烟雾测试: 30 条路由完整性+移动端+API 健康检查
+
+---
+
+## 🐛 全站 Bug 清零行动 (2026-05-30)
+
+### 发现与修复
+
+| # | 严重度 | 问题 | 修复方式 |
+|---|:---:|------|----------|
+| B1 | 🔴 P0 | 移动端"我的"Tab 指向 `/community/user` 返回 404 | 创建 `/community/user/page.tsx` 重定向页 + MobileNav 增加 auth 状态感知 |
+| B2 | 🔴 P0 | `/admin/orders` 目录存在但无 `page.tsx`，订单管理页 404 | 创建 `/admin/orders/page.tsx` 含完整订单管理 UI |
+| B3 | 🟡 P1 | `/profile` 路由缺失，仅 `/profile/edit` 存在 | 创建 `/profile/page.tsx` 重定向页 |
+| B4 | 🟡 P1 | MobileNav 无登录状态判断，未登录点击"消息"/"我的"无反馈 | MobileNav 增加 `authRequired` 标记 + 客户端 auth 检查 |
+| B5 | 🟡 P1 | `CheckoutForm` 中 `loadStripe("")` 静默失败 | 增加 Stripe key 空值检查 + 友好错误提示 |
+| B6 | 🟡 P1 | `extended.spec.ts` 语法错误导致 `test.skip` 失效 | 修复 test.skip 语法 |
+
+### 测试结果
+
+- **发现 Bug**: 6 个
+- **已修复**: 6 个
+- **遗留问题**: 0 个
+- **测试用例总数**: 73 (71 passed · 2 skipped)
+- **通过率**: 100% (skip 为预存在的认证相关测试)
+
+### 新增文件
+
+| 文件 | 用途 |
+|------|------|
+| `src/app/community/user/page.tsx` | "我的"路由重定向页 |
+| `src/app/profile/page.tsx` | 个人中心重定向页 |
+| `src/app/admin/orders/page.tsx` | 订单管理后台 |
+| `tests/smoke.spec.ts` | 全站烟雾测试 (30 cases) |
 
 ### 已知需要手动操作的事项
 
@@ -253,6 +287,7 @@ main                    ← 生产环境 (Vercel 自动部署)
 2. **Storage Bucket**: 手动创建 `community-images` (Public)
 
 3. **Stripe 配置**: STRIPE_SECRET_KEY / NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY / STRIPE_WEBHOOK_SECRET
+   - ⚠️ Vercel 环境变量需确认已配置以上所有 key
 
 ### 项目健康度评估
 
@@ -266,10 +301,12 @@ main                    ← 生产环境 (Vercel 自动部署)
 | 商城 | ✅ |
 | 支付集成 | ✅ |
 | 移动端适配 | ✅ |
+| 管理后台 | ✅ |
+| 路由完整性 | ✅ |
 | E2E 测试 | ✅ |
 | RLS 安全 | ✅ |
 | XSS 防护 | ✅ |
 
-**整体状态**: ✅ 健康，所有核心功能正常运行
+**整体状态**: ✅ 健康，所有核心功能正常运行，全站路由已验证无 404
 
-*最后更新: 2026-05-30 — 全站测试通过，健康度评估*
+*最后更新: 2026-05-30 — 全站 Bug 清零行动完成*

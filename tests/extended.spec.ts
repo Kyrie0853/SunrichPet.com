@@ -59,7 +59,7 @@ test.describe("扩展覆盖", () => {
   });
 
   test.describe("错误处理", () => {
-    test.skip("表单空提交不崩溃"  // auth page submit trigger OTP flow, async ({ page }) => {
+    test.skip("表单空提交不崩溃", async ({ page }) => {
       await page.goto("/auth");
       await page.waitForTimeout(1000);
       const submitBtn = page.locator("button[type=submit]");

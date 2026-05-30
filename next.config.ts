@@ -23,6 +23,20 @@ const nextConfig: NextConfig = {
 
   // 安全响应头
   async headers() {
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
+      "font-src 'self'",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+    ].join("; ");
+
     return [
       {
         source: "/(.*)",
@@ -32,6 +46,7 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Content-Security-Policy", value: csp },
         ],
       },
     ];

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "");
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 export default function CheckoutForm({ items }: { items: any[] }) {
   const [address, setAddress] = useState("");
@@ -11,6 +12,7 @@ export default function CheckoutForm({ items }: { items: any[] }) {
   const [error, setError] = useState("");
 
   async function handleCheckout() {
+    if (!stripePromise) { setError("支付系统暂未配置"); return; }
     setLoading(true); setError("");
     try {
       const res = await fetch("/api/checkout", {
