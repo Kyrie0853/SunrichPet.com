@@ -46,7 +46,7 @@ export default async function Navbar() {
       const { count } = await supabase
         .from("messages")
         .select("*", { count: "exact", head: true })
-        .eq("receiver_id", user.id)
+        .neq("sender_id", user.id)
         .eq("is_read", false);
       unreadMsgCount = count || 0;
     } catch {}

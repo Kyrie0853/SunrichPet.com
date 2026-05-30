@@ -172,38 +172,44 @@ export async function getFollowers(userId:string,page=1){
   const pMap=new Map((profiles||[]).map(p=>[p.id,p]));
   return data.map(r=>({...pMap.get(r.follower_id)||{},followed_at:r.created_at}));
 }
-// 私信系统
+// 私信系统 v2
+export async function getOrCreateConversation(userId:string,otherId:string){
+  const supabase=await createClient();
+  const p1=userId<otherId?userId:otherId;
+  const p2=userId<otherId?otherId:userId;
+  const {data:conv}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).single();
+  if(conv)return conv;
+  const {data:created}=await supabase.from("conversations").insert({participant_1:p1,participant_2:p2}).select("*").single();
+  return created;
+}
 export async function getConversations(userId:string){
   const supabase=await createClient();
-  // 获取所有对话的最后一条消息
-  const {data:sent}=await supabase.from("messages").select("receiver_id,content,created_at,is_read").eq("sender_id",userId).order("created_at",{ascending:false});
-  const {data:received}=await supabase.from("messages").select("sender_id,content,created_at,is_read").eq("receiver_id",userId).order("created_at",{ascending:false});
-  const convMap=new Map<string,{userId:string;lastContent:string;lastTime:string;unread:number}>();
-  (sent||[]).forEach(m=>{const k=m.receiver_id;if(!convMap.has(k)||convMap.get(k)!.lastTime<m.created_at)convMap.set(k,{userId:k,lastContent:m.content,lastTime:m.created_at,unread:convMap.get(k)?.unread||0});});
-  (received||[]).forEach(m=>{const k=m.sender_id;const existing=convMap.get(k);convMap.set(k,{userId:k,lastContent:existing&&existing.lastTime>m.created_at?existing.lastContent:m.content,lastTime:existing&&existing.lastTime>m.created_at?existing.lastTime:m.created_at,unread:(existing?.unread||0)+(m.is_read?0:1)});});
-  const convs=Array.from(convMap.values()).sort((a,b)=>b.lastTime.localeCompare(a.lastTime));
-  if(convs.length===0)return [];
-  const ids=convs.map(c=>c.userId);
-  const {data:profiles}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",ids);
+  const filter=`participant_1.eq.${userId},participant_2.eq.${userId}`;
+  const {data:convs}=await supabase.from("conversations").select("*").or(filter).order("updated_at",{ascending:false});
+  if(!convs||convs.length===0)return [];
+  const otherIds=convs.map(c=>c.participant_1===userId?c.participant_2:c.participant_1);
+  const {data:profiles}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",otherIds);
   const pMap=new Map((profiles||[]).map(p=>[p.id,p]));
-  return convs.map(c=>({...c,profile:pMap.get(c.userId)||null}));
+  // 每条会话的最后消息和未读数
+  const enriched=await Promise.all(convs.map(async c=>{
+    const {data:msgs}=await supabase.from("messages").select("content,created_at,sender_id,is_read").eq("conversation_id",c.id).order("created_at",{ascending:false}).limit(1);
+    const{count:unread}=await supabase.from("messages").select("*",{count:"exact",head:true}).eq("conversation_id",c.id).neq("sender_id",userId).eq("is_read",false);
+    const oid=c.participant_1===userId?c.participant_2:c.participant_1;
+    return {conversationId:c.id,userId:oid,profile:pMap.get(oid)||null,lastMsg:msgs?.[0]?.content||"",lastTime:msgs?.[0]?.created_at||c.created_at,unread:unread||0};
+  }));
+  return enriched;
 }
-export async function getMessages(userId:string,otherId:string,page=1){
+export async function getMessages(conversationId:string,page=1){
   const supabase=await createClient();
-  const filter = `and(sender_id.eq.${userId},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${userId})`;
-  const {data}=await supabase.from("messages").select("*").or(filter).order("created_at",{ascending:true}).range((page-1)*50,page*50-1);
-  if(!data)return [];
-  // 标记已读
-  const unreadIds=data.filter(m=>m.receiver_id===userId&&!m.is_read).map(m=>m.id);
-  if(unreadIds.length>0)await supabase.from("messages").update({is_read:true}).in("id",unreadIds);
-  return data;
+  const {data}=await supabase.from("messages").select("*").eq("conversation_id",conversationId).order("created_at",{ascending:true}).range((page-1)*50,page*50-1);
+  return data||[];
 }
-export async function sendMessage(senderId:string,receiverId:string,content:string){
+export async function sendMessage(conversationId:string,senderId:string,content:string){
   const supabase=await createClient();
-  return await supabase.from("messages").insert({sender_id:senderId,receiver_id:receiverId,content}).select("*").single();
+  return await supabase.from("messages").insert({conversation_id:conversationId,sender_id:senderId,content}).select("*").single();
 }
 export async function getUnreadMessageCount(userId:string){
   const supabase=await createClient();
-  const {count}=await supabase.from("messages").select("*",{count:"exact",head:true}).eq("receiver_id",userId).eq("is_read",false);
+  const {count}=await supabase.from("messages").select("*",{count:"exact",head:true}).neq("sender_id",userId).eq("is_read",false);
   return count||0;
 }
