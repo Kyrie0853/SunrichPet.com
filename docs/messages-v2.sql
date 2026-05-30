@@ -16,7 +16,7 @@ CREATE INDEX IF NOT EXISTS conv_p2_idx ON public.conversations(participant_2);
 
 -- 2. 消息表（新增 conversation_id）
 DROP TABLE IF EXISTS public.messages CASCADE;
-CREATE TABLE public.messages (
+CREATE TABLE IF NOT EXISTS public.messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
   sender_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,

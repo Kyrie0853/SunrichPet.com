@@ -9,7 +9,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS public_likes BOOLEAN NOT NU
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS allow_follows BOOLEAN NOT NULL DEFAULT true;
 
 -- 2. 通知表
-CREATE TABLE public.notifications (
+CREATE TABLE IF NOT EXISTS public.notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN (

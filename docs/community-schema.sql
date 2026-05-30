@@ -11,7 +11,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFA
 -- ============================================
 -- 1. community_posts 帖子表
 -- ============================================
-CREATE TABLE public.community_posts (
+CREATE TABLE IF NOT EXISTS public.community_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL CHECK (char_length(title) BETWEEN 2 AND 200),
@@ -33,7 +33,7 @@ CREATE INDEX cp_category_idx ON public.community_posts(category);
 -- ============================================
 -- 2. community_comments 评论表
 -- ============================================
-CREATE TABLE public.community_comments (
+CREATE TABLE IF NOT EXISTS public.community_comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   post_id UUID NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
   author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -50,7 +50,7 @@ CREATE INDEX cc_parent_idx ON public.community_comments(parent_id);
 -- ============================================
 -- 3. community_likes 点赞表
 -- ============================================
-CREATE TABLE public.community_likes (
+CREATE TABLE IF NOT EXISTS public.community_likes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   post_id UUID REFERENCES public.community_posts(id) ON DELETE CASCADE,
@@ -68,7 +68,7 @@ CREATE INDEX cl_user_idx ON public.community_likes(user_id);
 -- ============================================
 -- 4. community_favorites 收藏表
 -- ============================================
-CREATE TABLE public.community_favorites (
+CREATE TABLE IF NOT EXISTS public.community_favorites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   post_id UUID NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
@@ -82,7 +82,7 @@ CREATE INDEX cf_post_idx ON public.community_favorites(post_id);
 -- ============================================
 -- 5. user_follows 关注表
 -- ============================================
-CREATE TABLE public.user_follows (
+CREATE TABLE IF NOT EXISTS public.user_follows (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   follower_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   following_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -97,7 +97,7 @@ CREATE INDEX uf_following_idx ON public.user_follows(following_id);
 -- ============================================
 -- 6. community_tags 标签表
 -- ============================================
-CREATE TABLE public.community_tags (
+CREATE TABLE IF NOT EXISTS public.community_tags (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE CHECK (char_length(name) BETWEEN 1 AND 30),
   slug TEXT NOT NULL UNIQUE CHECK (char_length(slug) BETWEEN 1 AND 30),
@@ -108,7 +108,7 @@ CREATE TABLE public.community_tags (
 -- ============================================
 -- 7. community_post_tags 帖子标签关联表
 -- ============================================
-CREATE TABLE public.community_post_tags (
+CREATE TABLE IF NOT EXISTS public.community_post_tags (
   post_id UUID NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
   tag_id UUID NOT NULL REFERENCES public.community_tags(id) ON DELETE CASCADE,
   PRIMARY KEY (post_id, tag_id)
