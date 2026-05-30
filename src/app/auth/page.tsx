@@ -85,7 +85,7 @@ export default function AuthPage(){
     setMessage("验证码已重新发送");startCD();setLoading(false);
   }
 
-  async function forgotPassword(){if(!email.trim())return;const{error:e}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:location.origin+"/auth?reset=1"});if(e){setError(translateError(e.message))}else{setMessage("密码重置链接已发送，请查看邮箱")}}
+  function forgotPassword(){setStep("emailInput");setError("");setMessage("请通过验证码验证身份后设置新密码")}
 
   async function setPasswordHandler(e:React.FormEvent){
     e.preventDefault();setError("");
@@ -144,10 +144,10 @@ export default function AuthPage(){
       </form>)}
       {step==="setPassword"&&(<form onSubmit={setPasswordHandler} className="space-y-4">
         <div className="rounded-lg bg-emerald-50 p-3 text-center text-sm text-emerald-700">✅ 验证成功！</div>
-        <p className="text-sm text-gray-600">设置登录密码，下次可直接用密码登录 <strong>{email}</strong></p>
+        <p className="text-sm text-gray-600">设置新密码，下次可直接用密码登录 <strong>{email}</strong></p>
         <div><label className="mb-1 block text-sm font-medium text-gray-700">设置密码</label>
         <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} placeholder="至少 6 位" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
-        <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"设置中...":"设置密码并登录"}</button>
+        <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"设置中...":"保存新密码并登录"}</button>
         <button type="button" onClick={()=>{router.push("/");router.refresh()}} className="w-full text-center text-sm text-gray-400 hover:underline">跳过，直接进入</button>
       </form>)}
     </div>
