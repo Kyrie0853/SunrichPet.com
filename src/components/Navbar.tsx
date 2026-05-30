@@ -23,7 +23,7 @@ export default async function Navbar() {
     try {
       const { data: p } = await supabase
         .from("profiles")
-        .select("role, display_name, avatar_url")
+        .select("role, display_name, avatar_url, points, level, check_in_date, check_in_streak")
         .eq("id", user.id)
         .single();
       isAdmin = p?.role === "admin";
@@ -95,7 +95,7 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} />
+            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} currentPoints={profile?.points||0} canCheckIn={profile?.check_in_date !== new Date().toISOString().slice(0,10)} streak={profile?.check_in_streak||0} />
           ) : (
             <Link
               href="/auth"
