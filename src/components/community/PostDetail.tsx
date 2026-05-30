@@ -4,6 +4,7 @@ import { CommunityPost, PARENT_TABS } from "@/lib/supabase/community-types";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import ReportButton from "@/components/ReportButton";
 import Avatar from "@/components/Avatar";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});}
