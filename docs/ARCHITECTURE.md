@@ -166,42 +166,117 @@ categories ──1:N── products
 ---
 ## 社区模块（Phase 2 — 宠物玩家社区）
 
-### 新增表
+### 新增表（8张 + 2张扩展）
 
-| 表 | 说明 | 关键字段 |
-|----|------|----------|
-| community_posts | 论坛帖子 | author_id, title, content, category, images[], is_pinned, view_count |
-| community_comments | 评论（支持嵌套） | post_id, author_id, parent_id, content |
-| community_likes | 点赞（多态） | user_id, post_id/comment_id（二选一CHECK约束） |
-| community_favorites | 收藏（私有） | user_id, post_id（UNIQUE, 私有RLS） |
-| user_follows | 关注关系 | follower_id, following_id（CHECK防自关注） |
-| community_tags | 标签 | name, slug, color |
-| community_post_tags | 帖子-标签 | post_id, tag_id（联合PK） |
+| 表 | 说明 | 关键字段 | RLS |
+|----|------|----------|-----|
+| community_posts | 论坛帖子 | author_id, title, content, category, images[], is_pinned, view_count | 公开读/作者写/作者删 |
+| community_comments | 评论（嵌套） | post_id, author_id, parent_id, content | 公开读/作者写/作者删 |
+| community_likes | 点赞（多态） | user_id, post_id/comment_id（CHECK二选一） | 公开读/本人写/本人删 |
+| community_favorites | 收藏 | user_id, post_id（UNIQUE） | **私有**读/本人写/本人删 |
+| user_follows | 关注关系 | follower_id, following_id（CHECK防自关） | 公开读/本人写/本人删 |
+| community_tags | 标签 | name, slug, color | 公开读/管理员管理 |
+| community_post_tags | 帖子-标签 | post_id, tag_id（联合PK） | 公开读/作者管理/管理员管理 |
+| notifications | 通知 | user_id, type(comment/reply/follow/like), actor_id, is_read | 本人读/本人更新（触发器SECURITY DEFINER绕过insert） |
 
-profiles 扩展字段：`avatar_url`, `bio`, `updated_at`
+profiles 扩展字段：`avatar_url`, `bio`, `updated_at`, `public_favorites`, `public_likes`, `allow_follows`
 
-### 新增路由
+### 新增路由（18条总路由）
 
-| 路由 | 功能 |
-|------|------|
-| `/community` | 论坛首页：帖子列表 + 分类筛选 + 排序（最新/热门/趋势） + 分页 |
-| `/community/new` | 发帖：标题/内容/分类/标签/图片上传（Storage） |
-| `/community/post/[id]` | 帖子详情：完整内容/图片/点赞/收藏/分享/评论区 |
-| `/community/user/[id]` | 用户主页：个人信息/关注取关/用户帖子列表 |
+| 路由 | 功能 | 鉴权 |
+|------|------|------|
+| `/` | 论坛首页（社区主页） | 公开 |
+| `/shop` | 商品商城（原首页） | 公开 |
+| `/community` | 论坛首页（同 /） | 公开 |
+| `/community/new` | 发帖（上传图片至 Storage） | 需登录 |
+| `/community/post/[id]` | 帖子详情（内容/图片/点赞/收藏/分享/评论） | 公开 |
+| `/community/post/[id]/edit` | 编辑帖子（仅作者） | 需登录+作者校验 |
+| `/community/user/[id]` | 用户主页（三标签页：帖子/收藏/点赞） | 公开 |
+| `/community/notifications` | 消息通知（列表+标记已读） | 需登录 |
+
+### 组件清单
+
+| 组件 | 类型 | 功能 |
+|------|------|------|
+| UserMenu | 客户端 | 导航栏用户下拉菜单（头像+昵称+未读红点） |
+| PostCard | 客户端 | 帖子列表卡片 |
+| PostList | 客户端 | 帖子列表（分类筛选+排序+分页） |
+| PostDetail | 客户端 | 帖子详情（点赞/收藏/分享/编辑/删除按钮） |
+| EditPostForm | 客户端 | 编辑帖子表单（预填+标签管理） |
+| CommentSection | 客户端 | 评论区（发表+嵌套回复） |
+| UserProfileTabs | 客户端 | 用户主页标签页（帖子/收藏/点赞） |
+| NotificationList | 客户端 | 通知列表（已读/未读状态） |
+
+### 数据库触发器（4个，自动通知）
+
+| 触发器 | 触发时机 | 通知对象 |
+|--------|----------|----------|
+| trg_notify_comment | 新评论（parent_id IS NULL） | 帖主 |
+| trg_notify_reply | 新回复（parent_id IS NOT NULL） | 被回复者 |
+| trg_notify_follow | 新关注 | 被关注者 |
+| trg_notify_like | 新点赞 | 帖主 |
+
+> 所有触发器排除自操作（自己评论/点赞自己不会收到通知），使用 `SECURITY DEFINER SET search_path = ''` 安全模式。
 
 ### 安全措施
 
-- **XSS 防护**：sanitize-html 服务端净化用户提交的 HTML 内容
-- **文件上传**：限制类型（jpg/png/webp/gif）、大小（≤5MB）、数量（≤5张）
-- **RLS 全覆盖**：所有7张社区表启用 RLS，收藏表为私有（仅本人可读）
-- **输入校验**：标题（2-200字）、内容（≥10字）、评论（1-5000字）均有 CHECK 约束
+| 措施 | 实现方式 |
+|------|----------|
+| XSS 防护 | React JSX 默认转义 + sanitize-html（actions.ts 预置，备用） |
+| 文件上传 | 类型（jpg/png/webp/gif）、大小（≤5MB）、数量（≤5张） |
+| RLS | 8 张表全覆盖，收藏表为私有 |
+| 输入校验 | CHECK 约束（标题2-200字/内容≥10字/评论≤5000字）+ 前端校验 |
+| 权限检查 | 前端按钮显隐 + 服务端 RLS 双重校验（编辑/删除仅作者） |
+| SQL 注入 | Supabase 参数化查询，无拼接 SQL |
+| CSRF | Supabase Auth 自动处理 session token |
+
+### 路由架构变更
+
+```
+/                     →  论坛首页（宠物玩家社区）
+/shop                 →  商城（商品分类+搜索）
+/community            →  论坛首页（同 /，兼容已有链接）
+/community/new        →  发帖
+/community/post/[id]  →  帖子详情
+/community/post/[id]/edit → 编辑帖子
+/community/user/[id]  →  用户主页
+/community/notifications → 消息通知
+/admin                →  商家后台（仅 role=admin）
+```
+
+### 部署前 SQL 执行清单
+
+在 Supabase SQL Editor 中按顺序执行：
+1. `docs/community-schema.sql` — 建表+RLS+标签种子数据+触发器
+2. `docs/community-storage-setup.sql` — Storage RLS 策略
+3. `docs/notifications-schema.sql` — 通知表+隐私字段+RLS
+4. `docs/notifications-triggers.sql` — 自动通知触发器
+
+另需在 Supabase Dashboard 手动创建 Storage Bucket：`community-images`（Public）
 
 ### 数据流
 
 ```
-用户发帖 → FormData → 客户端上传图片至 Supabase Storage
-       → supabase.from('community_posts').insert() → RLS 检查 author_id = auth.uid()
-       → revalidatePath + redirect 到帖子详情页
+用户发帖 → 客户端上传图片至 Supabase Storage
+         → supabase.from('community_posts').insert() → RLS 检查 auth.uid() = author_id
+         → router.push 跳转详情页
+
+他人评论 → PG 触发器 SECURITY DEFINER → INSERT notifications
+         → Navbar 查询 notifications.is_read=false → 显示未读红点
+         → 用户点击进入 /community/notifications → 自动标为已读
 ```
 
-*最后更新: 2026-05-30 — Phase 2 社区核心功能完成*
+### RLS 权限矩阵
+
+| 表 | 未登录 | 登录用户 | 作者 | 管理员 |
+|----|:---:|:---:|:---:|:---:|
+| community_posts | 读 | 读 | 读写删 | 全部 |
+| community_comments | 读 | 读 | 读写删 | 全部 |
+| community_likes | 读 | 读 | 写删(自己) | — |
+| community_favorites | — | 读(自己) | 写删(自己) | — |
+| user_follows | 读 | 读 | 写删(自己) | — |
+| community_tags | 读 | 读 | — | 全部 |
+| community_post_tags | 读 | 读 | 管理(自己帖子) | 全部 |
+| notifications | — | 读(自己) | 更新(自己) | — |
+
+*最后更新: 2026-05-30 — Phase 2 社区模块完整文档*
