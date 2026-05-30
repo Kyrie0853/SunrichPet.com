@@ -70,7 +70,7 @@ export default function AuthPage(){
   }
 
   function handleCode(i:number,v:string){
-    if(!/^\\d?$/.test(v))return;
+    if(!/^\d?$/.test(v))return;
     const nc=[...code];nc[i]=v;setCode(nc);
     if(v&&i<5)codeRefs.current[i+1]?.focus();
     if(i===5&&v&&[...nc.slice(0,5),v].join("").length===6)setTimeout(verifyOtp,200);
