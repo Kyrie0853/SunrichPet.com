@@ -4,6 +4,7 @@ import { CommunityPost, CATEGORY_LABELS } from "@/lib/supabase/community-types";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Avatar from "@/components/Avatar";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});}
 
@@ -29,7 +30,7 @@ export default function PostDetail({post}:{post:CommunityPost}){
 
   return (<article>
     <div className="flex items-center gap-3">
-      <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-600">{!post.author?.avatar_url?(post.author?.display_name||"U").charAt(0):<img src={post.author.avatar_url} className="h-full w-full rounded-full object-cover" alt="" />}</div>
+      <Avatar userId={post.author_id} avatarUrl={post.author?.avatar_url} displayName={post.author?.display_name} size={48} />
       <div className="flex-1"><p className="font-semibold text-gray-900">{post.author?.display_name||"匿名用户"}</p><p className="text-sm text-gray-400">{timeFormat(post.created_at)} · {post.view_count} 次浏览 · <span className="text-xs bg-gray-100 rounded-full px-2 py-0.5">{label}</span></p></div>
       {isAuthor&&(<div className="flex gap-2"><button onClick={()=>router.push("/community/post/"+post.id+"/edit")} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50">编辑</button><button onClick={handleDelete} disabled={deleting} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50">{deleting?"删除中...":"删除"}</button></div>)}
     </div>

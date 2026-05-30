@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CommunityPost, CATEGORY_LABELS } from "@/lib/supabase/community-types";
+import Avatar from "@/components/Avatar";
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();

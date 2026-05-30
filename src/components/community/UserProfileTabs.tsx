@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Avatar from "@/components/Avatar";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}
 
@@ -43,7 +44,7 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
   return (<div>
     {/* Profile header */}
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white p-8 sm:flex-row">
-      <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-600">{(profile.display_name||"U").charAt(0)}</div>
+      <Avatar userId={profile.id} avatarUrl={profile.avatar_url} displayName={profile.display_name} size={80} editable={isOwn} onAvatarChange={(newUrl: string) => { profile.avatar_url = newUrl; }} />
       <div className="flex-1 text-center sm:text-left">
         <h1 className="text-2xl font-bold text-gray-900">{profile.display_name||"用户"}</h1>
         {profile.bio&&<p className="mt-1 text-sm text-gray-500">{profile.bio}</p>}

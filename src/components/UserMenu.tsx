@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Avatar from "./Avatar";
 
 export default function UserMenu({ user, isAdmin, unreadCount, profile }: { user: any; isAdmin: boolean; unreadCount: number; profile: any }) {
   const [open, setOpen] = useState(false);
@@ -14,12 +15,11 @@ export default function UserMenu({ user, isAdmin, unreadCount, profile }: { user
   const handleLogout = async () => { await supabase.auth.signOut(); window.location.href = "/"; };
 
   const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "用户";
-  const avatarLetter = displayName.charAt(0).toUpperCase();
 
   return (<div ref={ref} className="relative">
     <button onClick={() => setOpen(!open)} className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-gray-100 transition">
       <div className="relative">
-        <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-700">{avatarLetter}</div>
+        <Avatar userId={user.id} avatarUrl={profile?.avatar_url} displayName={displayName} size={32} />
         {unreadCount > 0 && (<span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>)}
       </div>
       <span className="hidden text-sm font-medium text-gray-700 sm:inline">{displayName}</span>
