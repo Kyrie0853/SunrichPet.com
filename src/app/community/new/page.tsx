@@ -48,16 +48,31 @@ export default function NewPostPage() {
       const { data: urlData } = supabase.storage.from("community-images").getPublicUrl(fileName);
       imageUrls.push(urlData.publicUrl);
     }
-    const { data: post, error: createErr } = await supabase
+    const { data: inserted, error: createErr } = await supabase
       .from("community_posts")
       .insert({ author_id: user.id, title: title.trim(), content: content.trim(), category, images: imageUrls })
       .select("id")
       .single();
-    if (createErr || !post) { setError("发帖失败"); setSubmitting(false); return; }
-    if (selectedTags.length > 0) {
-      await supabase.from("community_post_tags").insert(selectedTags.map(tagId => ({ post_id: post.id, tag_id: tagId })));
+
+    if (createErr) {
+      console.error("发帖 insert 失败:", createErr);
+      setError("发帖失败: " + createErr.message);
+      setSubmitting(false);
+      return;
     }
-    router.push("/community/post/" + post.id);
+
+    if (!inserted || !inserted.id) {
+      console.error("发帖成功但未返回 id:", inserted);
+      setError("发帖异常，请重试");
+      setSubmitting(false);
+      return;
+    }
+
+    if (selectedTags.length > 0) {
+      await supabase.from("community_post_tags").insert(selectedTags.map(tagId => ({ post_id: inserted.id, tag_id: tagId })));
+    }
+
+    router.push("/community/post/" + inserted.id);
   }
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">

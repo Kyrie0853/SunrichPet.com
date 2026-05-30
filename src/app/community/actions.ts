@@ -70,5 +70,6 @@ export async function createPost(formData: FormData) {
   }
 
   revalidatePath("/community");
+  revalidatePath("/");
   redirect("/community/post/" + post.id);
 }

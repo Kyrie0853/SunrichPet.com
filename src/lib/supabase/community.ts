@@ -66,9 +66,14 @@ export async function getPost(postId: string) {
   supabase.from("community_posts").select("view_count").eq("id", postId).single().then(({ data: row }) => {
     if (row) supabase.from("community_posts").update({ view_count: (row.view_count||0)+1 }).eq("id", postId).then(()=>{},()=>{});
   }, ()=>{});
-  const sq = ["*","author:profiles!community_posts_author_id_fkey(id,display_name,avatar_url)","tags:community_post_tags(tag:community_tags(id,name,slug,color))"].join(",");
-  const { data, error } = await supabase.from("community_posts").select(sq).eq("id",postId).single();
-  if (error||!data) return null;
+  const selectQuery = [
+    "*",
+    "author:profiles!community_posts_author_id_fkey(id, display_name, avatar_url)",
+    "tags:community_post_tags(tag:community_tags(id, name, slug, color))"
+  ].join(", ");
+  const { data, error } = await supabase.from("community_posts").select(selectQuery).eq("id", postId).single();
+  if (error) { console.error("getPost error:", error); return null; }
+  if (!data) return null;
   const d = data as any;
   const [lk,cm] = await Promise.all([
     supabase.from("community_likes").select("*",{count:"exact",head:true}).eq("post_id",d.id),
@@ -79,12 +84,12 @@ export async function getPost(postId: string) {
 
 export async function getComments(postId: string) {
   const supabase = await createClient();
-  const sq = ["*","author:profiles!community_comments_author_id_fkey(id,display_name,avatar_url)"].join(",");
-  const { data, error } = await supabase.from("community_comments").select(sq).eq("post_id",postId).is("parent_id",null).order("created_at",{ascending:true});
-  if (error||!data) return [];
-  const withReplies = await Promise.all(data.map(async(c: any)=>{
-    const {data:replies} = await supabase.from("community_comments").select(sq).eq("parent_id",c.id).order("created_at",{ascending:true});
-    return {...c,replies:replies||[]};
+  const selectQuery = ["*", "author:profiles!community_comments_author_id_fkey(id, display_name, avatar_url)"].join(", ");
+  const { data, error } = await supabase.from("community_comments").select(selectQuery).eq("post_id", postId).is("parent_id", null).order("created_at", { ascending: true });
+  if (error || !data) return [];
+  const withReplies = await Promise.all(data.map(async (c: any) => {
+    const { data: replies } = await supabase.from("community_comments").select(selectQuery).eq("parent_id", c.id).order("created_at", { ascending: true });
+    return { ...c, replies: replies || [] };
   }));
   return withReplies;
 }
