@@ -14,5 +14,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth?error=验证失败`);
+  return NextResponse.redirect(`${origin}/auth?error=登录验证失败，请重试`);
 }
