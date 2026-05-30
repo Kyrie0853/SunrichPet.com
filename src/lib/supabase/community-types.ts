@@ -5,6 +5,7 @@ export type CommunityPost = {
   category: string;
   images: string[];
   is_pinned: boolean;
+  is_featured: boolean;
   view_count: number;
   created_at: string;
   updated_at: string;
@@ -26,6 +27,7 @@ export type CommunityTag = {
 // 父分类（论坛首页顶部 Tab）
 export const PARENT_TABS = [
   { key: "" as const, label: "全部" },
+  { key: "featured" as const, label: "精华", color: "#d97706" },
   { key: "reptile" as const, label: "爬宠", color: "#059669" },
   { key: "aquarium" as const, label: "水族", color: "#0284c7" },
 ];

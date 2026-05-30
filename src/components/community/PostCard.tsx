@@ -24,12 +24,15 @@ export default function PostCard({ post }: { post: CommunityPost }) {
 
   return (
     <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
-      {/* 置顶标记 */}
-      {post.is_pinned && (
-        <span className="mb-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-          📌 置顶
-        </span>
-      )}
+      {/* 标签 */}
+      <div className="mb-2 flex flex-wrap gap-1.5">
+        {post.is_pinned && (
+          <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">📌 置顶</span>
+        )}
+        {post.is_featured && (
+          <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">⭐ 精华</span>
+        )}
+      </div>
 
       {/* 标题行 */}
       <div className="flex items-start gap-3">

@@ -19,7 +19,7 @@ export default function PostList({ initialPosts }: { initialPosts: CommunityPost
   useEffect(()=>{supabase.from("community_tags").select("*").order("name").then(({data})=>{if(data)setAllTags(data as CommunityTag[])})},[supabase]);
 
   useEffect(()=>{
-    if(parentTab===""&&selectedTagIds.length===0&&sort==="latest"&&page===1){setPosts(initialPosts);return;}
+    if(parentTab!=="featured"&&parentTab===""&&selectedTagIds.length===0&&sort==="latest"&&page===1){setPosts(initialPosts);return;}
     let cancelled=false;setLoading(true);
     (async()=>{
       let q=supabase.from("community_posts").select("*");
@@ -39,8 +39,10 @@ export default function PostList({ initialPosts }: { initialPosts: CommunityPost
         const tMap=new Map<string,any[]>();
         if(tIds.length>0){const {data:tags}=await supabase.from("community_tags").select("*").in("id",tIds);const tb=new Map((tags||[]).map((t:any)=>[t.id,t]));(tr||[]).forEach((r:any)=>{if(tb.has(r.tag_id)){if(!tMap.has(r.post_id))tMap.set(r.post_id,[]);tMap.get(r.post_id)!.push(tb.get(r.tag_id)!);}});}
         let filtered=fetched;
+        // 精华区
+        if(parentTab==="featured"){filtered=filtered.filter((p:any)=>p.is_featured===true);}
         // 按父分类过滤（通过标签的 parent_id）
-        if(parentTab){const parentChildren=allTags.filter(t=>t.parent_id===parentTab).map(t=>t.id);if(parentChildren.length>0){filtered=filtered.filter((p:any)=>{const ptIds=(tMap.get(p.id)||[]).map((t:any)=>t.id);return ptIds.some((id:string)=>parentChildren.includes(id));});}}
+        else if(parentTab){const parentChildren=allTags.filter(t=>t.parent_id===parentTab).map(t=>t.id);if(parentChildren.length>0){filtered=filtered.filter((p:any)=>{const ptIds=(tMap.get(p.id)||[]).map((t:any)=>t.id);return ptIds.some((id:string)=>parentChildren.includes(id));});}}
         // 按选中标签过滤
         if(selectedTagIds.length>0){filtered=filtered.filter((p:any)=>{const ptIds=(tMap.get(p.id)||[]).map((t:any)=>t.id);return selectedTagIds.some((id:string)=>ptIds.includes(id));});}
         const enriched=await Promise.all(filtered.map(async(p:any)=>{const[lk,cm]=await Promise.all([supabase.from("community_likes").select("*",{count:"exact",head:true}).eq("post_id",p.id),supabase.from("community_comments").select("*",{count:"exact",head:true}).eq("post_id",p.id)]);return{...p,author:aMap.get(p.author_id)||null,like_count:(lk as any).count||0,comment_count:(cm as any).count||0,tags:tMap.get(p.id)||[]};}));
