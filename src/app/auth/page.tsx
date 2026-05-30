@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -32,12 +32,11 @@ export default function AuthPage(){
   const[step,setStep]=useState<Step>("emailInput");
   const[email,setEmail]=useState("");
   const[password,setPassword]=useState("");
-  const[code,setCode]=useState<string[]>(["","","","","",""]);
+  const[code,setCode]=useState("");
   const[error,setError]=useState("");
   const[message,setMessage]=useState("");
   const[loading,setLoading]=useState(false);
   const[countdown,setCountdown]=useState(0);
-  const codeRefs=useRef<(HTMLInputElement|null)[]>([]);
 
   const startCD=()=>{setCountdown(60);const t=setInterval(()=>{setCountdown(c=>{if(c<=1){clearInterval(t);return 0}return c-1})},1000)};
 
@@ -51,10 +50,9 @@ export default function AuthPage(){
   }
 
   async function verifyOtp(){
-    const otp=code.join("");
-    if(otp.length!==6){setError("请输入完整的6位验证码");return}
+    if(code.length!==6){setError("请输入完整的6位验证码");return}
     setError("");setLoading(true);
-    const{error:vErr}=await supabase.auth.verifyOtp({email:email.trim(),token:otp,type:"email"});
+    const{error:vErr}=await supabase.auth.verifyOtp({email:email.trim(),token:code,type:"email"});
     if(vErr){setError(translateError(vErr.message));setLoading(false);return}
     const{data:{user}}=await supabase.auth.getUser();
     if(user){const{data:p}=await supabase.from("profiles").select("id").eq("id",user.id).single();if(!p)await supabase.from("profiles").insert({id:user.id,role:"customer"})}
@@ -69,11 +67,10 @@ export default function AuthPage(){
     router.push("/");router.refresh();
   }
 
-  function handleCode(i:number,v:string){
-    if(!/^\d?$/.test(v))return;
-    const nc=[...code];nc[i]=v;setCode(nc);
-    if(v&&i<5)codeRefs.current[i+1]?.focus();
-    if(i===5&&v&&[...nc.slice(0,5),v].join("").length===6)setTimeout(verifyOtp,200);
+  function handleCodeInput(v:string){
+    const digits=v.replace(/\D/g,"").slice(0,6);
+    setCode(digits);
+    if(digits.length===6)setTimeout(verifyOtp,200);
   }
 
   async function resendOtp(){
@@ -83,7 +80,7 @@ export default function AuthPage(){
     setMessage("验证码已重新发送");startCD();setLoading(false);
   }
 
-  const goBack=()=>{setStep("emailInput");setError("");setMessage("");setCode([...Array(6)].map(()=>""))};
+  const goBack=()=>{setStep("emailInput");setError("");setMessage("");setCode("")};
 
   return(<div className="flex min-h-[80vh] items-center justify-center px-4">
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
@@ -99,8 +96,19 @@ export default function AuthPage(){
       </form>)}
       {step==="otpInput"&&(<div className="space-y-4">
         <p className="text-sm text-gray-600">请输入发送到 <strong>{email}</strong> 的 6 位验证码</p>
-        <div className="flex justify-center gap-2">
-          {code.map((d,i)=>(<input key={i} ref={el=>{codeRefs.current[i]=el}} type="text" inputMode="numeric" maxLength={1} value={d} onChange={e=>handleCode(i,e.target.value)} className="h-12 w-12 rounded-lg border border-gray-300 text-center text-xl font-bold focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" />))}
+        <div className="relative mx-auto w-fit">
+          <input type="text" inputMode="numeric" maxLength={6} value={code}
+            onChange={e=>handleCodeInput(e.target.value)}
+            autoFocus autoComplete="one-time-code"
+            className="absolute inset-0 h-full w-full bg-transparent text-transparent caret-emerald-600 tracking-[2.2em] pl-[0.6em] text-2xl font-mono outline-none"
+            style={{letterSpacing:"2.2em",paddingLeft:"0.6em"}} />
+          <div className="flex gap-2">
+            {[0,1,2,3,4,5].map(i=>(
+              <div key={i} className={"h-12 w-12 rounded-lg border-2 flex items-center justify-center text-xl font-bold "+(code[i]?"border-emerald-500 bg-emerald-50 text-emerald-700":"border-gray-300 text-gray-400")}>
+                {code[i]||""}
+              </div>
+            ))}
+          </div>
         </div>
         <button onClick={verifyOtp} disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"验证中...":"确认登录"}</button>
         <div className="flex items-center justify-between text-sm">
