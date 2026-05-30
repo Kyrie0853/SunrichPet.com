@@ -71,6 +71,11 @@ export default async function CartPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <h1 className="mb-8 text-2xl font-bold text-gray-800">购物车</h1>
       <CartContent items={cartItems} />
+      <div className="mt-8">
+        <Link href="/checkout" className="block w-full rounded-xl bg-emerald-600 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-700">
+          去结算
+        </Link>
+      </div>
     </div>
   );
 }
