@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS public.conversations (
   participant_1 UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   participant_2 UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS conv_unique_pair_idx ON public.conversations (LEAST(participant_1,participant_2), GREATEST(participant_1,participant_2));
 CREATE INDEX IF NOT EXISTS conv_p1_idx ON public.conversations(participant_1);
