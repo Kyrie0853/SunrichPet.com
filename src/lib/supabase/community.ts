@@ -94,3 +94,43 @@ export async function getUserProfile(userId:string){
   ]);
   return {...profile,following_count:followingCount||0,follower_count:followerCount||0,posts:posts||[]};
 }
+
+export async function getNotifications(userId: string, page = 1) {
+  const supabase = await createClient();
+  const { data: notifs, count } = await supabase.from("notifications").select("*", { count: "estimated" }).eq("user_id", userId).order("created_at", { ascending: false }).range((page-1)*20, page*20-1);
+  if (!notifs || notifs.length === 0) return { notifications: [], total: count || 0 };
+  const actorIds = [...new Set(notifs.map((n: any) => n.actor_id).filter(Boolean))];
+  const { data: actors } = await supabase.from("profiles").select("id, display_name, avatar_url").in("id", actorIds);
+  const actorMap = new Map((actors || []).map((a: any) => [a.id, a]));
+  const enriched = notifs.map((n: any) => ({ ...n, actor: actorMap.get(n.actor_id) || null }));
+  return { notifications: enriched, total: count || 0 };
+}
+export async function markNotificationsRead(userId: string) {
+  const supabase = await createClient();
+  await supabase.from("notifications").update({ is_read: true }).eq("user_id", userId).eq("is_read", false);
+}
+export async function getUserFavorites(userId:string){
+  const supabase=await createClient();
+  const {data:favs}=await supabase.from("community_favorites").select("post_id,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(50);
+  if(!favs||favs.length===0)return [];
+  const postIds=favs.map(f=>f.post_id);
+  const {data:posts}=await supabase.from("community_posts").select("id,title,created_at,view_count,author_id").in("id",postIds);
+  if(!posts)return [];
+  const authorIds=[...new Set(posts.map(p=>p.author_id))];
+  const {data:authors}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",authorIds);
+  const aMap=new Map((authors||[]).map(a=>[a.id,a]));
+  return posts.map(p=>({...p,author:aMap.get(p.author_id)||null,favorited_at:favs.find(f=>f.post_id===p.id)?.created_at}));
+}
+export async function getUserLikes(userId:string){
+  const supabase=await createClient();
+  const {data:likes}=await supabase.from("community_likes").select("post_id,created_at").eq("user_id",userId).order("created_at",{ascending:false}).limit(50);
+  if(!likes||likes.length===0)return [];
+  const postIds=[...new Set(likes.map(l=>l.post_id).filter(Boolean))];
+  if(postIds.length===0)return [];
+  const {data:posts}=await supabase.from("community_posts").select("id,title,created_at,view_count,author_id").in("id",postIds);
+  if(!posts)return [];
+  const authorIds=[...new Set(posts.map(p=>p.author_id))];
+  const {data:authors}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",authorIds);
+  const aMap=new Map((authors||[]).map(a=>[a.id,a]));
+  return posts.map(p=>({...p,author:aMap.get(p.author_id)||null,liked_at:likes.find(l=>l.post_id===p.id)?.created_at}));
+}

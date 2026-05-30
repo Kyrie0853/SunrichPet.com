@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { LogoutButton } from "./LogoutButton";
+import UserMenu from "./UserMenu";
 
 export default async function Navbar() {
   const supabase = await createClient();
 
   let user = null;
   let isAdmin = false;
+  let unreadCount = 0;
+  let profile: any = null;
 
   try {
     const { data } = await supabase.auth.getUser();
@@ -17,14 +19,26 @@ export default async function Navbar() {
 
   if (user) {
     try {
-      const { data: profile } = await supabase
+      const { data: p } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, display_name, avatar_url")
         .eq("id", user.id)
         .single();
-      isAdmin = profile?.role === "admin";
+      isAdmin = p?.role === "admin";
+      profile = p;
     } catch {
       // 忽略 profiles 查询失败
+    }
+
+    try {
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false);
+      unreadCount = count || 0;
+    } catch {
+      // notifications 表可能尚未创建，忽略
     }
   }
 
@@ -68,20 +82,7 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <>
-              <span className="hidden text-gray-600 sm:inline">
-                {user.user_metadata?.display_name || user.email}
-              </span>
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="rounded-md bg-emerald-100 px-3 py-1.5 font-medium text-emerald-700 hover:bg-emerald-200"
-                >
-                  后台管理
-                </Link>
-              )}
-              <LogoutButton />
-            </>
+            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} profile={profile} />
           ) : (
             <Link
               href="/auth"
