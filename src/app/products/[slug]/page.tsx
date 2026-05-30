@@ -21,6 +21,18 @@ export default async function ProductDetailPage({ params }: Props) {
     notFound();
   }
 
+  // 商家评分
+  let sellerRating = { avg: 0, count: 0 };
+  if (product.seller_id) {
+    const { data: reviews } = await supabase.from("seller_reviews").select("rating").eq("seller_id", product.seller_id);
+    if (reviews && reviews.length > 0) {
+      sellerRating.avg = +(reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length).toFixed(1);
+      sellerRating.count = reviews.length;
+    }
+    const { data: seller } = await supabase.from("profiles").select("display_name").eq("id", product.seller_id).single();
+    product._seller = seller;
+  }
+
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="grid gap-8 md:grid-cols-2">
@@ -66,6 +78,21 @@ export default async function ProductDetailPage({ params }: Props) {
               {product.description || "暂无描述"}
             </p>
           </div>
+
+          {/* 商家信息 */}
+          {product.seller_id && (
+            <a href={"/shop/seller/" + product.seller_id} className="mt-8 flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 transition hover:bg-gray-100">
+              <div className="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-600">
+                {(product._seller?.display_name || "商").charAt(0)}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{product._seller?.display_name || "商家"}</p>
+                {sellerRating.count > 0 && (
+                  <p className="text-xs text-amber-600">⭐ {sellerRating.avg} · {sellerRating.count} 条评价</p>
+                )}
+              </div>
+            </a>
+          )}
 
           {/* 加入购物车 */}
           <div className="mt-auto pt-8">
