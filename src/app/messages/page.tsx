@@ -2,6 +2,7 @@ import { getConversations } from "@/lib/supabase/community";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Avatar from "@/components/Avatar";
 
 function timeAgo(d: string) { const diff = Date.now() - new Date(d).getTime(); const m = Math.floor(diff / 60000); if (m < 1) return "刚刚"; if (m < 60) return m + "分钟前"; const h = Math.floor(m / 60); if (h < 24) return h + "小时前"; const days = Math.floor(h / 24); if (days < 30) return days + "天前"; return Math.floor(days / 30) + "个月前"; }
 
@@ -22,9 +23,7 @@ export default async function MessagesPage() {
           {conversations.map((conv: any) => (
             <Link key={conv.userId} href={"/messages/" + conv.userId} className="flex items-center gap-4 px-5 py-4 transition hover:bg-gray-50">
               <div className="relative flex-shrink-0">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-600">
-                  {conv.profile?.display_name?.charAt(0) || "U"}
-                </div>
+                <Avatar userId={conv.userId} avatarUrl={conv.profile?.avatar_url} displayName={conv.profile?.display_name} size={48} clickable />
                 {conv.unread > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                     {conv.unread > 99 ? "99+" : conv.unread}

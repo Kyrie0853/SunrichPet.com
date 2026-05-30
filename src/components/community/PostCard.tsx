@@ -37,15 +37,7 @@ export default function PostCard({ post }: { post: CommunityPost }) {
       {/* 标题行 */}
       <div className="flex items-start gap-3">
         {/* 作者头像 */}
-        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-emerald-100">
-          {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center text-sm font-bold text-emerald-600">
-              {(post.author?.display_name || "U").charAt(0)}
-            </div>
-          )}
-        </div>
+        <Avatar userId={post.author_id} avatarUrl={post.author?.avatar_url} displayName={post.author?.display_name} size={40} clickable />
 
         <div className="min-w-0 flex-1">
           <Link href={"/community/post/" + post.id} className="block">

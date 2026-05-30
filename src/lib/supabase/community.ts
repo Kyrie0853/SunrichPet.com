@@ -177,19 +177,29 @@ export async function getOrCreateConversation(userId:string,otherId:string){
   const supabase=await createClient();
   const p1=userId<otherId?userId:otherId;
   const p2=userId<otherId?otherId:userId;
-  // 先尝试查找已有会话
+
+  // 尝试查找已有会话
   const {data:conv,error:lookupErr}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).maybeSingle();
-  if(lookupErr){console.error("getOrCreateConversation lookup error:",lookupErr);throw new Error("会话查询失败")}
+  if(lookupErr){
+    console.error("getOrCreateConversation lookup error:",lookupErr.code, lookupErr.message);
+    // PGRST116 = no rows (not a real error), 42P01 = table doesn't exist
+    if(lookupErr.code==="42P01")throw new Error("私信服务未初始化，请执行 messages-migration-safe.sql");
+    // 其他错误可能是 RLS 或权限问题，尝试 fallback
+  }
   if(conv)return conv;
+
   // 创建新会话
   const {data:created,error:createErr}=await supabase.from("conversations").insert({participant_1:p1,participant_2:p2}).select("*").single();
   if(createErr){
-    // 可能并发创建导致的唯一约束冲突，重新查询
+    // 23505 = 并发创建导致唯一约束冲突，重新查询
     if(createErr.code==="23505"){
       const {data:retry}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).maybeSingle();
       if(retry)return retry;
     }
-    console.error("getOrCreateConversation create error:",createErr);throw new Error("创建会话失败")
+    // 42501 = 权限不足 (RLS)
+    if(createErr.code==="42501")throw new Error("私信权限不足，请检查 RLS 策略是否已执行");
+    console.error("getOrCreateConversation create error:",createErr.code, createErr.message);
+    throw new Error("创建会话失败: "+createErr.message);
   }
   return created;
 }

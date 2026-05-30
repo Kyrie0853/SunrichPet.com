@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -9,13 +10,14 @@ type Props = {
   displayName?: string|null;
   size?: number;
   editable?: boolean;
+  clickable?: boolean;
   onAvatarChange?: (url: string) => void;
 };
 
 const ALLOWED_TYPES = ["image/jpeg","image/png","image/webp","image/gif"];
 const MAX_SIZE = 2 * 1024 * 1024;
 
-export default function Avatar({ userId, avatarUrl, displayName, size = 40, editable = false, onAvatarChange }: Props) {
+export default function Avatar({ userId, avatarUrl, displayName, size = 40, editable = false, clickable = false, onAvatarChange }: Props) {
   const [uploading, setUploading] = useState(false);
   const [url, setUrl] = useState(avatarUrl);
   const [error, setError] = useState("");
@@ -51,8 +53,8 @@ export default function Avatar({ userId, avatarUrl, displayName, size = 40, edit
   };
 
 
-  return (<div className="relative inline-block" style={{ width: size, height: size }}>
-    <div onClick={triggerFile} className={"relative h-full w-full rounded-full overflow-hidden flex items-center justify-center text-white font-bold select-none " + (editable ? "cursor-pointer border-2 border-dashed border-emerald-400 hover:border-emerald-600 transition-colors" : "") + (url ? "" : " bg-emerald-500")} style={{ fontSize: size * 0.4 }}>
+  const avatarEl = (
+    <div onClick={triggerFile} className={"relative h-full w-full rounded-full overflow-hidden flex items-center justify-center text-white font-bold select-none transition-all " + (editable ? "cursor-pointer border-2 border-dashed border-emerald-400 hover:border-emerald-600" : clickable ? "cursor-pointer hover:scale-105 hover:shadow-md" : "") + (url ? "" : " bg-emerald-500")} style={{ fontSize: size * 0.4 }}>
       {url ? (<img src={url} alt="" className="h-full w-full object-cover" draggable={false} />) : initial}
       {editable && !uploading && (<div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/30 pointer-events-none">
         <svg className="mb-1 h-4 w-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -68,7 +70,19 @@ export default function Avatar({ userId, avatarUrl, displayName, size = 40, edit
         </svg>
       </div>)}
     </div>
-    {error && (<div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-red-500 px-2 py-1 text-xs text-white shadow">{error}</div>)}
-    <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleUpload} className="hidden" />
-  </div>);
+  );
+
+  return (
+    <div className="relative inline-block" style={{ width: size, height: size }}>
+      {clickable ? (
+        <Link href={"/community/user/" + userId} className="block h-full w-full">
+          {avatarEl}
+        </Link>
+      ) : (
+        avatarEl
+      )}
+      {error && (<div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-red-500 px-2 py-1 text-xs text-white shadow">{error}</div>)}
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleUpload} className="hidden" />
+    </div>
+  );
 }

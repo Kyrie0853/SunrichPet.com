@@ -14,8 +14,37 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
   const other = await getUserProfile(userId);
   if (!other) notFound();
 
-  // 获取或创建会话
-  const conversation = await getOrCreateConversation(user.id, userId);
+  // 尝试获取或创建会话，失败时优雅降级
+  let conversation: any = null;
+  let conversationError: string | null = null;
+  try {
+    conversation = await getOrCreateConversation(user.id, userId);
+  } catch (e: any) {
+    console.error("ChatPage: getOrCreateConversation failed:", e.message);
+    conversationError = e.message;
+  }
+
+  // 如果无法创建会话，显示错误提示
+  if (!conversation || conversationError) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <p className="text-4xl mb-4">💬</p>
+        <p className="text-lg text-gray-700 font-semibold mb-2">无法建立私信会话</p>
+        <p className="text-sm text-gray-400 mb-6">
+          {conversationError || "会话服务暂不可用，请稍后重试"}
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <Link href={"/community/user/" + userId} className="rounded-xl border border-gray-200 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50">
+            返回用户主页
+          </Link>
+          <Link href="/messages" className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+            返回会话列表
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const messages = await getMessages(conversation.id);
 
   return (

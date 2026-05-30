@@ -2,6 +2,7 @@ import { searchPosts, searchProducts, searchUsers } from "@/lib/supabase/search"
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import FollowButton from "@/components/FollowButton";
+import Avatar from "@/components/Avatar";
 
 function highlight(text: string, q: string) {
   if (!q || !text) return text;
@@ -107,11 +108,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           {users.length === 0 && <p className="py-12 text-center text-gray-400">未找到相关用户，换个关键词试试吧</p>}
           {users.map((u: any) => (
             <div key={u.id} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
-              <Link href={"/community/user/" + u.id} className="flex-shrink-0">
-                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-600">
-                  {(u.display_name || "U").charAt(0)}
-                </div>
-              </Link>
+              <Avatar userId={u.id} avatarUrl={u.avatar_url} displayName={u.display_name} size={48} clickable />
               <Link href={"/community/user/" + u.id} className="min-w-0 flex-1">
                 <h3 className="font-semibold text-gray-900 truncate">{u.display_name || "用户"}</h3>
                 {u.bio && <p className="mt-0.5 text-sm text-gray-500 line-clamp-1">{u.bio}</p>}
