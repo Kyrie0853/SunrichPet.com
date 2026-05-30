@@ -11,7 +11,7 @@ export default async function CommunityPage() {
   const { posts } = await getPosts({ sort: "latest" });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-3 md:px-4 py-10">
       {/* 头部 */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

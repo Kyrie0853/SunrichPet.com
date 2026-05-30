@@ -16,7 +16,7 @@ export default async function FeedPage() {
   const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <div className="mx-auto max-w-3xl md:px-4 px-4 py-10">
       <h1 className="mb-2 text-3xl font-bold text-gray-900">我的动态</h1>
       <p className="mb-8 text-sm text-gray-500">你关注的人发布的最新帖子</p>
 

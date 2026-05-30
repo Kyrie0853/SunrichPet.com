@@ -98,7 +98,7 @@ export default function AuthPage(){
 
   const goBack=()=>{setStep("emailInput");setError("");setMessage("");setCode("")};
 
-  return(<div className="flex min-h-[80vh] items-center justify-center px-4">
+  return(<div className="flex min-h-[80vh] px-2 items-center justify-center px-4">
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
       <h1 className="mb-2 text-center text-2xl font-bold text-emerald-700">顺瑞益宠</h1>
       <p className="mb-6 text-center text-sm text-gray-400">登录或注册账号</p>

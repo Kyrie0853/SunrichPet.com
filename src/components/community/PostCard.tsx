@@ -23,7 +23,7 @@ export default function PostCard({ post }: { post: CommunityPost }) {
   
 
   return (
-    <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+    <article className="rounded-2xl border border-gray-100 bg-white p-3 md:p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
       {/* 标签 */}
       <div className="mb-2 flex flex-wrap gap-1.5">
         {post.is_pinned && (

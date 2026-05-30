@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 移动端优化 */
+@layer base {
+  /* iOS 输入框不自动缩放 */
+  input, textarea, select { font-size: 16px !important; }
+  /* 安全区域 */
+  .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+
+/* 移动端触摸优化 */
+@media (max-width: 767px) {
+  button, a { min-height: 44px; min-width: 44px; }
+  .touch-btn { min-height: 44px; min-width: 44px; }
+}

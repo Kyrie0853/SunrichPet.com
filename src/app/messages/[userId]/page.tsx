@@ -19,7 +19,7 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
   const messages = await getMessages(conversation.id);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col" style={{ height: "calc(100vh - 4rem)" }}>
+    <div className="mx-auto flex max-w-2xl md:px-4 flex-col" style={{ height: "calc(100vh - 4rem)" }}>
       {/* 头部 */}
       <div className="flex items-center gap-3 border-b bg-white px-4 py-3">
         <Link href="/messages" className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600">

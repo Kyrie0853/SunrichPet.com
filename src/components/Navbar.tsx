@@ -63,8 +63,8 @@ export default async function Navbar() {
           Sunrich Pet
         </Link>
 
-        {/* 中间导航 */}
-        <div className="flex items-center gap-1 text-sm font-medium">
+        {/* 中间导航（桌面端可见） */}
+        <div className="hidden items-center gap-1 text-sm font-medium md:flex">
           <Link
             href="/"
             className="rounded-md px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
@@ -80,7 +80,7 @@ export default async function Navbar() {
         </div>
 
         {/* 搜索框 */}
-        <SearchBar className="hidden flex-1 max-w-sm mx-4 sm:block" />
+        <SearchBar className="hidden flex-1 max-w-sm mx-4 md:block" />
 
         {/* 右侧 */}
         <div className="flex items-center gap-3 text-sm">

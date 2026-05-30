@@ -35,7 +35,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-4 md:gap-8 md:grid-cols-2">
         {/* 图片区域 */}
         <div className="overflow-hidden rounded-2xl bg-gray-100">
           {product.image_url ? (
