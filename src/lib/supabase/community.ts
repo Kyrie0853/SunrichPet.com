@@ -88,3 +88,15 @@ export async function getComments(postId: string) {
   }));
   return withReplies;
 }
+// 获取用户主页资料
+export async function getUserProfile(userId: string) {
+  const supabase = await createClient();
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  if (!profile) return null;
+  const [{ count: followingCount }, { count: followerCount }, { data: posts }] = await Promise.all([
+    supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
+    supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
+    supabase.from("community_posts").select("id,title,created_at,view_count").eq("author_id", userId).order("created_at", { ascending: false }).limit(20),
+  ]);
+  return { ...profile, following_count: followingCount||0, follower_count: followerCount||0, posts: posts||[] } as any;
+}
