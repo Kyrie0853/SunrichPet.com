@@ -1,86 +1,30 @@
+import { getPosts } from "@/lib/supabase/community";
+import PostList from "@/components/community/PostList";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { SearchBar } from "@/components/SearchBar";
+import type { Metadata } from "next";
 
-const CATEGORY_COLORS = [
-  "from-amber-100 to-orange-50 border-amber-200",
-  "from-green-100 to-emerald-50 border-green-200",
-  "from-lime-100 to-yellow-50 border-lime-200",
-  "from-cyan-100 to-blue-50 border-cyan-200",
-  "from-purple-100 to-pink-50 border-purple-200",
-  "from-rose-100 to-red-50 border-rose-200",
-  "from-teal-100 to-cyan-50 border-teal-200",
-  "from-sky-100 to-indigo-50 border-sky-200",
-];
+export const metadata: Metadata = {
+  title: "顺瑞益宠 — 宠物玩家社区与商城",
+  description: "宠物爱好者交流社区，分享饲养经验、晒宠展示、问答求助，以及小众宠物活体及用品交易",
+};
 
-export default async function Home() {
-  const supabase = await createClient();
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("sort_order", { ascending: true });
+export default async function HomePage() {
+  const { posts } = await getPosts({ sort: "latest" });
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Hero + 搜索 */}
-      <section className="bg-gradient-to-b from-emerald-50 via-white to-white py-16 text-center">
-        <h1 className="mb-3 text-4xl font-bold tracking-tight text-gray-800">
-          小众宠物，大有世界
-        </h1>
-        <p className="mx-auto mb-8 max-w-lg text-gray-500">
-          守宫、蛇、龟、观赏鱼 — 每一只都值得被认真对待
-        </p>
-
-        {/* 搜索框 */}
-        <div className="mx-auto max-w-xl px-4">
-          <SearchBar />
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      {/* 头部 */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">宠物玩家社区</h1>
+          <p className="mt-2 text-gray-500">分享饲养心得，展示爱宠日常，与全国宠友交流互动</p>
         </div>
-      </section>
-
-      {/* 分类导航 */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-20">
-        <div className="mb-8 flex items-center gap-3">
-          <span className="h-px flex-1 bg-gray-200" />
-          <h2 className="text-lg font-semibold text-gray-600">分类浏览</h2>
-          <span className="h-px flex-1 bg-gray-200" />
-        </div>
-
-        {categories && categories.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((cat, i) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${cat.slug}`}
-                className={`group rounded-2xl border bg-gradient-to-br p-6 text-center transition-all hover:shadow-md ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}`}
-              >
-                {cat.image_url ? (
-                  <img
-                    src={cat.image_url}
-                    alt={cat.name}
-                    className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white/60 text-2xl">
-                    {cat.name.charAt(0)}
-                  </div>
-                )}
-                <span className="block font-semibold text-gray-800 group-hover:text-emerald-700">
-                  {cat.name}
-                </span>
-                {cat.description && (
-                  <span className="mt-1 block text-xs text-gray-500 line-clamp-2">
-                    {cat.description}
-                  </span>
-                )}
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="py-12 text-center text-gray-400">
-            暂无分类，请管理员在后台添加
-          </p>
-        )}
-      </section>
+        <Link href="/community/new" className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+          发布帖子
+        </Link>
+      </div>
+      <PostList initialPosts={posts} />
     </div>
   );
 }

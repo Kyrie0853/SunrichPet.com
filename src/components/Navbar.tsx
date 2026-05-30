@@ -43,15 +43,15 @@ export default async function Navbar() {
         <div className="flex items-center gap-1 text-sm font-medium">
           <Link
             href="/"
-            className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-          >
-            商城
-          </Link>
-          <Link
-            href="/community"
             className="rounded-md px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
           >
             论坛
+          </Link>
+          <Link
+            href="/shop"
+            className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          >
+            商城
           </Link>
         </div>
 
