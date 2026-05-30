@@ -12,18 +12,23 @@ export type CommunityPost = {
   author: { id: string; display_name: string | null; avatar_url: string | null };
   like_count: number;
   comment_count: number;
-  tags: { id: string; name: string; slug: string; color: string }[];
+  tags: { id: string; name: string; slug: string; color: string; parent_id?: string }[];
 };
 
-export type CommunityCategory =
-  | "general" | "reptile" | "fish" | "bird" | "small-pet"
-  | "qa" | "marketplace-discuss" | "showcase" | "guide";
-
-export const CATEGORY_LABELS: Record<CommunityCategory, string> = {
-  general: "综合讨论", reptile: "爬宠世界", fish: "水族天地",
-  bird: "鸟类乐园", "small-pet": "小宠之家", qa: "问答求助",
-  "marketplace-discuss": "交易交流", showcase: "晒宠展示", guide: "饲养教程",
+export type CommunityTag = {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  parent_id?: string|null;
 };
+
+// 父分类（论坛首页顶部 Tab）
+export const PARENT_TABS = [
+  { key: "" as const, label: "全部" },
+  { key: "reptile" as const, label: "爬宠", color: "#059669" },
+  { key: "aquarium" as const, label: "水族", color: "#0284c7" },
+];
 
 export type SortOption = "latest" | "hot" | "trending";
 

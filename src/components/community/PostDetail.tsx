@@ -1,6 +1,6 @@
 "use client";
 
-import { CommunityPost, CATEGORY_LABELS } from "@/lib/supabase/community-types";
+import { CommunityPost, PARENT_TABS } from "@/lib/supabase/community-types";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ export default function PostDetail({post}:{post:CommunityPost}){
 
   const handleDelete=async()=>{if(!confirm("确定要删除这篇帖子吗？删除后无法恢复。"))return;setDeleting(true);const{error}=await supabase.from("community_posts").delete().eq("id",post.id);if(error){alert("删除失败: "+error.message);setDeleting(false)}else{router.push("/")}};
 
-  const label=CATEGORY_LABELS[post.category as keyof typeof CATEGORY_LABELS]||post.category;
+  const parent=PARENT_TABS.find(t=>t.key===post.category);const label=parent?parent.label:post.category;
 
   return (<article>
     <div className="flex items-center gap-3">

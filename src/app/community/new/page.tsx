@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CATEGORY_LABELS, CommunityCategory } from "@/lib/supabase/community-types";
+import { CommunityTag, PARENT_TABS } from "@/lib/supabase/community-types";
 import { createClient } from "@/lib/supabase/client";
 
 export default function NewPostPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<CommunityCategory>("general");
+  const [category, setCategory] = useState<string>("");
   const [images, setImages] = useState<File[]>([]);
   const [tags, setTags] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -19,7 +19,7 @@ export default function NewPostPage() {
   const imagePreviews = images.map((f) => URL.createObjectURL(f));
 
   useEffect(() => {
-    supabase.from("community_tags").select("id,name,slug").order("name").then(({ data }) => {
+    supabase.from("community_tags").select("*").order("name").then(({ data }) => {
       if (data) setTags(data);
     });
   }, [supabase]);
@@ -85,9 +85,10 @@ export default function NewPostPage() {
         </div>
         <div>
           <label className="mb-2 block text-sm font-semibold text-gray-700">分类</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value as CommunityCategory)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500">
-            {(Object.entries(CATEGORY_LABELS) as [CommunityCategory, string][]).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500">
+            <option value="">选择分类</option>
+            {PARENT_TABS.filter(t=>t.key).map(tab => (
+              <option key={tab.key} value={tab.key}>{tab.label}</option>
             ))}
           </select>
         </div>
@@ -115,4 +116,4 @@ export default function NewPostPage() {
       </form>
     </div>
   );
-}
+}// See next commit for full replacement.

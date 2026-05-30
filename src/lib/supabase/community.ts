@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import type { CommunityPost, CommunityCategory, SortOption } from '@/lib/supabase/community-types';
+import type { CommunityPost, SortOption } from '@/lib/supabase/community-types';
 
-export type { CommunityPost, CommunityCategory, SortOption };
-export { CATEGORY_LABELS, SORT_OPTIONS } from '@/lib/supabase/community-types';
+export type { CommunityPost, SortOption };
+export { SORT_OPTIONS } from '@/lib/supabase/community-types';
 
 // 获取帖子列表（分步查询，避免跨 schema FK 解析失败）
-export async function getPosts(options: {category?:CommunityCategory;sort?:SortOption;page?:number;pageSize?:number}) {
+export async function getPosts(options: {category?:string;sort?:SortOption;page?:number;pageSize?:number}) {
   const {category,sort="latest",page=1,pageSize=12}=options;
   const supabase=await createClient();
   let query=supabase.from("community_posts").select("*",{count:"estimated"});

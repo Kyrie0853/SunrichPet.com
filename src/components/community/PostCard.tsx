@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CommunityPost, CATEGORY_LABELS } from "@/lib/supabase/community-types";
+import { CommunityPost } from "@/lib/supabase/community-types";
 import Avatar from "@/components/Avatar";
 
 function timeAgo(dateStr: string) {
@@ -20,10 +20,10 @@ function timeAgo(dateStr: string) {
 
 export default function PostCard({ post }: { post: CommunityPost }) {
   const snippet = post.content.replace(/<[^>]*>/g, "").substring(0, 120);
-  const categoryLabel = CATEGORY_LABELS[post.category as keyof typeof CATEGORY_LABELS] || post.category;
+  
 
   return (
-    <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
+    <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
       {/* 置顶标记 */}
       {post.is_pinned && (
         <span className="mb-2 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
@@ -56,7 +56,7 @@ export default function PostCard({ post }: { post: CommunityPost }) {
 
       {/* 底部信息 */}
       <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-        <span className="rounded-full bg-gray-100 px-2 py-0.5">{categoryLabel}</span>
+        
         <span>{post.author?.display_name || "匿名用户"}</span>
         <span>{timeAgo(post.created_at)}</span>
         <span className="ml-auto flex items-center gap-1">
