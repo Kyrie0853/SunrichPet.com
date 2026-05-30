@@ -134,13 +134,13 @@ export default function AuthPage(){
         <button onClick={goBack} className="w-full text-center text-sm text-gray-400 hover:underline">← 更换邮箱</button>
       </div>)}
       {step==="passwordLogin"&&(<form onSubmit={passwordLogin} className="space-y-4">
-        <p className="text-sm text-gray-600">使用密码登录 <strong>{email}</strong></p>
+        <div><label className="mb-1 block text-sm font-medium text-gray-700">邮箱地址</label>
+        <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="your@email.com" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
         <div><label className="mb-1 block text-sm font-medium text-gray-700">密码</label>
         <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} placeholder="输入登录密码" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
         <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"登录中...":"登录"}</button>
         <button type="button" onClick={()=>{setStep("emailInput");setError("")}} className="w-full text-center text-sm text-emerald-600 hover:underline">使用验证码登录</button>
         <button type="button" onClick={forgotPassword} className="w-full text-center text-sm text-gray-500 hover:underline">忘记密码？</button>
-        <button type="button" onClick={goBack} className="w-full text-center text-sm text-gray-400 hover:underline">← 更换邮箱</button>
       </form>)}
       {step==="setPassword"&&(<form onSubmit={setPasswordHandler} className="space-y-4">
         <div className="rounded-lg bg-emerald-50 p-3 text-center text-sm text-emerald-700">✅ 验证成功！</div>
