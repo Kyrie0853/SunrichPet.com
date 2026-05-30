@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import UserMenu from "./UserMenu";
+import { SearchBar } from "./SearchBar";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -77,6 +78,9 @@ export default async function Navbar() {
             商城
           </Link>
         </div>
+
+        {/* 搜索框 */}
+        <SearchBar className="hidden flex-1 max-w-sm mx-4 sm:block" />
 
         {/* 右侧 */}
         <div className="flex items-center gap-3 text-sm">
