@@ -20,3 +20,35 @@ export async function searchProducts(query:string,page=1){
   const {data:products,count}=await supabase.from("products").select("*",{count:"estimated"}).or(filter2).eq("status","active").order("created_at",{ascending:false}).range((page-1)*10,page*10-1);
   return {products:products||[],total:count||0};
 }
+
+export async function searchUsers(query: string, currentUserId?: string, page = 1) {
+  const supabase = await createClient();
+  const term = `%${query}%`;
+  const { data: users, count } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url, bio, points, level")
+    .ilike("display_name", term)
+    .order("display_name", { ascending: true })
+    .range((page - 1) * 20, page * 20 - 1);
+
+  if (!users || users.length === 0) return { users: [], total: 0 };
+
+  // 排除当前用户自己
+  const filtered = currentUserId ? users.filter(u => u.id !== currentUserId) : users;
+  // 获取关注状态
+  let followingSet = new Set<string>();
+  if (currentUserId && filtered.length > 0) {
+    const ids = filtered.map(u => u.id);
+    const { data: follows } = await supabase
+      .from("user_follows")
+      .select("following_id")
+      .eq("follower_id", currentUserId)
+      .in("following_id", ids);
+    followingSet = new Set((follows || []).map(f => f.following_id));
+  }
+
+  return {
+    users: filtered.map(u => ({ ...u, isFollowing: followingSet.has(u.id) })),
+    total: count || 0,
+  };
+}

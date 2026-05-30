@@ -1,5 +1,7 @@
-import { searchPosts, searchProducts } from "@/lib/supabase/search";
+import { searchPosts, searchProducts, searchUsers } from "@/lib/supabase/search";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import FollowButton from "@/components/FollowButton";
 
 function highlight(text: string, q: string) {
   if (!q || !text) return text;
@@ -14,6 +16,9 @@ function timeAgo(d: string) { const diff = Date.now() - new Date(d).getTime(); c
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; tab?: string }> }) {
   const { q = "", tab = "posts" } = await searchParams;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   if (!q.trim()) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center">
@@ -22,19 +27,30 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     );
   }
 
-  const [{ posts, total: postTotal }, { products, total: prodTotal }] = await Promise.all([
+  const [
+    { posts, total: postTotal },
+    { products, total: prodTotal },
+    { users, total: userTotal },
+  ] = await Promise.all([
     tab === "posts" || tab === "all" ? searchPosts(q.trim()) : { posts: [], total: 0 } as any,
     tab === "products" || tab === "all" ? searchProducts(q.trim()) : { products: [], total: 0 } as any,
+    tab === "users" || tab === "all" ? searchUsers(q.trim(), user?.id) : { users: [], total: 0 } as any,
   ]);
+
+  const tabs = [
+    { key: "posts", label: `帖子 (${postTotal})` },
+    { key: "products", label: `商品 (${prodTotal})` },
+    { key: "users", label: `用户 (${userTotal})` },
+  ];
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold text-gray-900">搜索 "{q}"</h1>
-      <p className="mb-6 text-sm text-gray-400">帖子 {postTotal} 条 · 商品 {prodTotal} 条</p>
+      <p className="mb-6 text-sm text-gray-400">帖子 {postTotal} 条 · 商品 {prodTotal} 条 · 用户 {userTotal} 人</p>
 
       {/* Tab 切换 */}
       <div className="mb-6 flex gap-1 border-b border-gray-200">
-        {[{ key: "posts", label: `帖子 (${postTotal})` }, { key: "products", label: `商品 (${prodTotal})` }].map(tabItem => (
+        {tabs.map(tabItem => (
           <Link key={tabItem.key} href={`/search?q=${encodeURIComponent(q)}&tab=${tabItem.key}`}
             className={"px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px " + (tab === tabItem.key ? "border-emerald-600 text-emerald-700" : "border-transparent text-gray-500 hover:text-gray-700")}>
             {tabItem.label}
@@ -81,6 +97,31 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
                 {product.stock > 0 ? <p className="text-xs text-green-600">有货</p> : <p className="text-xs text-red-400">缺货</p>}
               </div>
             </Link>
+          ))}
+        </div>
+      )}
+
+      {/* 用户结果 */}
+      {tab === "users" && (
+        <div className="space-y-3">
+          {users.length === 0 && <p className="py-12 text-center text-gray-400">未找到相关用户，换个关键词试试吧</p>}
+          {users.map((u: any) => (
+            <div key={u.id} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <Link href={"/community/user/" + u.id} className="flex-shrink-0">
+                <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-600">
+                  {(u.display_name || "U").charAt(0)}
+                </div>
+              </Link>
+              <Link href={"/community/user/" + u.id} className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 truncate">{u.display_name || "用户"}</h3>
+                {u.bio && <p className="mt-0.5 text-sm text-gray-500 line-clamp-1">{u.bio}</p>}
+                <div className="mt-1 flex items-center gap-2 text-xs text-gray-400">
+                  <span>⭐ {u.points || 0}</span>
+                  {u.level > 0 && <span>LV.{u.level}</span>}
+                </div>
+              </Link>
+              <FollowButton targetId={u.id} initialFollowing={u.isFollowing} currentUserId={user?.id} />
+            </div>
           ))}
         </div>
       )}

@@ -86,6 +86,28 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
           {likes.length===0&&<p className="py-8 text-center text-sm text-gray-400">暂无点赞记录</p>}
           {likes.map((p:any)=>(<Link key={p.id} href={"/community/post/"+p.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-5 py-3 transition hover:shadow-sm"><span className="font-medium text-gray-900 truncate">{p.title}</span><span className="text-xs text-gray-400">{p.liked_at?timeFormat(p.liked_at):""}</span></Link>))}
         </div>)}
+
+        {tab==="following"&&(<div className="space-y-2">
+          {followingList.length===0&&<p className="py-8 text-center text-sm text-gray-400">暂未关注任何人</p>}
+          {followingList.map((u:any)=>(<Link key={u.id||u.followed_at} href={"/community/user/"+u.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white px-5 py-3 transition hover:shadow-sm">
+            <Avatar userId={u.id} avatarUrl={u.avatar_url} displayName={u.display_name} size={36} />
+            <div className="min-w-0 flex-1">
+              <span className="font-medium text-gray-900 truncate block">{u.display_name||"用户"}</span>
+              <span className="text-xs text-gray-400">关注于 {timeFormat(u.followed_at)}</span>
+            </div>
+          </Link>))}
+        </div>)}
+
+        {tab==="followers"&&(<div className="space-y-2">
+          {followers.length===0&&<p className="py-8 text-center text-sm text-gray-400">暂无粉丝</p>}
+          {followers.map((u:any)=>(<Link key={u.id||u.followed_at} href={"/community/user/"+u.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white px-5 py-3 transition hover:shadow-sm">
+            <Avatar userId={u.id} avatarUrl={u.avatar_url} displayName={u.display_name} size={36} />
+            <div className="min-w-0 flex-1">
+              <span className="font-medium text-gray-900 truncate block">{u.display_name||"用户"}</span>
+              <span className="text-xs text-gray-400">关注于 {timeFormat(u.followed_at)}</span>
+            </div>
+          </Link>))}
+        </div>)}
       </div>
     </div>
   </div>);

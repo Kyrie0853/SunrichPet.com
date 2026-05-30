@@ -11,6 +11,7 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const supabase = createClient();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,11 +57,16 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
     const content = text.trim();
     if (!content || sending) return;
     setSending(true);
+    setSendError("");
     setText("");
     const { error } = await supabase.from("messages").insert({
       conversation_id: conversationId, sender_id: currentUserId, content
     });
-    if (error) console.error("Send error:", error);
+    if (error) {
+      console.error("Send error:", error);
+      setSendError("发送失败: " + (error.message || "请稍后重试"));
+      setText(content); // 恢复输入内容
+    }
     setSending(false);
   }
 
@@ -82,6 +88,11 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
         })}
         <div ref={bottomRef} />
       </div>
+
+      {/* 错误提示 */}
+      {sendError && (
+        <div className="mx-4 mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{sendError}</div>
+      )}
 
       {/* 输入框 */}
       <form onSubmit={handleSend} className="flex items-center gap-2 border-t bg-white px-4 py-3">

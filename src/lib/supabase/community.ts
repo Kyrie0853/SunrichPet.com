@@ -177,9 +177,20 @@ export async function getOrCreateConversation(userId:string,otherId:string){
   const supabase=await createClient();
   const p1=userId<otherId?userId:otherId;
   const p2=userId<otherId?otherId:userId;
-  const {data:conv}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).single();
+  // 先尝试查找已有会话
+  const {data:conv,error:lookupErr}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).maybeSingle();
+  if(lookupErr){console.error("getOrCreateConversation lookup error:",lookupErr);throw new Error("会话查询失败")}
   if(conv)return conv;
-  const {data:created}=await supabase.from("conversations").insert({participant_1:p1,participant_2:p2}).select("*").single();
+  // 创建新会话
+  const {data:created,error:createErr}=await supabase.from("conversations").insert({participant_1:p1,participant_2:p2}).select("*").single();
+  if(createErr){
+    // 可能并发创建导致的唯一约束冲突，重新查询
+    if(createErr.code==="23505"){
+      const {data:retry}=await supabase.from("conversations").select("*").eq("participant_1",p1).eq("participant_2",p2).maybeSingle();
+      if(retry)return retry;
+    }
+    console.error("getOrCreateConversation create error:",createErr);throw new Error("创建会话失败")
+  }
   return created;
 }
 export async function getConversations(userId:string){
@@ -206,7 +217,9 @@ export async function getMessages(conversationId:string,page=1){
 }
 export async function sendMessage(conversationId:string,senderId:string,content:string){
   const supabase=await createClient();
-  return await supabase.from("messages").insert({conversation_id:conversationId,sender_id:senderId,content}).select("*").single();
+  const {data,error}=await supabase.from("messages").insert({conversation_id:conversationId,sender_id:senderId,content}).select("*").single();
+  if(error){console.error("sendMessage error:",error);return null}
+  return data;
 }
 export async function getUnreadMessageCount(userId:string){
   const supabase=await createClient();

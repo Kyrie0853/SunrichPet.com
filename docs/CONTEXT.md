@@ -268,13 +268,43 @@ main                    ← 生产环境 (Vercel 自动部署)
 | `src/app/community/user/page.tsx` | "我的"路由重定向页 |
 | `src/app/profile/page.tsx` | 个人中心重定向页 |
 | `src/app/admin/orders/page.tsx` | 订单管理后台 |
+| `src/components/FollowButton.tsx` | 通用关注/取关按钮组件 |
 | `tests/smoke.spec.ts` | 全站烟雾测试 (30 cases) |
+| `docs/messages-migration-safe.sql` | 私信v1→v2安全迁移（不丢数据） |
+
+---
+
+## 🐛 社区社交功能修复 (2026-05-30)
+
+### Bug 1: 个人中心关注/粉丝列表空白
+
+| 项目 | 内容 |
+|------|------|
+| **根因** | `UserProfileTabs.tsx` 的 `loadTabData` 正确加载了关注和粉丝数据，但 JSX 渲染段缺失 `following`/`followers` 两个 tab 的渲染代码 |
+| **修复** | 添加 `following` 和 `followers` 标签页渲染，显示用户头像、昵称、关注时间 |
+| **状态** | ✅ 已修复 |
+
+### Bug 2: 关注入口过窄 → 评论区+搜索用户
+
+| 项目 | 内容 |
+|------|------|
+| **根因** | 关注功能仅限于帖子详情页作者信息区，评论区、搜索结果中无可关注入口；无用户搜索功能 |
+| **修复** | ① 创建 `FollowButton.tsx` 通用关注组件 ② 评论区评论+回复旁添加关注按钮 ③ 搜索页新增"用户"Tab + `searchUsers()` API ④ 用户搜索结果展示头像/昵称/积分/关注状态 |
+| **状态** | ✅ 已修复 |
+
+### Bug 3: 私信功能完全不可用
+
+| 项目 | 内容 |
+|------|------|
+| **根因** | ① `messages-v2.sql` 使用 `DROP TABLE CASCADE` 重建表，若未在 Supabase 执行则 `conversations` 表不存在 ② `getOrCreateConversation` 使用 `single()` 在无结果时可能抛错而非返回 null |
+| **修复** | ① 创建 `docs/messages-migration-safe.sql` 安全迁移脚本（保留数据、自动检测v1→v2） ② `getOrCreateConversation` 改用 `maybeSingle()` + 并发冲突重试 ③ `sendMessage` 增加错误返回 ④ `ChatView` 添加发送错误提示 |
+| **状态** | ✅ 代码已修复 · ⚠️ 需在 Supabase 执行 messages-migration-safe.sql |
 
 ### 已知需要手动操作的事项
 
-1. **Supabase SQL 执行**:
+1. **⚠️ Supabase SQL 执行 (紧急)**:
+   - `docs/messages-migration-safe.sql` (私信v1→v2安全迁移 — 最高优先级)
    - `docs/community-schema.sql` (基础表)
-   - `docs/messages-v2.sql` (私信v2)
    - `docs/notifications-schema.sql` + `docs/notifications-triggers.sql` (通知)
    - `docs/points-system.sql` (积分)
    - `docs/reports-schema.sql` (举报)
