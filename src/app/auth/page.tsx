@@ -5,26 +5,29 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 function translateError(msg:string):string{
-  const m:Record<string,string>={
-    "Invalid login credentials":"邮箱或密码错误，请检查后重试",
-    "Invalid email or password":"邮箱或密码错误",
-    "Invalid Refresh Token":"登录已过期，请重新登录",
-    "Email not confirmed":"邮箱尚未验证，请先点击邮件中的确认链接",
-    "User not found":"该邮箱尚未注册",
-    "User already registered":"该邮箱已注册，请直接登录",
-    "Signups not allowed":"新用户注册功能暂未开放，请联系管理员",
-    "For security purposes":"发送过于频繁，请 60 秒后再试",
-    "Email rate limit exceeded":"邮件发送频率超限，请稍后再试",
-    "Token has expired":"验证码已过期，请重新获取",
-    "Invalid OTP":"验证码错误，请检查后重新输入",
-    "Password must be":"密码长度不能少于 6 位",
-    "Auth session missing":"登录已过期，请重新登录",
-  };
-  for(const[k,v]of Object.entries(m)){if(msg.includes(k))return v;}
+  // 按顺序匹配，长关键词优先
+  const m:[string,string][]=[
+    ["Token has expired or is invalid","验证码错误，请检查后重新输入"],
+    ["Token has expired","验证码已过期，请重新获取"],
+    ["Invalid login credentials","邮箱或密码错误，请检查后重试"],
+    ["Invalid email or password","邮箱或密码错误"],
+    ["Invalid Refresh Token","登录已过期，请重新登录"],
+    ["Email not confirmed","邮箱尚未验证"],
+    ["User not found","该邮箱尚未注册"],
+    ["User already registered","该邮箱已注册"],
+    ["Signups not allowed","新用户注册暂未开放"],
+    ["For security purposes","发送过于频繁，请60秒后再试"],
+    ["Email rate limit exceeded","邮件发送频率超限，请稍后再试"],
+    ["Invalid OTP","验证码错误"],
+    ["Password must be","密码长度不能少于6位"],
+    ["Auth session missing","登录已过期，请重新登录"],
+    ["New password should be","新密码与当前密码不同"],
+  ];
+  for(const[k,v]of m){if(msg.includes(k))return v;}
   return "操作失败："+msg;
 }
 
-type Step="emailInput"|"otpInput"|"passwordLogin";
+type Step="emailInput"|"otpInput"|"passwordLogin"|"setPassword";
 
 export default function AuthPage(){
   const router=useRouter();
@@ -56,7 +59,8 @@ export default function AuthPage(){
     if(vErr){setError(translateError(vErr.message));setLoading(false);return}
     const{data:{user}}=await supabase.auth.getUser();
     if(user){const{data:p}=await supabase.from("profiles").select("id").eq("id",user.id).single();if(!p)await supabase.from("profiles").insert({id:user.id,role:"customer"})}
-    router.push("/");router.refresh();
+    // OTP 登录成功 → 引导设置密码（可跳过）
+    setStep("setPassword");setPassword("");setLoading(false);
   }
 
   async function passwordLogin(e:React.FormEvent){
@@ -79,6 +83,17 @@ export default function AuthPage(){
     const{error:oErr}=await supabase.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:true}});
     if(oErr){setError(translateError(oErr.message));setLoading(false);return}
     setMessage("验证码已重新发送");startCD();setLoading(false);
+  }
+
+  async function forgotPassword(){if(!email.trim())return;const{error:e}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:location.origin+"/auth?reset=1"});if(e){setError(translateError(e.message))}else{setMessage("密码重置链接已发送，请查看邮箱")}}
+
+  async function setPasswordHandler(e:React.FormEvent){
+    e.preventDefault();setError("");
+    if(password.length<6){setError("密码至少 6 位");return}
+    setLoading(true);
+    const{error:uErr}=await supabase.auth.updateUser({password});
+    if(uErr){setError(translateError(uErr.message));setLoading(false);return}
+    router.push("/");router.refresh();
   }
 
   const goBack=()=>{setStep("emailInput");setError("");setMessage("");setCode("")};
@@ -124,7 +139,16 @@ export default function AuthPage(){
         <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} placeholder="输入登录密码" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
         <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"登录中...":"登录"}</button>
         <button type="button" onClick={()=>{setStep("emailInput");setError("")}} className="w-full text-center text-sm text-emerald-600 hover:underline">使用验证码登录</button>
+        <button type="button" onClick={forgotPassword} className="w-full text-center text-sm text-gray-500 hover:underline">忘记密码？</button>
         <button type="button" onClick={goBack} className="w-full text-center text-sm text-gray-400 hover:underline">← 更换邮箱</button>
+      </form>)}
+      {step==="setPassword"&&(<form onSubmit={setPasswordHandler} className="space-y-4">
+        <div className="rounded-lg bg-emerald-50 p-3 text-center text-sm text-emerald-700">✅ 验证成功！</div>
+        <p className="text-sm text-gray-600">设置登录密码，下次可直接用密码登录 <strong>{email}</strong></p>
+        <div><label className="mb-1 block text-sm font-medium text-gray-700">设置密码</label>
+        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6} placeholder="至少 6 位" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
+        <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"设置中...":"设置密码并登录"}</button>
+        <button type="button" onClick={()=>{router.push("/");router.refresh()}} className="w-full text-center text-sm text-gray-400 hover:underline">跳过，直接进入</button>
       </form>)}
     </div>
   </div>);
