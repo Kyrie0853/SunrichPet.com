@@ -45,14 +45,14 @@ export default function AuthPage(){
     setLoading(true);
     const{error:otpErr}=await supabase.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:true}});
     if(otpErr){setError(translateError(otpErr.message));setLoading(false);return}
-    setMessage("验证码已发送至 "+email.trim()+"，新用户将自动创建账号");
+    setMessage("验证码已发送至 "+email.trim()+"，如未收到请查看垃圾邮件或稍等片刻");
     setStep("otpInput");startCD();setLoading(false);
   }
 
-  async function verifyOtp(){
-    if(code.length!==6){setError("请输入完整的6位验证码");return}
+  async function doVerify(token:string){
+    if(token.length!==6){setError("请输入完整的6位验证码");return}
     setError("");setLoading(true);
-    const{error:vErr}=await supabase.auth.verifyOtp({email:email.trim(),token:code,type:"email"});
+    const{error:vErr}=await supabase.auth.verifyOtp({email:email.trim(),token,type:"email"});
     if(vErr){setError(translateError(vErr.message));setLoading(false);return}
     const{data:{user}}=await supabase.auth.getUser();
     if(user){const{data:p}=await supabase.from("profiles").select("id").eq("id",user.id).single();if(!p)await supabase.from("profiles").insert({id:user.id,role:"customer"})}
@@ -70,7 +70,8 @@ export default function AuthPage(){
   function handleCodeInput(v:string){
     const digits=v.replace(/\D/g,"").slice(0,6);
     setCode(digits);
-    if(digits.length===6)setTimeout(verifyOtp,200);
+    // 直接传值，避免 setTimeout 闭包捕获旧 state
+    if(digits.length===6)setTimeout(()=>doVerify(digits),200);
   }
 
   async function resendOtp(){
@@ -110,7 +111,7 @@ export default function AuthPage(){
             ))}
           </div>
         </div>
-        <button onClick={verifyOtp} disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"验证中...":"确认登录"}</button>
+        <button onClick={()=>doVerify(code)} disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"验证中...":"确认登录"}</button>
         <div className="flex items-center justify-between text-sm">
           <button onClick={resendOtp} disabled={countdown>0} className="text-emerald-600 hover:underline disabled:text-gray-400">{countdown>0?countdown+" 秒后重发":"重新发送验证码"}</button>
           <button onClick={()=>{setStep("passwordLogin");setError("")}} className="text-gray-500 hover:underline">使用密码登录</button>
