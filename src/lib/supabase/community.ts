@@ -134,3 +134,41 @@ export async function getUserLikes(userId:string){
   const aMap=new Map((authors||[]).map(a=>[a.id,a]));
   return posts.map(p=>({...p,author:aMap.get(p.author_id)||null,liked_at:likes.find(l=>l.post_id===p.id)?.created_at}));
 }
+export async function getFeed(userId:string,page=1){
+  const supabase=await createClient();
+  const {data:follows}=await supabase.from("user_follows").select("following_id").eq("follower_id",userId);
+  if(!follows||follows.length===0)return {posts:[],total:0};
+  const followingIds=follows.map(f=>f.following_id);
+  const {data:posts,count}=await supabase.from("community_posts").select("*",{count:"estimated"}).in("author_id",followingIds).order("created_at",{ascending:false}).range((page-1)*12,page*12-1);
+  if(!posts||posts.length===0)return {posts:[],total:0};
+  // 批量作者
+  const aIds=[...new Set(posts.map(p=>p.author_id))];
+  const {data:authors}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",aIds);
+  const aMap=new Map((authors||[]).map(a=>[a.id,a]));
+  // 批量标签
+  const pIds=posts.map(p=>p.id);
+  const {data:tr}=await supabase.from("community_post_tags").select("post_id,tag_id").in("post_id",pIds);
+  const tIds=[...new Set((tr||[]).map(r=>r.tag_id))];
+  let tMap=new Map();
+  if(tIds.length>0){const {data:tags}=await supabase.from("community_tags").select("*").in("id",tIds);const tb=new Map((tags||[]).map(t=>[t.id,t]));(tr||[]).forEach(r=>{if(tb.has(r.tag_id)){if(!tMap.has(r.post_id))tMap.set(r.post_id,[]);tMap.get(r.post_id)!.push(tb.get(r.tag_id)!);}});}
+  const enriched=await Promise.all(posts.map(async p=>{const[lk,cm]=await Promise.all([supabase.from("community_likes").select("*",{count:"exact",head:true}).eq("post_id",p.id),supabase.from("community_comments").select("*",{count:"exact",head:true}).eq("post_id",p.id)]);return {...p,author:aMap.get(p.author_id)||null,like_count:(lk as any).count||0,comment_count:(cm as any).count||0,tags:tMap.get(p.id)||[]};}));
+  return {posts:enriched,total:count||0};
+}
+export async function getFollowing(userId:string,page=1){
+  const supabase=await createClient();
+  const {data}=await supabase.from("user_follows").select("following_id,created_at").eq("follower_id",userId).order("created_at",{ascending:false}).range((page-1)*20,page*20-1);
+  if(!data||data.length===0)return [];
+  const ids=data.map(r=>r.following_id);
+  const {data:profiles}=await supabase.from("profiles").select("id,display_name,avatar_url,bio").in("id",ids);
+  const pMap=new Map((profiles||[]).map(p=>[p.id,p]));
+  return data.map(r=>({...pMap.get(r.following_id)||{},followed_at:r.created_at}));
+}
+export async function getFollowers(userId:string,page=1){
+  const supabase=await createClient();
+  const {data}=await supabase.from("user_follows").select("follower_id,created_at").eq("following_id",userId).order("created_at",{ascending:false}).range((page-1)*20,page*20-1);
+  if(!data||data.length===0)return [];
+  const ids=data.map(r=>r.follower_id);
+  const {data:profiles}=await supabase.from("profiles").select("id,display_name,avatar_url,bio").in("id",ids);
+  const pMap=new Map((profiles||[]).map(p=>[p.id,p]));
+  return data.map(r=>({...pMap.get(r.follower_id)||{},followed_at:r.created_at}));
+}

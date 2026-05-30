@@ -13,6 +13,8 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
   const [posts,setPosts]=useState<any[]>(profile.posts||[]);
   const [favorites,setFavorites]=useState<any[]>([]);
   const [likes,setLikes]=useState<any[]>([]);
+  const [followingList,setFollowingList]=useState<any[]>([]);
+  const [followers,setFollowersList]=useState<any[]>([]);
   const [loading,setLoading]=useState(false);
   const [following,setFollowing]=useState(false);
   const [fCount,setFCount]=useState(profile.follower_count);
@@ -27,6 +29,8 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
       const{data:f}=await supabase.from("community_favorites").select("post_id,created_at").eq("user_id",profile.id).order("created_at",{ascending:false}).limit(50);
       if(f&&f.length>0){const ids=f.map(x=>x.post_id);const{data:p}=await supabase.from("community_posts").select("id,title,created_at,view_count,author_id").in("id",ids);
       if(p){const aIds=[...new Set(p.map(x=>x.author_id))];const{data:as}=await supabase.from("profiles").select("id,display_name").in("id",aIds);const aM=new Map((as||[]).map(a=>[a.id,a]));setFavorites(p.map(x=>({...x,author:aM.get(x.author_id)||null,favorited_at:f.find(y=>y.post_id===x.id)?.created_at})));}}
+    }else if(t==="following"&&followingList.length===0){const{data:d}=await supabase.from("user_follows").select("following_id,created_at").eq("follower_id",profile.id).order("created_at",{ascending:false}).limit(50);if(d&&d.length>0){const ids=d.map(x=>x.following_id);const{data:ps}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",ids);const pm=new Map((ps||[]).map(p=>[p.id,p]));setFollowingList(d.map(x=>({...pm.get(x.following_id)||{},followed_at:x.created_at})));}
+    }else if(t==="followers"&&followers.length===0){const{data:d}=await supabase.from("user_follows").select("follower_id,created_at").eq("following_id",profile.id).order("created_at",{ascending:false}).limit(50);if(d&&d.length>0){const ids=d.map(x=>x.follower_id);const{data:ps}=await supabase.from("profiles").select("id,display_name,avatar_url").in("id",ids);const pm=new Map((ps||[]).map(p=>[p.id,p]));setFollowersList(d.map(x=>({...pm.get(x.follower_id)||{},followed_at:x.created_at})));}
     }else if(t==="likes"&&likes.length===0){
       const{data:l}=await supabase.from("community_likes").select("post_id,created_at").eq("user_id",profile.id).order("created_at",{ascending:false}).limit(50);
       if(l&&l.length>0){const ids=[...new Set(l.map(x=>x.post_id).filter(Boolean))];if(ids.length>0){const{data:p}=await supabase.from("community_posts").select("id,title,created_at,view_count,author_id").in("id",ids);if(p)setLikes(p.map(x=>({...x,liked_at:l.find(y=>y.post_id===x.id)?.created_at})));}}
@@ -40,7 +44,7 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
 
   const handleDelete=async(postId:string)=>{if(!confirm("删除这篇帖子？"))return;await supabase.from("community_posts").delete().eq("id",postId);setPosts(prev=>prev.filter(p=>p.id!==postId))};
 
-  const tabs=[{key:"posts",label:"我的帖子"},{key:"favorites",label:"我的收藏"},{key:"likes",label:"点赞记录"}];
+  const tabs=[{key:"posts",label:"我的帖子"},{key:"favorites",label:"我的收藏"},{key:"likes",label:"点赞记录"},{key:"following",label:"我的关注"},{key:"followers",label:"我的粉丝"}];
   return (<div>
     {/* Profile header */}
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white p-8 sm:flex-row">
