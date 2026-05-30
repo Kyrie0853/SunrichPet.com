@@ -4,6 +4,72 @@ import type { CommunityPost, SortOption } from '@/lib/supabase/community-types';
 export type { CommunityPost, SortOption };
 export { SORT_OPTIONS } from '@/lib/supabase/community-types';
 
+// 获取热门帖子（跨吧聚合，用于热门广场首页）
+export async function getHotPosts(options: { page?: number; pageSize?: number } = {}) {
+  const { page = 1, pageSize = 12 } = options;
+  const supabase = await createClient();
+
+  // 综合权重排序：置顶优先 → 加权评分降序
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  // 先获取最近30天的帖子（包含置顶帖所有时间），避免全表扫描
+  const { data: posts, error, count } = await supabase
+    .from("community_posts")
+    .select("*", { count: "estimated" })
+    .or(`created_at.gte.${thirtyDaysAgo},is_pinned.eq.true`)
+    .order("is_pinned", { ascending: false })
+    .order("created_at", { ascending: false })
+    .range((page - 1) * pageSize, page * pageSize - 1);
+
+  if (error || !posts || posts.length === 0) return { posts: [], total: count || 0 };
+
+  // 批量获取作者
+  const authorIds = [...new Set(posts.map(p => p.author_id))];
+  const { data: authors } = await supabase.from("profiles").select("id,display_name,avatar_url").in("id", authorIds);
+  const authorMap = new Map((authors || []).map(a => [a.id, a]));
+
+  // 批量获取吧信息
+  const barIds = [...new Set(posts.map(p => p.bar_id).filter(Boolean))];
+  let barMap = new Map<string, any>();
+  if (barIds.length > 0) {
+    const { data: bars } = await supabase.from("bars").select("id,name,slug,icon").in("id", barIds);
+    (bars || []).forEach(b => barMap.set(b.id, b));
+  }
+
+  // 批量获取互动数据
+  const postIds = posts.map(p => p.id);
+  const [likeCounts, commentCounts] = await Promise.all([
+    Promise.all(postIds.map(id => supabase.from("community_likes").select("*", { count: "exact", head: true }).eq("post_id", id))),
+    Promise.all(postIds.map(id => supabase.from("community_comments").select("*", { count: "exact", head: true }).eq("post_id", id))),
+  ]);
+
+  const result = posts.map((p, i) => {
+    const lc = (likeCounts[i] as any).count || 0;
+    const cc = (commentCounts[i] as any).count || 0;
+    // 计算热度分
+    const daysSinceCreation = (Date.now() - new Date(p.created_at).getTime()) / (24 * 60 * 60 * 1000);
+    const timeDecay = daysSinceCreation <= 7 ? 2.0 : daysSinceCreation <= 30 ? 1.0 : 0.5;
+    const hotScore = (lc * 3 + cc * 2 + (p.view_count || 0) * 1) * timeDecay;
+    return {
+      ...p,
+      author: authorMap.get(p.author_id) || null,
+      bar: barMap.get(p.bar_id) || null,
+      like_count: lc,
+      comment_count: cc,
+      hot_score: Math.round(hotScore),
+    };
+  });
+
+  // 按 hotScore 重新排序（置顶优先）
+  result.sort((a, b) => {
+    if (a.is_pinned !== b.is_pinned) return b.is_pinned ? 1 : -1;
+    return b.hot_score - a.hot_score;
+  });
+
+  return { posts: result as CommunityPost[], total: count || 0 };
+}
+
 // 获取帖子列表（分步查询，避免跨 schema FK 解析失败）
 export async function getPosts(options: {category?:string;sort?:SortOption;page?:number;pageSize?:number}) {
   const {category,sort="latest",page=1,pageSize=12}=options;

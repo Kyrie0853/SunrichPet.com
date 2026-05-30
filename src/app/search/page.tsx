@@ -1,4 +1,4 @@
-import { searchPosts, searchProducts, searchUsers } from "@/lib/supabase/search";
+import { searchPosts, searchProducts, searchUsers, searchBars } from "@/lib/supabase/search";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import FollowButton from "@/components/FollowButton";
@@ -32,14 +32,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     { posts, total: postTotal },
     { products, total: prodTotal },
     { users, total: userTotal },
+    { bars, total: barTotal },
   ] = await Promise.all([
     tab === "posts" || tab === "all" ? searchPosts(q.trim()) : { posts: [], total: 0 } as any,
     tab === "products" || tab === "all" ? searchProducts(q.trim()) : { products: [], total: 0 } as any,
     tab === "users" || tab === "all" ? searchUsers(q.trim(), user?.id) : { users: [], total: 0 } as any,
+    tab === "bars" || tab === "all" ? searchBars(q.trim()) : { bars: [], total: 0 } as any,
   ]);
 
   const tabs = [
     { key: "posts", label: `帖子 (${postTotal})` },
+    { key: "bars", label: `吧 (${barTotal})` },
     { key: "products", label: `商品 (${prodTotal})` },
     { key: "users", label: `用户 (${userTotal})` },
   ];
@@ -47,7 +50,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="mb-2 text-2xl font-bold text-gray-900">搜索 "{q}"</h1>
-      <p className="mb-6 text-sm text-gray-400">帖子 {postTotal} 条 · 商品 {prodTotal} 条 · 用户 {userTotal} 人</p>
+      <p className="mb-6 text-sm text-gray-400">帖子 {postTotal} 条 · 吧 {barTotal} 个 · 商品 {prodTotal} 件 · 用户 {userTotal} 人</p>
 
       {/* Tab 切换 */}
       <div className="mb-6 flex gap-1 border-b border-gray-200">
@@ -96,6 +99,28 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <div className="flex-shrink-0 text-right">
                 <span className="text-lg font-bold text-emerald-700">¥{product.price}</span>
                 {product.stock > 0 ? <p className="text-xs text-green-600">有货</p> : <p className="text-xs text-red-400">缺货</p>}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* 吧搜索结果 */}
+      {tab === "bars" && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {bars.length === 0 && <p className="col-span-2 py-12 text-center text-gray-400">未找到相关的吧</p>}
+          {bars.map((bar: any) => (
+            <Link key={bar.id} href={"/b/" + bar.slug} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-2xl shrink-0">
+                {bar.icon || "🐾"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900">{bar.name}吧</h3>
+                {bar.description && <p className="mt-0.5 text-sm text-gray-500 line-clamp-1">{bar.description}</p>}
+                <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+                  <span>👥 {bar.member_count} 成员</span>
+                  <span>📝 {bar.post_count} 帖子</span>
+                </div>
               </div>
             </Link>
           ))}

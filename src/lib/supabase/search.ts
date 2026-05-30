@@ -52,3 +52,16 @@ export async function searchUsers(query: string, currentUserId?: string, page = 
     total: count || 0,
   };
 }
+
+export async function searchBars(query: string, page = 1) {
+  const supabase = await createClient();
+  const term = `%${query}%`;
+  const { data: bars, count } = await supabase
+    .from("bars")
+    .select("*", { count: "estimated" })
+    .ilike("name", term)
+    .order("member_count", { ascending: false })
+    .range((page - 1) * 20, page * 20 - 1);
+
+  return { bars: bars || [], total: count || 0 };
+}

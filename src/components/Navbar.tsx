@@ -69,7 +69,7 @@ export default async function Navbar() {
             href="/"
             className="rounded-md px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
           >
-            论坛
+            热门
           </Link>
           <Link
             href="/b"

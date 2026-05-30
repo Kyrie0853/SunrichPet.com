@@ -128,7 +128,7 @@ test.describe("移动端专项检查", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(500);
 
-    const tabs = ["首页", "论坛", "商城", "消息", "我的"];
+    const tabs = ["首页", "吧", "商城", "消息", "我的"];
     for (const tab of tabs) {
       const link = page.locator(`nav.fixed.bottom-0 a:has-text("${tab}")`);
       const count = await link.count();
@@ -180,7 +180,7 @@ test.describe("关键页面结构检查", () => {
     await page.waitForTimeout(1000);
     
     // 至少应有分类Tab或帖子卡片或空状态提示
-    const heading = page.locator('h1, h2').filter({ hasText: /宠物玩家社区|论坛|社区/ });
+    const heading = page.locator('h1, h2').filter({ hasText: /热门广场|宠物玩家社区|论坛|社区/ });
     const tabBtn = page.locator('button').filter({ hasText: '全部' });
     const hasContent = await heading.first().isVisible().catch(() => false);
     const hasTab = await tabBtn.first().isVisible().catch(() => false);

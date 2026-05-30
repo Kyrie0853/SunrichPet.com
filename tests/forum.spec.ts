@@ -1,23 +1,24 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("论坛核心", () => {
-  test("论坛首页可以加载", async ({ page }) => {
+  test("热门广场首页可以加载", async ({ page }) => {
     await page.goto("/");
-    await expect(page.locator("text=宠物玩家社区")).toBeVisible();
+    await expect(page.locator("text=热门广场")).toBeVisible();
   });
 
-  test("分类 Tab 可以切换", async ({ page }) => {
+  test("热门广场可跳转到吧", async ({ page }) => {
     await page.goto("/");
-    await page.locator("text=爬宠").click();
-    await page.waitForTimeout(500);
-    await expect(page).toHaveURL(/\//);
+    const barLink = page.locator("a[href*='/b/']").first();
+    if (await barLink.count() > 0) {
+      await barLink.click();
+      await page.waitForTimeout(500);
+      await expect(page.locator("text=吧")).toBeVisible();
+    }
   });
 
-  test("排序按钮可以切换", async ({ page }) => {
+  test("发帖按钮可点击", async ({ page }) => {
     await page.goto("/");
-    await page.locator("text=热门").click();
-    await page.waitForTimeout(300);
-    await expect(page.locator("text=热门")).toBeVisible();
+    await expect(page.locator("text=发布帖子")).toBeVisible();
   });
 
   test("搜索帖子功能", async ({ page }) => {
@@ -36,7 +37,7 @@ test.describe("论坛核心", () => {
   });
 
   test("帖子详情页可访问", async ({ page }) => {
-    await page.goto("/community");
+    await page.goto("/");
     const link = page.locator("a[href*='/community/post/']").first();
     if (await link.count() > 0) {
       await link.click();
