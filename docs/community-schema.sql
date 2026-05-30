@@ -25,10 +25,10 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX cp_search_idx ON public.community_posts USING GIN (to_tsvector('simple', coalesce(title,'') || ' ' || coalesce(content,'')));
-CREATE INDEX cp_created_idx ON public.community_posts(created_at DESC);
-CREATE INDEX cp_author_idx ON public.community_posts(author_id);
-CREATE INDEX cp_category_idx ON public.community_posts(category);
+CREATE INDEX IF NOT EXISTS cp_search_idx ON public.community_posts USING GIN (to_tsvector('simple', coalesce(title,'') || ' ' || coalesce(content,'')));
+CREATE INDEX IF NOT EXISTS cp_created_idx ON public.community_posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS cp_author_idx ON public.community_posts(author_id);
+CREATE INDEX IF NOT EXISTS cp_category_idx ON public.community_posts(category);
 
 -- ============================================
 -- 2. community_comments 评论表
@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS public.community_comments (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX cc_post_idx ON public.community_comments(post_id, created_at ASC);
-CREATE INDEX cc_author_idx ON public.community_comments(author_id);
-CREATE INDEX cc_parent_idx ON public.community_comments(parent_id);
+CREATE INDEX IF NOT EXISTS cc_post_idx ON public.community_comments(post_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS cc_author_idx ON public.community_comments(author_id);
+CREATE INDEX IF NOT EXISTS cc_parent_idx ON public.community_comments(parent_id);
 
 -- ============================================
 -- 3. community_likes 点赞表
@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS public.community_likes (
   UNIQUE (user_id, post_id, comment_id)
 );
 
-CREATE INDEX cl_post_idx ON public.community_likes(post_id);
-CREATE INDEX cl_comment_idx ON public.community_likes(comment_id);
-CREATE INDEX cl_user_idx ON public.community_likes(user_id);
+CREATE INDEX IF NOT EXISTS cl_post_idx ON public.community_likes(post_id);
+CREATE INDEX IF NOT EXISTS cl_comment_idx ON public.community_likes(comment_id);
+CREATE INDEX IF NOT EXISTS cl_user_idx ON public.community_likes(user_id);
 
 
 -- ============================================
@@ -76,8 +76,8 @@ CREATE TABLE IF NOT EXISTS public.community_favorites (
   UNIQUE (user_id, post_id)
 );
 
-CREATE INDEX cf_user_idx ON public.community_favorites(user_id);
-CREATE INDEX cf_post_idx ON public.community_favorites(post_id);
+CREATE INDEX IF NOT EXISTS cf_user_idx ON public.community_favorites(user_id);
+CREATE INDEX IF NOT EXISTS cf_post_idx ON public.community_favorites(post_id);
 
 -- ============================================
 -- 5. user_follows 关注表
@@ -91,8 +91,8 @@ CREATE TABLE IF NOT EXISTS public.user_follows (
   CHECK (follower_id <> following_id)
 );
 
-CREATE INDEX uf_follower_idx ON public.user_follows(follower_id);
-CREATE INDEX uf_following_idx ON public.user_follows(following_id);
+CREATE INDEX IF NOT EXISTS uf_follower_idx ON public.user_follows(follower_id);
+CREATE INDEX IF NOT EXISTS uf_following_idx ON public.user_follows(following_id);
 
 -- ============================================
 -- 6. community_tags 标签表

@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX notif_user_idx ON public.notifications(user_id, created_at DESC);
-CREATE INDEX notif_unread_idx ON public.notifications(user_id, is_read) WHERE is_read = false;
+CREATE INDEX IF NOT EXISTS notif_user_idx ON public.notifications(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS notif_unread_idx ON public.notifications(user_id, is_read) WHERE is_read = false;
 
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
