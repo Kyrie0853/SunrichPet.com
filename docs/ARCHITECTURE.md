@@ -163,4 +163,45 @@ categories ──1:N── products
 
 ---
 
-*最后更新: 2026-05-28 — 阶段1 MVP 初始数据库设计*
+---
+## 社区模块（Phase 2 — 宠物玩家社区）
+
+### 新增表
+
+| 表 | 说明 | 关键字段 |
+|----|------|----------|
+| community_posts | 论坛帖子 | author_id, title, content, category, images[], is_pinned, view_count |
+| community_comments | 评论（支持嵌套） | post_id, author_id, parent_id, content |
+| community_likes | 点赞（多态） | user_id, post_id/comment_id（二选一CHECK约束） |
+| community_favorites | 收藏（私有） | user_id, post_id（UNIQUE, 私有RLS） |
+| user_follows | 关注关系 | follower_id, following_id（CHECK防自关注） |
+| community_tags | 标签 | name, slug, color |
+| community_post_tags | 帖子-标签 | post_id, tag_id（联合PK） |
+
+profiles 扩展字段：`avatar_url`, `bio`, `updated_at`
+
+### 新增路由
+
+| 路由 | 功能 |
+|------|------|
+| `/community` | 论坛首页：帖子列表 + 分类筛选 + 排序（最新/热门/趋势） + 分页 |
+| `/community/new` | 发帖：标题/内容/分类/标签/图片上传（Storage） |
+| `/community/post/[id]` | 帖子详情：完整内容/图片/点赞/收藏/分享/评论区 |
+| `/community/user/[id]` | 用户主页：个人信息/关注取关/用户帖子列表 |
+
+### 安全措施
+
+- **XSS 防护**：sanitize-html 服务端净化用户提交的 HTML 内容
+- **文件上传**：限制类型（jpg/png/webp/gif）、大小（≤5MB）、数量（≤5张）
+- **RLS 全覆盖**：所有7张社区表启用 RLS，收藏表为私有（仅本人可读）
+- **输入校验**：标题（2-200字）、内容（≥10字）、评论（1-5000字）均有 CHECK 约束
+
+### 数据流
+
+```
+用户发帖 → FormData → 客户端上传图片至 Supabase Storage
+       → supabase.from('community_posts').insert() → RLS 检查 author_id = auth.uid()
+       → revalidatePath + redirect 到帖子详情页
+```
+
+*最后更新: 2026-05-30 — Phase 2 社区核心功能完成*
