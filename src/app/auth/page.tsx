@@ -6,15 +6,22 @@ import { createClient } from "@/lib/supabase/client";
 
 function translateError(msg:string):string{
   const m:Record<string,string>={
-    "Invalid login credentials":"邮箱或密码错误",
-    "Email not confirmed":"邮箱尚未验证",
+    "Invalid login credentials":"邮箱或密码错误，请检查后重试",
+    "Invalid email or password":"邮箱或密码错误",
+    "Invalid Refresh Token":"登录已过期，请重新登录",
+    "Email not confirmed":"邮箱尚未验证，请先点击邮件中的确认链接",
     "User not found":"该邮箱尚未注册",
-    "User already registered":"该邮箱已注册",
-    "For security purposes":"发送过于频繁，请60秒后再试",
-    "Token has expired":"验证码已过期或无效",
+    "User already registered":"该邮箱已注册，请直接登录",
+    "Signups not allowed":"新用户注册功能暂未开放，请联系管理员",
+    "For security purposes":"发送过于频繁，请 60 秒后再试",
+    "Email rate limit exceeded":"邮件发送频率超限，请稍后再试",
+    "Token has expired":"验证码已过期，请重新获取",
+    "Invalid OTP":"验证码错误，请检查后重新输入",
+    "Password must be":"密码长度不能少于 6 位",
+    "Auth session missing":"登录已过期，请重新登录",
   };
   for(const[k,v]of Object.entries(m)){if(msg.includes(k))return v;}
-  return msg;
+  return "操作失败："+msg;
 }
 
 type Step="emailInput"|"otpInput"|"registerConfirm"|"passwordLogin";
@@ -39,8 +46,15 @@ export default function AuthPage(){
     setLoading(true);
     const{error:otpErr}=await supabase.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false}});
     if(otpErr){
-      if(otpErr.message.includes("User not found"))setStep("registerConfirm");
-      else setError(translateError(otpErr.message));
+      if(otpErr.message.includes("User not found")){
+        // 邮箱未注册，引导用户注册
+        setStep("registerConfirm");
+      }else if(otpErr.message.includes("Signups not allowed")){
+        // OTP 注册被禁用：可能是 Supabase 后台未开启，给管理员提示
+        setError("该邮箱暂未注册，且系统暂不支持新用户注册。请联系管理员开启注册功能。");
+      }else{
+        setError(translateError(otpErr.message));
+      }
       setLoading(false);return;
     }
     setMessage("验证码已发送至 "+email.trim());
