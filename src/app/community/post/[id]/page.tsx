@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const post = await getPost(id);
   if (!post) return { title: "帖子未找到" };
-  return { title: post.title + " - Sunrich Pet 社区" };
+  return { title: post.title + " — 顺瑞益宠" };
 }
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {

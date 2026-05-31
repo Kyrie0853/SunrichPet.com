@@ -5,8 +5,8 @@ import Avatar from "@/components/Avatar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "顺瑞益宠 — 热门宠物社区",
-  description: "全国宠友交流聚集地，热门饲养心得、晒宠展示、问答求助一站式浏览",
+  title: "顺瑞益宠 — 全国宠物玩家的聚集地",
+  description: "加入你最爱的宠物社区，与同好交流分享养宠经验，发现你的宠物伙伴。",
 };
 
 export default async function HomePage() {

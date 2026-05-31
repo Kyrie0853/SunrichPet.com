@@ -4,8 +4,8 @@ import { SearchBar } from "@/components/SearchBar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "宠物商城 — Sunrich Pet",
-  description: "小众宠物活体及用品交易平台，守宫、蛇、龟、观赏鱼等",
+  title: "宠物商城 — 顺瑞益宠",
+  description: "精选好物，为你的宠物提供最好的照顾",
 };
 
 const CATEGORY_COLORS = [
@@ -31,10 +31,10 @@ export default async function ShopPage() {
       {/* Hero + 搜索 */}
       <section className="bg-gradient-to-b from-emerald-50 via-white to-white py-16 text-center">
         <h1 className="mb-3 text-4xl font-bold tracking-tight text-gray-800">
-          小众宠物，大有世界
+          精选好物
         </h1>
         <p className="mx-auto mb-8 max-w-lg text-gray-500">
-          守宫、蛇、龟、观赏鱼 — 每一只都值得被认真对待
+          为你的宠物伙伴找到最好的食物、用品和装备
         </p>
 
         {/* 搜索框 */}

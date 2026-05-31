@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
 import PageTransition from "@/components/PageTransition";
+import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -23,8 +24,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sunrich Pet — 小众宠物活体及用品交易平台",
-  description: "Sunrich Pet — 安全、可自主管理的宠物活体及用品多商家购物平台",
+  title: "顺瑞益宠 — 全国宠物玩家的聚集地",
+  description: "顺瑞益宠 — 全国宠物玩家的聚集地。加入社区，分享养宠经验，发现你的宠物伙伴。",
 };
 
 export default function RootLayout({
@@ -38,6 +39,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#f8f9fa]">
+        <SplashScreen />
         <Navbar />
         <main className="flex-1 pb-16 md:pb-0">
           <PageTransition>{children}</PageTransition>
