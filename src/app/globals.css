@@ -1,28 +1,72 @@
 @import "tailwindcss";
 
+/* ============================================================
+   顺瑞益宠 Design System v2.0 — CSS 自定义属性
+   ============================================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 品牌色 */
+  --brand: #1a7f5a;
+  --brand-light: #e8f5ef;
+  --brand-hover: #166b4b;
+  /* 强调色 */
+  --accent: #f0a04b;
+  --danger: #dc3545;
+  --danger-light: #fef2f2;
+  /* 中性色 */
+  --bg-page: #f8f9fa;
+  --bg-card: #ffffff;
+  --bg-input: #f9fafb;
+  --bg-hover: #f3f4f6;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-disabled: #9ca3af;
+  --border-color: #e5e7eb;
+  --border-light: #f3f4f6;
+  /* 阴影 */
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-nav: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-fab: 0 4px 12px rgba(26,127,90,0.25);
+  /* 圆角 */
+  --radius-card: 12px;
+  --radius-widget: 8px;
+  --radius-full: 9999px;
+  /* 字体 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* ============================================================
+   全局基础样式
+   ============================================================ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 选中文字颜色 */
+::selection {
+  background-color: rgba(26, 127, 90, 0.12);
+  color: var(--text-primary);
+}
+
+/* 滚动条美化 (WebKit) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 /* ============================================================
@@ -33,22 +77,21 @@ body {
   .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
-/* 移动端触摸优化 */
 @media (max-width: 767px) {
   button, a { min-height: 44px; min-width: 44px; }
   .touch-btn { min-height: 44px; min-width: 44px; }
 }
 
 /* ============================================================
-   全局交互动画规范 — 统一的 hover / active / focus 效果
+   全局交互动画规范 v2.0 — 统一 200ms ease-in-out
    ============================================================ */
 @layer components {
   /* 卡片交互 */
   .card-interactive {
-    @apply cursor-pointer transition-all duration-200;
+    @apply cursor-pointer transition-all duration-200 ease-in-out;
   }
   .card-interactive:hover {
-    @apply -translate-y-1 shadow-md;
+    @apply -translate-y-0.5 shadow-md;
   }
   .card-interactive:active {
     @apply scale-[0.98];
@@ -56,45 +99,28 @@ body {
 
   /* 按钮交互 */
   .btn-interactive {
-    @apply cursor-pointer transition-all duration-200;
-  }
-  .btn-interactive:hover {
-    @apply brightness-110;
+    @apply cursor-pointer transition-all duration-200 ease-in-out;
   }
   .btn-interactive:active {
-    @apply scale-[0.96];
+    @apply scale-[0.97];
   }
 
-  /* 链接交互 */
-  .link-interactive {
-    @apply cursor-pointer transition-colors duration-200;
-  }
-  .link-interactive:hover {
-    @apply text-emerald-600;
-  }
-
-  /* 图片悬停放大 */
-  .img-hover-zoom {
-    @apply transition-transform duration-300;
-  }
-  .img-hover-zoom:hover {
-    @apply scale-105;
-  }
-
-  /* 头像交互 */
+  /* 头像交互 — 悬停品牌绿光环 */
   .avatar-interactive {
-    @apply cursor-pointer transition-all duration-200;
+    @apply cursor-pointer transition-all duration-200 ease-in-out;
   }
   .avatar-interactive:hover {
-    @apply scale-110 shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-300/50;
+    @apply ring-2 ring-offset-2;
+    ring-color: rgba(26, 127, 90, 0.35);
   }
 
-  /* 标签交互 */
-  .tag-interactive {
-    @apply cursor-pointer transition-all duration-200;
+  /* 输入框交互 */
+  .input-focus {
+    @apply transition-all duration-200 ease-in-out;
   }
-  .tag-interactive:hover {
-    @apply -translate-y-0.5 shadow-sm;
+  .input-focus:focus {
+    @apply border-[#1a7f5a] ring-1 bg-white outline-none;
+    ring-color: rgba(26, 127, 90, 0.15);
   }
 }
 
