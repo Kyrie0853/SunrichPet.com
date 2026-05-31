@@ -51,47 +51,47 @@ export default async function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <nav className="sticky top-0 z-50 bg-white shadow-sm" style={{ height: 56 }}>
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
         {/* Logo */}
         <Link
           href="/"
-          className="text-lg font-bold text-emerald-700 hover:text-emerald-800"
+          className="text-lg font-semibold tracking-tight text-[#1a7f5a] hover:opacity-80 transition-opacity duration-200"
         >
           Sunrich Pet
         </Link>
 
         {/* 中间导航（桌面端可见） */}
-        <div className="hidden items-center gap-1 text-sm font-medium md:flex">
+        <div className="hidden items-center gap-0.5 md:flex">
           <Link
             href="/"
-            className="rounded-md px-3 py-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
+            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#1a7f5a] bg-[#e8f5ef] transition-colors duration-200"
           >
             热门
           </Link>
           <Link
             href="/b"
-            className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#6b7280] hover:text-[#1f2937] hover:bg-[#f3f4f6] transition-colors duration-200"
           >
             吧
           </Link>
           <Link
             href="/shop"
-            className="rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#6b7280] hover:text-[#1f2937] hover:bg-[#f3f4f6] transition-colors duration-200"
           >
             商城
           </Link>
         </div>
 
         {/* 搜索框 */}
-        <SearchBar className="hidden flex-1 max-w-sm mx-4 md:block" />
+        <SearchBar className="hidden flex-1 max-w-sm mx-6 md:block" />
 
         {/* 右侧 */}
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-2">
           {/* 购物车 */}
           <Link
             href="/cart"
-            className="rounded-md p-1.5 text-gray-600 hover:bg-gray-100"
+            className="rounded-full p-2 text-[#6b7280] hover:bg-[#f3f4f6] hover:text-[#1f2937] transition-colors duration-200"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 003 3h4.5a3 3 0 003-3H7.5zM6.75 14.25l-1.5-6h13.5l-1.5 6H6.75zM9 17.25a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM19.5 17.25a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
@@ -103,7 +103,7 @@ export default async function Navbar() {
           ) : (
             <Link
               href="/auth"
-              className="rounded-md bg-emerald-600 px-4 py-1.5 font-medium text-white hover:bg-emerald-700"
+              className="rounded-full bg-[#1a7f5a] px-5 py-2 text-[13px] font-medium text-white transition-all duration-200 hover:bg-[#166b4b] active:scale-[0.97]"
             >
               登录
             </Link>

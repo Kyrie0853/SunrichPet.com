@@ -41,14 +41,14 @@ export default function MobileNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm md:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#f3f4f6] bg-white md:hidden safe-area-bottom">
       <div className="flex items-center justify-around">
         {TABS.map(tab => {
           const active = tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href);
           return (
             <Link key={tab.href} href={getTabHref(tab)}
               onClick={(e) => handleTabClick(e, tab)}
-              className={"flex flex-col items-center gap-0.5 py-1.5 min-w-[56px] " + (active ? "text-emerald-700" : "text-gray-400")}>
+              className={"flex flex-col items-center gap-0.5 py-2 min-w-[56px] transition-colors duration-200 " + (active ? "text-[#1a7f5a]" : "text-[#9ca3af]")}>
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={active ? 2 : 1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
               </svg>
