@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
+import PageTransition from "@/components/PageTransition";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -38,7 +39,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-zinc-50">
         <Navbar />
-        <main className="flex-1 pb-16 md:pb-0">{children}</main>
+        <main className="flex-1 pb-16 md:pb-0">
+          <PageTransition>{children}</PageTransition>
+        </main>
         <MobileNav />
       </body>
     </html>

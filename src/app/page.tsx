@@ -38,8 +38,8 @@ export default async function HomePage() {
           </div>
         )}
 
-        {posts.map((post: any) => (
-          <article key={post.id} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
+        {posts.map((post: any, i: number) => (
+          <article key={post.id} className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 active:scale-[0.98] animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}>
             {/* 吧标签 */}
             {post.bar && (
               <Link href={"/b/" + post.bar.slug} className="mb-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition">
