@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { sendFollowIcebreaker } from "@/app/actions/messages";
 
 export default function FollowButton({
   targetId,
@@ -37,6 +38,8 @@ export default function FollowButton({
         .from("user_follows")
         .insert({ follower_id: currentUserId!, following_id: targetId });
       setFollowing(true);
+      // 🧊 关注成功后自动发送破冰消息（fire-and-forget，不阻塞 UI）
+      sendFollowIcebreaker(currentUserId!, targetId).catch(() => {});
     }
     setLoading(false);
   }

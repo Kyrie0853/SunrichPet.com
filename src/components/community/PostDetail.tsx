@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import ReportButton from "@/components/ReportButton";
 import Avatar from "@/components/Avatar";
+import { sendFollowIcebreaker } from "@/app/actions/messages";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"});}
 
@@ -25,7 +26,7 @@ export default function PostDetail({post}:{post:CommunityPost}){
 
   const togglePin=async()=>{const v=!pinned;await supabase.from("community_posts").update({is_pinned:v}).eq("id",post.id);setPinned(v);};
   const toggleFeatured=async()=>{const v=!featured;await supabase.from("community_posts").update({is_featured:v}).eq("id",post.id);setFeatured(v);};
-  const toggleFollowAuthor=async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user)return;if(followingAuthor){await supabase.from("user_follows").delete().eq("follower_id",user.id).eq("following_id",post.author_id);setFollowingAuthor(false)}else{await supabase.from("user_follows").insert({follower_id:user.id,following_id:post.author_id});setFollowingAuthor(true)}};
+  const toggleFollowAuthor=async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user)return;if(followingAuthor){await supabase.from("user_follows").delete().eq("follower_id",user.id).eq("following_id",post.author_id);setFollowingAuthor(false)}else{await supabase.from("user_follows").insert({follower_id:user.id,following_id:post.author_id});setFollowingAuthor(true);sendFollowIcebreaker(user.id,post.author_id).catch(()=>{})}};
 
   useEffect(()=>{supabase.auth.getUser().then(({data:{user}})=>{if(user){setCurrentUserId(user.id);supabase.from("user_follows").select("id").eq("follower_id",user.id).eq("following_id",post.author_id).single().then(({data})=>{if(data)setFollowingAuthor(true)});supabase.from("profiles").select("role").eq("id",user.id).single().then(({data})=>{if(data?.role==="admin")setIsAdmin(true)});supabase.from("community_likes").select("id").eq("user_id",user.id).eq("post_id",post.id).single().then(({data})=>{if(data)setLiked(true)});supabase.from("community_favorites").select("id").eq("user_id",user.id).eq("post_id",post.id).single().then(({data})=>{if(data)setFavorited(true)});}});},[post.id,supabase]);
 

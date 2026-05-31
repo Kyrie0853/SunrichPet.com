@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
 import LevelBadge from "@/components/LevelBadge";
+import { sendFollowIcebreaker } from "@/app/actions/messages";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}
 
@@ -41,7 +42,7 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
 
   useEffect(()=>{loadTabData(tab);},[tab,loadTabData]);
 
-  const toggleFollow=async()=>{if(!currentUserId)return;if(following){await supabase.from("user_follows").delete().eq("follower_id",currentUserId).eq("following_id",profile.id);setFollowing(false);setFCount((c:number)=>c-1)}else{await supabase.from("user_follows").insert({follower_id:currentUserId,following_id:profile.id});setFollowing(true);setFCount((c:number)=>c+1)}};
+  const toggleFollow=async()=>{if(!currentUserId)return;if(following){await supabase.from("user_follows").delete().eq("follower_id",currentUserId).eq("following_id",profile.id);setFollowing(false);setFCount((c:number)=>c-1)}else{await supabase.from("user_follows").insert({follower_id:currentUserId,following_id:profile.id});setFollowing(true);setFCount((c:number)=>c+1);sendFollowIcebreaker(currentUserId,profile.id).catch(()=>{})}};
 
   const handleDelete=async(postId:string)=>{if(!confirm("删除这篇帖子？"))return;await supabase.from("community_posts").delete().eq("id",postId);setPosts(prev=>prev.filter(p=>p.id!==postId))};
 
