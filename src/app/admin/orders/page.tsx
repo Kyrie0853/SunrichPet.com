@@ -1,93 +1,54 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
+"use client";
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: "待支付", color: "bg-yellow-100 text-yellow-700" },
-  paid: { label: "已支付", color: "bg-blue-100 text-blue-700" },
-  shipped: { label: "已发货", color: "bg-purple-100 text-purple-700" },
-  completed: { label: "已完成", color: "bg-emerald-100 text-emerald-700" },
-  cancelled: { label: "已取消", color: "bg-gray-100 text-gray-500" },
-};
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-export default async function AdminOrdersPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth");
+const STATUS_LABELS: Record<string, string> = { pending: "待处理", paid: "已支付", shipped: "已发货", completed: "已完成", cancelled: "已取消" };
+const STATUS_COLORS: Record<string, string> = { pending: "bg-yellow-50 text-yellow-700", paid: "bg-blue-50 text-blue-700", shipped: "bg-purple-50 text-purple-700", completed: "bg-emerald-50 text-emerald-700", cancelled: "bg-gray-100 text-gray-500" };
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
-  if (profile?.role !== "admin") redirect("/");
+  const loadOrders = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(50);
+    setOrders(data || []);
+    setLoading(false);
+  }, [supabase]);
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*, profiles:user_id(display_name, email)")
-    .order("created_at", { ascending: false })
-    .limit(50);
+  useEffect(() => { loadOrders(); }, [loadOrders]);
 
-  const normalized = (orders || []).map((order: any) => ({
-    ...order,
-    profile: Array.isArray(order.profiles) ? order.profiles[0] : order.profiles,
-  }));
+  async function changeStatus(id: string, status: string) {
+    await fetch(`/api/admin/orders/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    loadOrders();
+  }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <Link href="/admin" className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-700">
-        &larr; 返回后台
-      </Link>
-      <h1 className="mb-2 text-2xl font-bold text-gray-800">订单管理</h1>
-      <p className="mb-8 text-sm text-gray-400">共 {normalized.length} 条订单</p>
-
-      {normalized.length === 0 ? (
-        <div className="py-20 text-center">
-          <p className="text-4xl">📦</p>
-          <p className="mt-4 text-gray-400">暂无订单</p>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-gray-100 bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 font-medium text-gray-500">订单号</th>
-                <th className="px-4 py-3 font-medium text-gray-500">用户</th>
-                <th className="px-4 py-3 font-medium text-gray-500">金额</th>
-                <th className="px-4 py-3 font-medium text-gray-500">状态</th>
-                <th className="px-4 py-3 font-medium text-gray-500">时间</th>
+    <div>
+      <h1 className="text-xl font-semibold text-[#1f2937] mb-6">订单管理</h1>
+      <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] overflow-hidden">
+        <table className="w-full text-[13px]">
+          <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-4 py-3">订单号</th><th className="text-left px-4 py-3">金额</th><th className="text-left px-4 py-3">状态</th><th className="text-left px-4 py-3">时间</th><th className="text-right px-4 py-3">操作</th></tr></thead>
+          <tbody>
+            {loading ? <tr><td colSpan={5} className="text-center py-8 text-[#9ca3af]">加载中...</td></tr>
+            : orders.map(o => (
+              <tr key={o.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                <td className="px-4 py-3 font-mono text-[12px]">{o.id.slice(0,12)}...</td>
+                <td className="px-4 py-3 font-medium">¥{o.total_amount}</td>
+                <td className="px-4 py-3"><span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[o.status]||""}`}>{STATUS_LABELS[o.status]||o.status}</span></td>
+                <td className="px-4 py-3 text-[#6b7280]">{new Date(o.created_at).toLocaleDateString("zh-CN")}</td>
+                <td className="px-4 py-3 text-right">
+                  <select value={o.status} onChange={e=>changeStatus(o.id,e.target.value)} className="rounded-lg border border-[#e5e7eb] px-2 py-1 text-[12px] outline-none">
+                    {Object.entries(STATUS_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
+                  </select>
+                </td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {normalized.map((order: any) => {
-                const st = STATUS_MAP[order.status] || STATUS_MAP.pending;
-                return (
-                  <tr key={order.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-500">
-                      {order.id.slice(0, 8)}...
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {order.profile?.display_name || order.profile?.email || "用户"}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-emerald-600">
-                      ¥{order.total_amount}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${st.color}`}>
-                        {st.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-400">
-                      {new Date(order.created_at).toLocaleString("zh-CN")}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
