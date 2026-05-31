@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Message = { id: string; conversation_id: string; sender_id: string; content: string; is_read: boolean; created_at: string };
+type Message = { id: string; conversation_id: string; sender_id: string; content: string; is_read: boolean; created_at: string; _status?: "sending" | "sent" | "failed" };
 
 function timeFormat(d: string) { return new Date(d).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }); }
+function tempId() { return "temp-" + Math.random().toString(36).slice(2, 10); }
 
 export default function ChatView({ conversationId, currentUserId, initialMessages }: { conversationId: string; currentUserId: string; initialMessages: Message[] }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -21,7 +22,7 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
 
   // 标记已读
   useEffect(() => {
-    const unread = messages.filter(m => m.sender_id !== currentUserId && !m.is_read);
+    const unread = messages.filter(m => m.sender_id !== currentUserId && !m.is_read && m._status !== "sending");
     if (unread.length > 0) {
       supabase.from("messages").update({ is_read: true }).eq("conversation_id", conversationId).neq("sender_id", currentUserId).eq("is_read", false).then(() => {});
     }
@@ -35,8 +36,12 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages(prev => {
-            if (prev.find(m => m.id === newMsg.id)) return prev;
-            return [...prev, newMsg];
+            // 如果已是乐观更新的消息（temp-xxx），替换为真实消息
+            const exists = prev.find(m => m.id === newMsg.id);
+            if (exists) return prev;
+            // 替换可能存在的乐观更新消息（同一内容 + 同一 sender）
+            const withoutOptimistic = prev.filter(m => !(m.id.startsWith("temp-") && m.sender_id === newMsg.sender_id && m.content === newMsg.content));
+            return [...withoutOptimistic, newMsg];
           });
           // 自动标记收到的消息已读
           if (newMsg.sender_id !== currentUserId) {
@@ -52,23 +57,60 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
   // 聚焦输入框
   useEffect(() => { inputRef.current?.focus(); }, []);
 
+  // 🚀 发送消息（乐观更新）
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     const content = text.trim();
     if (!content || sending) return;
-    setSending(true);
-    setSendError("");
     setText("");
-    const { error } = await supabase.from("messages").insert({
+    setSendError("");
+
+    const optimisticId = tempId();
+    const optimisticMsg: Message = {
+      id: optimisticId,
+      conversation_id: conversationId,
+      sender_id: currentUserId,
+      content,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      _status: "sending",
+    };
+
+    // 乐观更新：立即显示消息
+    setMessages(prev => [...prev, optimisticMsg]);
+    setSending(true);
+
+    const { data: inserted, error } = await supabase.from("messages").insert({
       conversation_id: conversationId, sender_id: currentUserId, content
-    });
+    }).select("*").single();
+
     if (error) {
       console.error("Send error:", error);
+      // 标记失败
+      setMessages(prev => prev.map(m => m.id === optimisticId ? { ...m, _status: "failed" as const } : m));
       setSendError("发送失败: " + (error.message || "请稍后重试"));
-      setText(content); // 恢复输入内容
+    } else if (inserted) {
+      // 替换临时消息为真实消息
+      setMessages(prev => prev.map(m => m.id === optimisticId ? { ...inserted, _status: "sent" as const } : m));
     }
     setSending(false);
   }
+
+  // 重发失败消息
+  const retryMessage = useCallback(async (failedMsg: Message) => {
+    setMessages(prev => prev.filter(m => m.id !== failedMsg.id));
+    // 触发重新发送
+    const { data: inserted, error } = await supabase.from("messages").insert({
+      conversation_id: conversationId, sender_id: currentUserId, content: failedMsg.content
+    }).select("*").single();
+
+    if (error) {
+      setMessages(prev => [...prev, { ...failedMsg, id: tempId(), _status: "failed" }]);
+      setSendError("重发失败");
+    } else if (inserted) {
+      setMessages(prev => [...prev, { ...inserted, _status: "sent" }]);
+    }
+  }, [conversationId, currentUserId, supabase]);
 
   return (
     <>
@@ -77,11 +119,23 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
         {messages.length === 0 && <p className="py-12 text-center text-sm text-gray-400">开始聊天吧</p>}
         {messages.map((msg) => {
           const isMe = msg.sender_id === currentUserId;
+          const isFailed = msg._status === "failed";
+          const isSending = msg._status === "sending";
           return (
             <div key={msg.id} className={"flex " + (isMe ? "justify-end" : "justify-start")}>
-              <div className={"max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed " + (isMe ? "bg-emerald-600 text-white rounded-br-md" : "bg-white text-gray-800 rounded-bl-md shadow-sm border border-gray-100")}>
+              <div className={"max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed relative " + (
+                isFailed ? "bg-red-50 text-red-600 border border-red-200 rounded-br-md" :
+                isSending ? "bg-emerald-400 text-white rounded-br-md opacity-70" :
+                isMe ? "bg-emerald-600 text-white rounded-br-md" : "bg-white text-gray-800 rounded-bl-md shadow-sm border border-gray-100"
+              )}>
                 {msg.content}
-                <div className={"mt-1 text-right text-[10px] " + (isMe ? "text-emerald-200" : "text-gray-400")}>{timeFormat(msg.created_at)}</div>
+                <div className={"mt-1 text-right text-[10px] flex items-center gap-1 " + (isMe && !isFailed ? "text-emerald-200" : isFailed ? "text-red-400" : "text-gray-400")}>
+                  {isSending && <span className="inline-block w-2.5 h-2.5 border-2 border-white/60 border-t-transparent rounded-full animate-spin mr-1" />}
+                  {isFailed && (
+                    <button onClick={() => retryMessage(msg)} className="underline hover:text-red-800 mr-1">重发</button>
+                  )}
+                  {timeFormat(msg.created_at)}
+                </div>
               </div>
             </div>
           );

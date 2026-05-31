@@ -347,12 +347,12 @@ export const getMessages = _cached(async function getMessages(conversationId:str
   const {data}=await supabase.from("messages").select("*").eq("conversation_id",conversationId).order("created_at",{ascending:true}).range((page-1)*50,page*50-1);
   return data||[];
 });
-export const sendMessage = _cached(async function sendMessage(conversationId:string,senderId:string,content:string){
+export async function sendMessage(conversationId:string,senderId:string,content:string){
   const supabase=await createClient();
   const {data,error}=await supabase.from("messages").insert({conversation_id:conversationId,sender_id:senderId,content}).select("*").single();
   if(error){console.error("sendMessage error:",error);return null}
   return data;
-});
+}
 export const getUnreadMessageCount = _cached(async function getUnreadMessageCount(userId:string){
   const supabase=await createClient();
   // 先获取用户参与的所有会话
