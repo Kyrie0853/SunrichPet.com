@@ -24,7 +24,7 @@ export default async function HomePage() {
             发布帖子
           </Link>
           <Link href="/b" className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2.5 text-[13px] font-medium text-white transition-all duration-200 hover:bg-white/10 active:scale-[0.97]">
-            🏘️ 探索宠物吧
+            🏘️ 探索社区
           </Link>
         </div>
       </div>
@@ -40,15 +40,15 @@ export default async function HomePage() {
 
         {posts.map((post: any, i: number) => (
           <article key={post.id} className={`card-interactive rounded-xl bg-white p-4 md:p-5 animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}>
-            {/* 吧标签 */}
+            {/* 社区标签 */}
             {post.bar && (
               <Link href={"/b/" + post.bar.slug} className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-[#e8f5ef] px-2.5 py-0.5 text-[12px] font-medium text-[#1a7f5a] hover:bg-emerald-100 transition-colors duration-200">
-                {post.bar.icon} {post.bar.name}吧
+                {post.bar.icon} {post.bar.name}
               </Link>
             )}
 
             {/* 标题 + 内容 */}
-            <Link href={"/community/post/" + post.id} className="block group">
+            <Link href={"/community/post/" + post.id} className="block group" prefetch={true}>
               <h2 className="text-[18px] font-semibold text-[#1f2937] line-clamp-1 group-hover:text-[#1a7f5a] transition-colors duration-200 leading-relaxed">
                 {post.is_pinned && "📌 "}{post.is_featured && "⭐ "}{post.title}
               </h2>

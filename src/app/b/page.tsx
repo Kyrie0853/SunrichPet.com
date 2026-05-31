@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
-export const metadata = { title: "社区吧 — 顺瑞益宠" };
+export const metadata = { title: "社区 — 顺瑞益宠" };
 
 export default async function BarsPage() {
   const supabase = await createClient();
@@ -23,11 +23,11 @@ export default async function BarsPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="mb-2 text-3xl font-bold text-gray-900">宠物社区吧</h1>
-      <p className="mb-8 text-gray-500">选择你感兴趣的吧，与同好一起交流</p>
+      <h1 className="mb-2 text-3xl font-bold text-gray-900">宠物社区</h1>
+      <p className="mb-8 text-gray-500">选择你感兴趣的社区，与同好一起交流</p>
 
       {!bars?.length ? (
-        <div className="py-20 text-center text-gray-400">暂无可用的吧</div>
+        <div className="py-20 text-center text-gray-400">暂无可用社区</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {bars.map((bar: any) => (

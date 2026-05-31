@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import UserMenu from "./UserMenu";
 import { SearchBar } from "./SearchBar";
+import NavLinks from "./NavLinks";
 import { getUnreadMessageCount } from "@/lib/supabase/community";
 
 export default async function Navbar() {
@@ -61,27 +62,8 @@ export default async function Navbar() {
           Sunrich Pet
         </Link>
 
-        {/* 中间导航（桌面端可见） */}
-        <div className="hidden items-center gap-0.5 md:flex">
-          <Link
-            href="/"
-            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#1a7f5a] bg-[#e8f5ef] transition-colors duration-200"
-          >
-            热门
-          </Link>
-          <Link
-            href="/b"
-            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#6b7280] hover:text-[#1f2937] hover:bg-[#f3f4f6] transition-colors duration-200"
-          >
-            吧
-          </Link>
-          <Link
-            href="/shop"
-            className="rounded-full px-3.5 py-1.5 text-[13px] font-medium text-[#6b7280] hover:text-[#1f2937] hover:bg-[#f3f4f6] transition-colors duration-200"
-          >
-            商城
-          </Link>
-        </div>
+        {/* 中间导航（桌面端可见，客户端动态高亮） */}
+        <NavLinks />
 
         {/* 搜索框 */}
         <SearchBar className="hidden flex-1 max-w-sm mx-6 md:block" />

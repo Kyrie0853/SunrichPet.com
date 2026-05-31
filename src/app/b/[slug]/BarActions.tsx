@@ -34,7 +34,7 @@ export default function BarActions({ barId, initialMember, userId }: { barId: st
           : "bg-emerald-600 text-white hover:bg-emerald-700"
       } disabled:opacity-50`}
     >
-      {loading ? "..." : isMember ? "已加入" : "+ 加入吧"}
+      {loading ? "..." : isMember ? "已加入" : "+ 加入社区"}
     </button>
   );
 }

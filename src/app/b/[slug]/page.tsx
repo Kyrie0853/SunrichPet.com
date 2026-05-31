@@ -8,8 +8,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const supabase = await createClient();
   const { data: bar } = await supabase.from("bars").select("name").eq("slug", slug).single();
-  if (!bar) return { title: "吧未找到" };
-  return { title: bar.name + "吧 — 顺瑞益宠" };
+  if (!bar) return { title: "社区未找到" };
+  return { title: bar.name + " — 顺瑞益宠" };
 }
 
 export default async function BarPage({ params, searchParams }: {
@@ -55,17 +55,17 @@ export default async function BarPage({ params, searchParams }: {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link href="/b" className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-700">
-        &larr; 全部吧
+        &larr; 全部社区
       </Link>
 
-      {/* 吧头部 */}
+      {/* 社区头部 */}
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <div className="flex items-start gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-4xl">
             {bar.icon || "🐾"}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">{bar.name}吧</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{bar.name}</h1>
             <p className="mt-1 text-gray-500">{bar.description || "暂无简介"}</p>
             <div className="mt-3 flex items-center gap-4 text-sm text-gray-400">
               <span>👥 {bar.member_count || 0} 成员</span>
@@ -106,10 +106,10 @@ export default async function BarPage({ params, searchParams }: {
         {enriched.length === 0 && (
           <div className="py-16 text-center text-gray-400">
             <p className="text-4xl mb-3">📭</p>
-            <p>该吧暂无帖子</p>
+            <p>该社区暂无帖子</p>
             {isMember && (
               <Link href={`/community/new?bar=${bar.id}`} className="mt-3 inline-block text-emerald-600 hover:underline">
-                来发布第一个帖子吧
+                来发布第一个帖子
               </Link>
             )}
           </div>
