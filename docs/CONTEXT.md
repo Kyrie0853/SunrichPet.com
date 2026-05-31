@@ -448,3 +448,51 @@ main                    ← 生产环境 (Vercel 自动部署)
 ---
 
 *最后更新: 2026-05-31 — 全站性能优化完成*
+
+---
+
+## 🎨 全站 UI/UX 全面升级 — 设计规范 v2.0 (2026-05-31)
+
+### 设计哲学
+**简约 · 干净 · 顺手 · 高级**
+
+| 原则 | 实践 |
+|------|------|
+| 简约 | 删除多余视觉元素，用留白替代分割线 |
+| 干净 | 配色克制，灰白为主，品牌绿仅用于关键操作 |
+| 顺手 | 交互符合直觉，点击有反馈，导航不迷路 |
+| 高级 | 细腻阴影、统一 8px 圆角、流畅微过渡、舒适字体层级 |
+
+### 设计规范 (docs/design-system.md)
+
+| 维度 | 规范 |
+|------|------|
+| **品牌色** | `#1a7f5a` 低饱和深绿 + `#166b4b` 悬停 |
+| **强调色** | `#f0a04b` 暖橙（未读/促销/收藏） |
+| **页面背景** | `#f8f9fa` 极浅灰 |
+| **卡片** | `#ffffff` 白底 + `rounded-xl`(12px) + `shadow-sm` |
+| **字体栈** | `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ...` |
+| **标题** | 18px/600/1.4 — 正文 15px/400/1.6 — 辅助 13px |
+| **间距** | 8px 基础单位，16px 卡片内边距 |
+| **阴影** | 默认 `shadow-sm`(0 1px 2px)，悬停 `shadow-md`(0 4px 12px) |
+| **圆角** | 卡片 `rounded-xl`(12px)，部件 `rounded-lg`(8px)，按钮 `rounded-full` |
+| **过渡** | 统一 `200ms ease-in-out` |
+
+### 改造清单
+
+| 组件 | 变更 |
+|------|------|
+| `globals.css` | 🆕 CSS 设计令牌 + 系统字体 + 滚动条美化 + 选中色 |
+| `layout.tsx` | 背景色 `#f8f9fa` |
+| `Navbar` | 纯白 `shadow-sm` · 56px 高度 · 品牌绿 Logo · `rounded-full` 导航按钮 |
+| `SearchBar` | `rounded-full` 全圆角 · `#f3f4f6` 底 · focus 品牌绿光晕 |
+| `UserMenu` | 品牌色调 · 橙色 `#f0a04b` 未读徽章 · 统一 13px 字体 |
+| `MobileNav` | 白底 · 极浅上边框 · `#1a7f5a` 激活态 |
+| `PostCard` | `rounded-xl` + 统一字体层级 · 细线标签 · 品牌绿 hover |
+| `Avatar` | 渐变色 fallback · 悬停品牌绿光环 `hover:ring-2` |
+| `CommentSection` | 缩进层级替代边框 · `#f9fafb` 评论底 · `rounded-full` 按钮 |
+| `HomePage` | Hero `rounded-full` 按钮 · 卡片交错入场动画 |
+
+---
+
+*最后更新: 2026-05-31 — UI 设计规范 v2.0 升级完成*
