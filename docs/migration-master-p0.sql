@@ -4,6 +4,9 @@
 -- 所有操作均为幂等（可重复执行不报错）
 -- ============================================
 
+-- 0. 启用必需的扩展
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- ============================================
 -- Step 1: 私信系统 v2 — conversations + messages
 -- ============================================
@@ -173,16 +176,18 @@ ON CONFLICT (id) DO NOTHING;
 -- Step 3: 补充缺失索引
 -- ============================================
 
--- profiles 查询优化
+-- profiles 查询优化（无依赖，直接创建）
 CREATE INDEX IF NOT EXISTS profiles_display_name_idx ON public.profiles(display_name);
 
--- 商品搜索优化
-CREATE INDEX IF NOT EXISTS products_name_idx ON public.products USING gin (name gin_trgm_ops);
--- 注：如果 gin_trgm_ops 不可用，跳过此索引（ilike 仍可用但无索引加速）
-
--- community_posts 搜索优化  
-CREATE INDEX IF NOT EXISTS community_posts_title_idx ON public.community_posts USING gin (title gin_trgm_ops);
--- 注：同上，如果扩展不可用则跳过
+-- 商品搜索优化（依赖 pg_trgm 扩展，不存在则跳过）
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm') THEN
+    CREATE INDEX IF NOT EXISTS products_name_idx ON public.products USING gin (name gin_trgm_ops);
+    CREATE INDEX IF NOT EXISTS community_posts_title_idx ON public.community_posts USING gin (title gin_trgm_ops);
+  ELSE
+    RAISE NOTICE '⚠️  pg_trgm 扩展未安装，跳过文本搜索索引（ilike 仍可用）';
+  END IF;
+END $$;
 
 
 -- ============================================
