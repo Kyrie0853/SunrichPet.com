@@ -299,6 +299,10 @@ export async function sendMessage(conversationId:string,senderId:string,content:
 }
 export async function getUnreadMessageCount(userId:string){
   const supabase=await createClient();
-  const {count}=await supabase.from("messages").select("*",{count:"exact",head:true}).neq("sender_id",userId).eq("is_read",false);
+  // 先获取用户参与的所有会话
+  const {data:convs}=await supabase.from("conversations").select("id").or(`participant_1.eq.${userId},participant_2.eq.${userId}`);
+  if(!convs||convs.length===0)return 0;
+  const convIds=convs.map(c=>c.id);
+  const {count}=await supabase.from("messages").select("*",{count:"exact",head:true}).in("conversation_id",convIds).neq("sender_id",userId).eq("is_read",false);
   return count||0;
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import UserMenu from "./UserMenu";
 import { SearchBar } from "./SearchBar";
+import { getUnreadMessageCount } from "@/lib/supabase/community";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -43,13 +44,10 @@ export default async function Navbar() {
       // notifications 表可能尚未创建，忽略
     }
     try {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .neq("sender_id", user.id)
-        .eq("is_read", false);
-      unreadMsgCount = count || 0;
-    } catch {}
+      unreadMsgCount = await getUnreadMessageCount(user.id);
+    } catch {
+      // messages 表可能尚未迁移，忽略
+    }
   }
 
   return (
