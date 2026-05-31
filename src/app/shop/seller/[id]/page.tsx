@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from "next/navigation";
 import Link from "next/link";
 import ReviewSection from "@/components/ReviewSection";
 
@@ -8,7 +7,18 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
   const supabase = await createClient();
 
   const { data: seller } = await supabase.from("profiles").select("*").eq("id", id).single();
-  if (!seller) notFound();
+  if (!seller) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-20 text-center">
+        <p className="text-5xl mb-4">🏪</p>
+        <h1 className="text-xl font-bold text-gray-700 mb-2">商家不存在</h1>
+        <p className="text-sm text-gray-400 mb-6">该商家可能已注销或暂停经营</p>
+        <Link href="/shop" className="inline-block rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+          返回商城
+        </Link>
+      </div>
+    );
+  }
 
   const { data: products } = await supabase.from("products").select("id,name,price,image_url,slug").eq("seller_id", id).eq("status", "active").limit(12);
 

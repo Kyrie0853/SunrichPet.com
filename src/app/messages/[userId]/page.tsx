@@ -12,7 +12,18 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
   if (userId === user.id) redirect("/messages");
 
   const other = await getUserProfile(userId);
-  if (!other) notFound();
+  if (!other) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+        <p className="text-5xl mb-4">👤</p>
+        <h1 className="text-xl font-bold text-gray-700 mb-2">用户不存在</h1>
+        <p className="text-sm text-gray-400 mb-6">该用户可能已注销，无法发起私信</p>
+        <Link href="/messages" className="inline-block rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+          返回会话列表
+        </Link>
+      </div>
+    );
+  }
 
   // 尝试获取或创建会话，失败时优雅降级
   let conversation: any = null;
