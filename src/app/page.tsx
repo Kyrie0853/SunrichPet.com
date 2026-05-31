@@ -15,15 +15,15 @@ export default async function HomePage() {
   return (
     <div className="mx-auto max-w-5xl px-3 md:px-4 py-10">
       {/* 头部 Hero */}
-      <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-8 text-white">
-        <h1 className="text-3xl font-bold tracking-tight">🔥 热门广场</h1>
-        <p className="mt-2 text-emerald-100">全国宠友都在看的热门内容，发现精彩帖子</p>
+      <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-6 md:p-8 text-white">
+        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">🔥 热门广场</h1>
+        <p className="mt-2 text-emerald-100/90 text-[15px]">全国宠友都在看的热门内容，发现精彩帖子</p>
         <div className="mt-4 flex items-center gap-3">
-          <Link href="/community/new" className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50">
+          <Link href="/community/new" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-medium text-[#1a7f5a] transition-all duration-200 hover:bg-emerald-50 active:scale-[0.97]">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
             发布帖子
           </Link>
-          <Link href="/b" className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
+          <Link href="/b" className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2.5 text-[13px] font-medium text-white transition-all duration-200 hover:bg-white/10 active:scale-[0.97]">
             🏘️ 探索宠物吧
           </Link>
         </div>
@@ -39,31 +39,31 @@ export default async function HomePage() {
         )}
 
         {posts.map((post: any, i: number) => (
-          <article key={post.id} className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-1 active:scale-[0.98] animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}>
+          <article key={post.id} className={`card-interactive rounded-xl bg-white p-4 md:p-5 animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}>
             {/* 吧标签 */}
             {post.bar && (
-              <Link href={"/b/" + post.bar.slug} className="mb-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition">
+              <Link href={"/b/" + post.bar.slug} className="mb-2.5 inline-flex items-center gap-1 rounded-full bg-[#e8f5ef] px-2.5 py-0.5 text-[12px] font-medium text-[#1a7f5a] hover:bg-emerald-100 transition-colors duration-200">
                 {post.bar.icon} {post.bar.name}吧
               </Link>
             )}
 
             {/* 标题 + 内容 */}
             <Link href={"/community/post/" + post.id} className="block group">
-              <h2 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-emerald-700 transition">
+              <h2 className="text-[18px] font-semibold text-[#1f2937] line-clamp-1 group-hover:text-[#1a7f5a] transition-colors duration-200 leading-relaxed">
                 {post.is_pinned && "📌 "}{post.is_featured && "⭐ "}{post.title}
               </h2>
-              <p className="mt-1.5 text-sm text-gray-500 line-clamp-2">
+              <p className="mt-1.5 text-[15px] text-[#6b7280] line-clamp-2 leading-relaxed">
                 {post.content.replace(/<[^>]*>/g, "").substring(0, 200)}
               </p>
             </Link>
 
-            {/* 底栏：作者 + 互动数据 + 热度 */}
-            <div className="mt-4 flex items-center gap-3 text-xs text-gray-400">
-              <Link href={"/community/user/" + post.author_id} className="flex items-center gap-1.5 hover:text-gray-700 transition shrink-0">
+            {/* 底栏 */}
+            <div className="mt-4 flex items-center gap-3 text-[13px] text-[#9ca3af]">
+              <Link href={"/community/user/" + post.author_id} className="flex items-center gap-1.5 hover:text-[#1f2937] transition-colors duration-200 shrink-0">
                 <Avatar userId={post.author_id} avatarUrl={post.author?.avatar_url} displayName={post.author?.display_name} size={24} />
                 <span>{post.author?.display_name || "匿名"}</span>
               </Link>
-              <span>·</span>
+              <span className="text-[#e5e7eb]">·</span>
               <span>{(() => { const d = (Date.now() - new Date(post.created_at).getTime()) / 60000; return d < 1 ? "刚刚" : d < 60 ? Math.floor(d) + "分钟前" : d < 1440 ? Math.floor(d / 60) + "小时前" : Math.floor(d / 1440) + "天前"; })()}</span>
               <span className="ml-auto flex items-center gap-3">
                 <span className="flex items-center gap-1">
@@ -75,7 +75,7 @@ export default async function HomePage() {
                   {post.comment_count}
                 </span>
                 {post.hot_score > 0 && (
-                  <span className="flex items-center gap-1 text-amber-500 font-medium">
+                  <span className="flex items-center gap-1 text-[#f0a04b] font-medium">
                     🔥 {post.hot_score}
                   </span>
                 )}

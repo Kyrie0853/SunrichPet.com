@@ -23,36 +23,35 @@ export default function PostCard({ post }: { post: CommunityPost }) {
   
 
   return (
-    <article className="rounded-2xl border border-gray-100 bg-white p-3 md:p-5 shadow-sm transition hover:shadow-md hover:-translate-y-0.5">
+    <article className="card-interactive rounded-xl bg-white p-4 md:p-5">
       {/* 标签 */}
       <div className="mb-2 flex flex-wrap gap-1.5">
         {post.is_pinned && (
-          <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">📌 置顶</span>
+          <span className="inline-block rounded-full bg-red-50 px-2 py-0.5 text-[12px] font-medium text-red-600">📌 置顶</span>
         )}
         {post.is_featured && (
-          <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">⭐ 精华</span>
+          <span className="inline-block rounded-full bg-amber-50 px-2 py-0.5 text-[12px] font-medium text-amber-600">⭐ 精华</span>
         )}
       </div>
 
       {/* 标题行 */}
       <div className="flex items-start gap-3">
-        {/* 作者头像 */}
         <Avatar userId={post.author_id} avatarUrl={post.author?.avatar_url} displayName={post.author?.display_name} size={40} clickable />
 
         <div className="min-w-0 flex-1">
           <Link href={"/community/post/" + post.id} className="block">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 hover:text-emerald-700">
+            <h3 className="text-[18px] font-semibold text-[#1f2937] line-clamp-1 hover:text-[#1a7f5a] transition-colors duration-200">
               {post.title}
             </h3>
           </Link>
-          <p className="mt-1 text-sm text-gray-500 line-clamp-2">{snippet}</p>
+          <p className="mt-1 text-[15px] text-[#6b7280] line-clamp-2 leading-relaxed">{snippet}</p>
         </div>
       </div>
 
       {/* 底部信息 */}
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-gray-400">
-        
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-[13px] text-[#9ca3af]">
         <span>{post.author?.display_name || "匿名用户"}</span>
+        <span className="text-[#e5e7eb]">·</span>
         <span>{timeAgo(post.created_at)}</span>
         <span className="ml-auto flex items-center gap-1">
           <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
@@ -74,8 +73,7 @@ export default function PostCard({ post }: { post: CommunityPost }) {
           {post.tags.map((tag) => (
             <span
               key={tag.id}
-              className="inline-block rounded-full px-2 py-0.5 text-xs font-medium"
-              style={{ backgroundColor: tag.color + "20", color: tag.color }}
+              className="inline-block rounded-full border border-[#e5e7eb] bg-white px-2.5 py-0.5 text-[12px] font-medium text-[#6b7280]"
             >
               {tag.name}
             </span>

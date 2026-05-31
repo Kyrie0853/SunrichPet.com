@@ -56,7 +56,7 @@ export default function Avatar({ userId, avatarUrl, displayName, size = 40, edit
 
 
   const avatarEl = (
-    <div onClick={triggerFile} className={"relative h-full w-full rounded-full overflow-hidden flex items-center justify-center text-white font-bold select-none transition-all " + (editable ? "cursor-pointer border-2 border-dashed border-emerald-400 hover:border-emerald-600" : clickable ? "cursor-pointer hover:scale-105 hover:shadow-md" : "") + (showImage ? "" : " bg-emerald-500")} style={{ fontSize: size * 0.4 }}>
+    <div onClick={triggerFile} className={"relative h-full w-full rounded-full overflow-hidden flex items-center justify-center text-white font-bold select-none " + (editable ? "cursor-pointer border-2 border-dashed border-[#1a7f5a]/40 hover:border-[#1a7f5a]" : clickable ? "cursor-pointer transition-all duration-200 hover:ring-2 hover:ring-offset-1 hover:ring-[#1a7f5a]/30" : "") + (showImage ? "" : " bg-gradient-to-br from-emerald-400 to-emerald-600")} style={{ fontSize: size * 0.4 }}>
       {showImage ? (<img src={url} alt="" className="h-full w-full object-cover" draggable={false} onError={() => setImgError(true)} />) : initial}
       {editable && !uploading && (<div className="absolute inset-0 flex flex-col items-center justify-center rounded-full bg-black/30 pointer-events-none">
         <svg className="mb-1 h-4 w-4 text-white drop-shadow" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
