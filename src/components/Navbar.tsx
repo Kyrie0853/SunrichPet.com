@@ -28,7 +28,7 @@ export default async function Navbar() {
         .select("role, display_name, avatar_url, points, level, check_in_date, check_in_streak")
         .eq("id", user.id)
         .single();
-      isAdmin = p?.role === "admin";
+      isAdmin = p?.role === "admin" || p?.role === "super_admin";
       profile = p;
     } catch {
       // 忽略 profiles 查询失败
