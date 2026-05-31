@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ProductFavoriteButton from "./ProductFavoriteButton";
+import SafeImage from "./SafeImage";
 
 type Product = {
   id: string;
@@ -40,17 +41,16 @@ export async function ProductCard({ product, showFavorite = false }: { product: 
 
       {/* 商品图片 */}
       <div className="aspect-square overflow-hidden bg-gray-100">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl text-gray-300">
-            {product.name.charAt(0)}
-          </div>
-        )}
+        <SafeImage
+          src={product.image_url}
+          alt={product.name}
+          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          fallback={
+            <div className="flex h-full w-full items-center justify-center text-4xl text-gray-300">
+              {product.name.charAt(0)}
+            </div>
+          }
+        />
       </div>
 
       {/* 信息 */}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { updateCartItem, removeCartItem, checkout } from "@/app/actions/cart";
+import SafeImage from "./SafeImage";
 
 type CartItem = {
   id: string;
@@ -136,17 +137,16 @@ export function CartContent({ items: initialItems }: { items: CartItem[] }) {
             {/* 商品信息 */}
             <div className="flex items-center gap-3">
               <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                {item.product.image_url ? (
-                  <img
-                    src={item.product.image_url}
-                    alt={item.product.name}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-xl text-gray-300">
-                    {item.product.name.charAt(0)}
-                  </div>
-                )}
+                <SafeImage
+                  src={item.product.image_url}
+                  alt={item.product.name}
+                  className="h-full w-full object-cover"
+                  fallback={
+                    <div className="flex h-full items-center justify-center text-xl text-gray-300">
+                      {item.product.name.charAt(0)}
+                    </div>
+                  }
+                />
               </div>
               <Link
                 href={`/products/${item.product.slug}`}
