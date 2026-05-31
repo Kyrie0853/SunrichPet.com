@@ -74,12 +74,17 @@ export default function Avatar({ userId, avatarUrl, displayName, size = 40, edit
     </div>
   );
 
+  // 安全检查：userId 无效时禁用点击
+  const safeClickable = clickable && userId && userId.length > 0;
+
   return (
     <div className="relative inline-block" style={{ width: size, height: size }}>
-      {clickable ? (
+      {safeClickable ? (
         <Link href={"/community/user/" + userId} className="block h-full w-full">
           {avatarEl}
         </Link>
+      ) : clickable ? (
+        avatarEl
       ) : (
         avatarEl
       )}

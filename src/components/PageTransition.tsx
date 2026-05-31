@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 export default function PageTransition({ children }: { children: React.ReactNode }) {
@@ -14,7 +14,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
       const timer = setTimeout(() => {
         setPrevPathname(pathname);
         setIsVisible(true);
-      }, 80);
+      }, 50); // 50ms 快速过渡，感知为"瞬间"
       return () => clearTimeout(timer);
     }
   }, [pathname, prevPathname]);
