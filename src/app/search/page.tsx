@@ -88,7 +88,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           {products.map((product: any) => (
             <Link key={product.id} href={"/products/" + product.slug} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md">
               {product.image_url ? (
-                <img src={product.image_url} alt="" className="h-16 w-16 flex-shrink-0 rounded-lg object-cover" />
+                <img src={product.image_url} alt="" className="h-16 w-16 flex-shrink-0 rounded-lg object-cover" loading="lazy" />
               ) : (
                 <div className="h-16 w-16 flex-shrink-0 rounded-lg bg-gray-100 flex items-center justify-center text-gray-300">无图</div>
               )}

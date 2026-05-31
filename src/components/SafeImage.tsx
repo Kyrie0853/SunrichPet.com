@@ -24,6 +24,7 @@ export default function SafeImage({ src, alt = "", className = "", fallback }: P
       src={src}
       alt={alt}
       className={className}
+      loading="lazy"
       onError={() => setError(true)}
     />
   );

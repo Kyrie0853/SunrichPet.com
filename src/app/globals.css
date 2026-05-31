@@ -25,11 +25,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* 移动端优化 */
+/* ============================================================
+   移动端优化
+   ============================================================ */
 @layer base {
-  /* iOS 输入框不自动缩放 */
   input, textarea, select { font-size: 16px !important; }
-  /* 安全区域 */
   .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
 }
 
@@ -38,3 +38,102 @@ body {
   button, a { min-height: 44px; min-width: 44px; }
   .touch-btn { min-height: 44px; min-width: 44px; }
 }
+
+/* ============================================================
+   全局交互动画规范 — 统一的 hover / active / focus 效果
+   ============================================================ */
+@layer components {
+  /* 卡片交互 */
+  .card-interactive {
+    @apply cursor-pointer transition-all duration-200;
+  }
+  .card-interactive:hover {
+    @apply -translate-y-1 shadow-md;
+  }
+  .card-interactive:active {
+    @apply scale-[0.98];
+  }
+
+  /* 按钮交互 */
+  .btn-interactive {
+    @apply cursor-pointer transition-all duration-200;
+  }
+  .btn-interactive:hover {
+    @apply brightness-110;
+  }
+  .btn-interactive:active {
+    @apply scale-[0.96];
+  }
+
+  /* 链接交互 */
+  .link-interactive {
+    @apply cursor-pointer transition-colors duration-200;
+  }
+  .link-interactive:hover {
+    @apply text-emerald-600;
+  }
+
+  /* 图片悬停放大 */
+  .img-hover-zoom {
+    @apply transition-transform duration-300;
+  }
+  .img-hover-zoom:hover {
+    @apply scale-105;
+  }
+
+  /* 头像交互 */
+  .avatar-interactive {
+    @apply cursor-pointer transition-all duration-200;
+  }
+  .avatar-interactive:hover {
+    @apply scale-110 shadow-lg shadow-emerald-500/20 ring-2 ring-emerald-300/50;
+  }
+
+  /* 标签交互 */
+  .tag-interactive {
+    @apply cursor-pointer transition-all duration-200;
+  }
+  .tag-interactive:hover {
+    @apply -translate-y-0.5 shadow-sm;
+  }
+}
+
+/* ============================================================
+   骨架屏动画
+   ============================================================ */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.5rem;
+}
+
+/* ============================================================
+   页面过渡动画
+   ============================================================ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* 交错动画延迟 — 用于列表项依次出现 */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }

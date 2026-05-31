@@ -146,7 +146,7 @@ export default function ProductReviewSection({ productId, initialReviews, initia
             {review.images?.length > 0 && (
               <div className="mt-2 flex gap-2">
                 {review.images.map((img: string, i: number) => (
-                  <img key={i} src={img} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                  <img key={i} src={img} alt="" className="h-16 w-16 rounded-lg object-cover" loading="lazy" />
                 ))}
               </div>
             )}

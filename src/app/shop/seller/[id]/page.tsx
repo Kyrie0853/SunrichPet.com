@@ -62,7 +62,7 @@ export default async function SellerPage({ params }: { params: Promise<{ id: str
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {products.map((p: any) => (
               <Link key={p.id} href={"/products/" + p.slug} className="rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition hover:shadow-md">
-                {p.image_url ? <img src={p.image_url} alt="" className="mb-2 h-32 w-full rounded-lg object-cover" /> : <div className="mb-2 h-32 w-full rounded-lg bg-gray-100 flex items-center justify-center text-gray-300">无图</div>}
+                {p.image_url ? <img src={p.image_url} alt="" className="mb-2 h-32 w-full rounded-lg object-cover" loading="lazy" /> : <div className="mb-2 h-32 w-full rounded-lg bg-gray-100 flex items-center justify-center text-gray-300">无图</div>}
                 <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
                 <p className="text-sm font-bold text-emerald-700">¥{p.price}</p>
               </Link>
