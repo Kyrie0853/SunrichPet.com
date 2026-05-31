@@ -24,12 +24,10 @@ export type CommunityTag = {
   parent_id?: string|null;
 };
 
-// 父分类（论坛首页顶部 Tab）
+// 帖子分类标签（已扁平化，移除"爬宠""水族"大类）
 export const PARENT_TABS = [
   { key: "" as const, label: "全部" },
   { key: "featured" as const, label: "精华", color: "#d97706" },
-  { key: "reptile" as const, label: "爬宠", color: "#059669" },
-  { key: "aquarium" as const, label: "水族", color: "#0284c7" },
 ];
 
 export type SortOption = "latest" | "hot" | "trending";

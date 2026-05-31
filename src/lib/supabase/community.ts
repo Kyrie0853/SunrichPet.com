@@ -47,11 +47,11 @@ export const getHotPosts = _cached(async function getHotPosts(options: { page?: 
   const authorIds = [...new Set(posts.map(p => p.author_id))];
   const barIds = [...new Set(posts.map(p => p.bar_id).filter(Boolean))];
 
-  // 🚀 优化：并行批量查询（3 个批量查询替代 2N+2 个单独查询）
+  // 🚀 优化：并行批量查询
   const [authorsRes, barRes, likeCounts, commentCounts] = await Promise.all([
     supabase.from("profiles").select("id,display_name,avatar_url").in("id", authorIds),
     barIds.length > 0
-      ? supabase.from("bars").select("id,name,slug,icon").in("id", barIds)
+      ? supabase.from("bars").select("id,name,slug,icon").in("id", barIds).eq("is_active", true)
       : Promise.resolve({ data: [] }),
     batchCounts(supabase, "community_likes", postIds),
     batchCounts(supabase, "community_comments", postIds),

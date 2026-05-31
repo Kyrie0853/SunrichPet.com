@@ -20,7 +20,7 @@ export default async function BarPage({ params, searchParams }: {
   const { sort = "latest" } = await searchParams;
   const supabase = await createClient();
 
-  const { data: bar } = await supabase.from("bars").select("*").eq("slug", slug).single();
+  const { data: bar } = await supabase.from("bars").select("*").eq("slug", slug).eq("is_active", true).single();
   if (!bar) notFound();
 
   const { data: { user } } = await supabase.auth.getUser();

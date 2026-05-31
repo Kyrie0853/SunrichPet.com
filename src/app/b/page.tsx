@@ -8,6 +8,7 @@ export default async function BarsPage() {
   const { data: bars } = await supabase
     .from("bars")
     .select("*")
+    .eq("is_active", true)
     .order("member_count", { ascending: false });
 
   const { data: { user } } = await supabase.auth.getUser();
