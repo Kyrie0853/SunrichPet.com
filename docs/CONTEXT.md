@@ -339,4 +339,56 @@ main                    ← 生产环境 (Vercel 自动部署)
 
 **整体状态**: ✅ 健康，所有核心功能正常运行，全站路由已验证无 404
 
-*最后更新: 2026-05-30 — 全站 Bug 清零行动完成*
+---
+
+## 🐛 全站 Bug 清零行动 v2 (2026-05-31)
+
+### 背景
+新一轮全面代码审查发现 8 个 Bug（3 个 P0 + 5 个 P1），已全部修复。
+
+### 发现与修复
+
+| # | 严重度 | 问题 | 根因 | 修复方式 |
+|---|:---:|------|------|----------|
+| **B1** | 🔴 P0 | 头像点击跳转用户主页 404 | `getUserProfile()` 返回 null 时调用 `notFound()` 硬 404；用户可能存在于 `auth.users` 但在 `profiles` 表中无记录 | 3 个页面改为友好提示代替 404；创建 `handle_new_user` 触发器自动创建 profiles |
+| **B2** | 🔴 P0 | 私信目标用户 404 | 同上，`messages/[userId]/page.tsx` 中 `notFound()` 导致 | 改为友好"用户不存在"提示 + 返回会话列表按钮 |
+| **B3** | 🔴 P0 | 商家主页 404 | `shop/seller/[id]/page.tsx` 中 `notFound()` 导致 | 改为友好"商家不存在"提示 + 返回商城按钮 |
+| **B4** | 🟡 P1 | Navbar 未读消息计数使用 v1 schema | `messages` 表直接按 `sender_id` 过滤，未通过 `conversations` 表 join，依赖 RLS 不健壮 | 改用 `getUnreadMessageCount()` v2 实现（先查 conversations 再查 messages） |
+| **B5** | 🟡 P1 | `ChatInput.tsx` 死代码 + 使用错误 schema | 从未被 import，使用 v1 的 `sender_id`/`receiver_id`（无 `conversation_id`） | 删除文件 |
+| **B6** | 🟡 P1 | `UserProfileClient.tsx` 死代码 | 未被任何组件 import，功能已由 `UserProfileTabs` 替代 | 删除文件 |
+| **B7** | 🟡 P1 | 头像图片加载失败无降级 | `Avatar` 组件 `img` 标签无 `onerror` 处理 | 添加 `imgError` 状态 + 降级为文字首字母 |
+| **B8** | 🟡 P1 | 商品图片加载失败无降级 | `ProductCard`/`CartContent` 等组件的 `<img>` 无错误处理 | 创建 `SafeImage` 组件 + 应用到 ProductCard 和 CartContent |
+
+### 新增/修改文件
+
+| 文件 | 变更 |
+|------|------|
+| `src/components/SafeImage.tsx` | 🆕 通用安全图片组件（自动降级 fallback） |
+| `docs/migration-master-p0.sql` | 🆕 一键执行的全站数据库修复脚本（私信 v2 RLS + profiles 自动创建 + 索引优化） |
+| `src/app/community/user/[id]/page.tsx` | ✏️ 用户不存在 → 友好提示 |
+| `src/app/messages/[userId]/page.tsx` | ✏️ 用户不存在 → 友好提示 |
+| `src/app/shop/seller/[id]/page.tsx` | ✏️ 商家不存在 → 友好提示 |
+| `src/components/Avatar.tsx` | ✏️ 图片加载失败 → 文字首字母降级 |
+| `src/components/Navbar.tsx` | ✏️ 使用 v2 `getUnreadMessageCount` |
+| `src/components/ProductCard.tsx` | ✏️ 使用 `SafeImage` |
+| `src/components/CartContent.tsx` | ✏️ 使用 `SafeImage` |
+| `src/lib/supabase/community.ts` | ✏️ `getUnreadMessageCount` 改为 v2 实现 |
+| `src/components/ChatInput.tsx` | 🗑️ 删除（死代码） |
+| `src/components/community/UserProfileClient.tsx` | 🗑️ 删除（死代码） |
+
+### 测试结果
+- **发现 Bug**: 8 个 (P0: 3, P1: 5)
+- **已修复**: 8 个
+- **遗留问题**: 0 个
+- **TypeScript 编译**: ✅ 通过（0 错误）
+- **Next.js 构建**: ✅ 通过（33/33 路由）
+
+### ⚠️ 需手动执行
+1. **Supabase SQL Editor**: 执行 `docs/migration-master-p0.sql`
+   - 创建 conversations v2 表 + RLS
+   - 自动创建 profiles 触发器（修复头像 404）
+   - 缺失索引优化
+
+---
+
+*最后更新: 2026-05-31 — 全站 Bug 清零行动 v2 完成*
