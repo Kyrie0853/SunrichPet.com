@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { formatMessageTime } from "@/lib/utils/time";
 
 type Message = { id: string; conversation_id: string; sender_id: string; content: string; is_read: boolean; created_at: string; _status?: "sending" | "sent" | "failed" };
-
-function timeFormat(d: string) { return new Date(d).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }); }
 function tempId() { return "temp-" + Math.random().toString(36).slice(2, 10); }
 
 export default function ChatView({ conversationId, currentUserId, initialMessages }: { conversationId: string; currentUserId: string; initialMessages: Message[] }) {
@@ -134,7 +133,7 @@ export default function ChatView({ conversationId, currentUserId, initialMessage
                   {isFailed && (
                     <button onClick={() => retryMessage(msg)} className="underline hover:text-red-800 mr-1">重发</button>
                   )}
-                  {timeFormat(msg.created_at)}
+                  {formatMessageTime(msg.created_at)}
                 </div>
               </div>
             </div>

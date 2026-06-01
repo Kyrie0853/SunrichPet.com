@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Avatar from "@/components/Avatar";
+import { formatConvTime } from "@/lib/utils/time";
 
 type ConvItem = {
   conversationId: string;
@@ -13,18 +14,6 @@ type ConvItem = {
   lastTime: string;
   unread: number;
 };
-
-function timeAgo(d: string) {
-  const diff = Date.now() - new Date(d).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "刚刚";
-  if (m < 60) return m + "分钟前";
-  const h = Math.floor(m / 60);
-  if (h < 24) return h + "小时前";
-  const days = Math.floor(h / 24);
-  if (days < 30) return days + "天前";
-  return Math.floor(days / 30) + "个月前";
-}
 
 export default function ConversationList({ userId, initialData }: { userId: string; initialData: ConvItem[] }) {
   const [conversations, setConversations] = useState<ConvItem[]>(initialData);
@@ -108,7 +97,7 @@ export default function ConversationList({ userId, initialData }: { userId: stri
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
               <span className="font-semibold text-gray-900">{conv.profile?.display_name || "用户"}</span>
-              <span className="text-xs text-gray-400">{timeAgo(conv.lastTime)}</span>
+              <span className="text-xs text-gray-400">{formatConvTime(conv.lastTime)}</span>
             </div>
             <p className={"mt-0.5 truncate text-sm " + (conv.unread > 0 ? "font-medium text-gray-900" : "text-gray-500")}>
               {conv.lastMsg || "开始聊天"}
