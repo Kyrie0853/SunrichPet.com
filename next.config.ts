@@ -49,11 +49,7 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
         ],
       },
-      // 静态资源长期缓存
-      {
-        source: "/_next/static/(.*)",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
-      },
+      // PWA 图标长期缓存（Next.js 已自动处理 /_next/static/*，不手动覆盖）
       {
         source: "/icons/(.*)",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
