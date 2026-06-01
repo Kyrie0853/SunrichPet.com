@@ -79,7 +79,11 @@ export default async function HomePage() {
                 {post.is_pinned && "📌 "}{post.is_featured && "⭐ "}{post.title}
               </h2>
               <p className="mt-1.5 text-[15px] text-[#6b7280] line-clamp-2 leading-relaxed">
-                {post.content.replace(/<[^>]*>/g, "").substring(0, 200)}
+                {post.content
+                  ? post.content.replace(/<[^>]*>/g, "").substring(0, 100)
+                  : post.images?.length > 0
+                    ? '📷 查看图片'
+                    : ''}
               </p>
             </Link>
 
