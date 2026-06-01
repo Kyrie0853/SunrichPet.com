@@ -19,7 +19,18 @@ export async function POST(req: Request) {
     const orderId = session.metadata?.order_id;
     if (orderId) {
       const supabase = await createClient();
-      await supabase.from("orders").update({ status: "paid" }).eq("id", orderId);
+      const paidAt = new Date().toISOString();
+      await supabase.from("orders").update({
+        status: "paid",
+        stripe_session_id: session.id,
+      }).eq("id", orderId);
+
+      // 记录日志
+      await supabase.from("order_logs").insert({
+        order_id: orderId,
+        action: "paid",
+        details: { stripeSessionId: session.id, paidAt },
+      });
     }
   }
   return NextResponse.json({ received: true });

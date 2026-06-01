@@ -13,6 +13,7 @@ export default function SellerDashboardPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [score, setScore] = useState<any>(null);
+  const [balance, setBalance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,15 +28,17 @@ export default function SellerDashboardPage() {
       }
       setProfile(p);
 
-      const [prodRes, orderRes, scoreRes] = await Promise.all([
+      const [prodRes, orderRes, scoreRes, balanceRes] = await Promise.all([
         supabase.from('products').select('*').eq('seller_id', u.id).order('created_at', { ascending: false }).limit(20),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('orders').select('*').eq('seller_id', u.id).order('created_at', { ascending: false }).limit(20),
         supabase.from('seller_scores').select('*').eq('seller_id', u.id).maybeSingle(),
+        supabase.from('seller_balances').select('*').eq('seller_id', u.id).maybeSingle(),
       ]);
 
       setProducts(prodRes.data || []);
       setOrders(orderRes.data || []);
       setScore(scoreRes.data);
+      setBalance(balanceRes.data || { available_balance: 0, pending_balance: 0, total_earned: 0 });
       setLoading(false);
     }
     load();
@@ -52,11 +55,11 @@ export default function SellerDashboardPage() {
       <p className="text-[#6b7280] text-[14px] mb-8">欢迎回来，{profile?.display_name || '商家'}</p>
 
       {/* 数据概览 */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
         {[
-          { label: '商品总数', value: products.length, icon: '📦' },
-          { label: '在售商品', value: activeProducts, icon: '✅' },
-          { label: '待处理订单', value: pendingOrders, icon: '📋' },
+          { label: '可提现余额', value: '¥' + Number(balance?.available_balance || 0).toFixed(2), icon: '💰' },
+          { label: '待结算金额', value: '¥' + Number(balance?.pending_balance || 0).toFixed(2), icon: '⏳' },
+          { label: '累计收入', value: '¥' + Number(balance?.total_earned || 0).toFixed(2), icon: '📊' },
           { label: '商家评分', value: score?.score ?? 100, icon: '⭐' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl p-5 shadow-sm border">

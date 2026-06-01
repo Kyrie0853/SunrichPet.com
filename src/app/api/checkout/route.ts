@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     if (!items?.length) return NextResponse.json({ error: "购物车为空" }, { status: 400 });
 
     const productIds = items.map((i: any) => i.product_id);
-    const { data: products } = await supabase.from("products").select("id,name,price,stock").in("id", productIds);
+    const { data: products } = await supabase.from("products").select("id,name,price,stock,seller_id").in("id", productIds);
     const priceMap = new Map((products || []).map(p => [p.id, p]));
 
     let totalAmount = 0;
@@ -32,8 +32,12 @@ export async function POST(req: Request) {
     }
     if (lineItems.length === 0) return NextResponse.json({ error: "无有效商品" }, { status: 400 });
 
+    // 获取第一个商品的卖家ID
+    const firstProduct = products?.[0];
+    const sellerId = firstProduct?.seller_id || null;
+
     const { data: order } = await supabase.from("orders").insert({
-      user_id: user.id, status: "pending", total_amount: totalAmount, shipping_address: shippingAddress || "",
+      user_id: user.id, seller_id: sellerId, status: "pending", total_amount: totalAmount, shipping_address: shippingAddress || "",
     }).select("id").single();
 
     const session = await stripe.checkout.sessions.create({
