@@ -1,0 +1,56 @@
+{
+  "name": "顺瑞益宠",
+  "short_name": "顺瑞益宠",
+  "description": "全国宠物玩家的聚集地 — 加入社区，分享养宠经验，发现你的宠物伙伴",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#1a7f5a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "社区",
+      "url": "/b",
+      "description": "浏览宠物社区"
+    },
+    {
+      "name": "商城",
+      "url": "/shop",
+      "description": "宠物商城"
+    },
+    {
+      "name": "发布帖子",
+      "url": "/community/new",
+      "description": "发布新帖子"
+    }
+  ],
+  "categories": [
+    "social",
+    "lifestyle",
+    "shopping"
+  ]
+}
