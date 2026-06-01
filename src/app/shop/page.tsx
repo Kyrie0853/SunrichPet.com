@@ -37,6 +37,13 @@ export default async function ShopPage() {
           为你的宠物伙伴找到最好的食物、用品和装备
         </p>
 
+        {/* 平台担保标识 */}
+        <div className="mx-auto mb-6 max-w-lg">
+          <div className="rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium inline-flex items-center gap-2">
+            🛡️ 平台担保交易：下单后由平台协调收款和发货，保障双方权益
+          </div>
+        </div>
+
         {/* 搜索框 */}
         <div className="mx-auto max-w-xl px-4">
           <SearchBar />

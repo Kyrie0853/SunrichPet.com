@@ -83,8 +83,13 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
           </div>
 
+          {/* 平台担保标识 */}
+          <div className="mt-4 rounded-lg bg-[#e8f5ef] border border-[#1a7f5a]/15 px-3 py-2 text-[12px] text-[#1a7f5a] font-medium">
+            🛡️ 平台担保交易 · 收货验货后付款 · 保护动物禁止交易
+          </div>
+
           {/* 库存状态 */}
-          <div className="mt-4">
+          <div className="mt-3">
             {product.stock > 0 ? (
               <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-sm text-emerald-700">
                 有货（库存 {product.stock}）

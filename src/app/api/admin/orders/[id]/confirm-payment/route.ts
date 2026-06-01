@@ -18,6 +18,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // 更新订单状态
   const { error } = await supabase.from('orders').update({
     status: 'paid',
+    paid_at: now,
     payment_method: order.payment_method || 'manual',
   }).eq('id', id);
 

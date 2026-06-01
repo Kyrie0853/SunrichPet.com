@@ -27,7 +27,10 @@ export default async function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">确认订单</h1>
+      <h1 className="mb-2 text-2xl font-bold text-gray-900">确认订单</h1>
+      <div className="mb-5 rounded-lg bg-[#e8f5ef] border border-[#1a7f5a]/15 px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
+        🛡️ 平台担保模式 · 下单后平台确认收款 → 商家发货 → 验货后确认收货
+      </div>
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         {lineItems.map((item: any) => (
           <div key={item.product_id} className="flex items-center justify-between border-b border-gray-50 py-3">
