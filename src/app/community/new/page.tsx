@@ -14,6 +14,7 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<string>("");
   const [images, setImages] = useState<File[]>([]);
+  const [bars, setBars] = useState<any[]>([]);
   const [tags, setTags] = useState<{ id: string; name: string; slug: string }[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -110,8 +111,8 @@ export default function NewPostPage() {
               <label className="mb-2 block text-sm font-semibold text-gray-700">分类</label>
               <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500">
                 <option value="">选择分类</option>
-                {PARENT_TABS.filter(t=>t.key).map(tab => (
-                  <option key={tab.key} value={tab.key}>{tab.label}</option>
+                {bars.map((bar: any) => (
+                  <option key={bar.slug} value={bar.slug}>{bar.name}</option>
                 ))}
               </select>
             </div>

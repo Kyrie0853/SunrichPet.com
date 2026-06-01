@@ -111,7 +111,7 @@ body {
   }
   .avatar-interactive:hover {
     @apply ring-2 ring-offset-2;
-    ring-color: rgba(26, 127, 90, 0.35);
+    --tw-ring-color: rgba(26, 127, 90, 0.35);
   }
 
   /* 输入框交互 */
@@ -120,7 +120,7 @@ body {
   }
   .input-focus:focus {
     @apply border-[#1a7f5a] ring-1 bg-white outline-none;
-    ring-color: rgba(26, 127, 90, 0.15);
+    --tw-ring-color: rgba(26, 127, 90, 0.15);
   }
 }
 

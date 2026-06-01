@@ -4,4 +4,4 @@
 ALTER TABLE public.community_posts DROP CONSTRAINT IF EXISTS community_posts_category_check;
 
 ALTER TABLE public.community_posts ADD CONSTRAINT community_posts_category_check
-  CHECK (category IN ('', 'reptile', 'aquarium', 'general', 'fish', 'bird', 'small-pet', 'qa', 'marketplace-discuss', 'showcase', 'guide'));
+  CHECK (category IN ('', 'reptile', 'aquarium', 'general', 'fish', 'bird', 'small-pet', 'qa', 'marketplace-discuss', 'showcase', 'guide', 'featured'));
