@@ -53,7 +53,8 @@ export default function RootLayout({
     >
       <head>
         <meta name="theme-color" content="#1a7f5a" />
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
       </head>
       <body className="min-h-full flex flex-col bg-[#f8f9fa]">
         <SplashScreen />
