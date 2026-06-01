@@ -26,9 +26,9 @@ export default function ReportActions({ reportId, targetType, targetId }: { repo
 
   return (
     <div className="ml-auto flex gap-2">
-      <button onClick={() => resolve(true)} className="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700">屏蔽并删除</button>
-      <button onClick={() => resolve(false)} className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700">标记已处理</button>
-      <button onClick={dismiss} className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-medium text-gray-500 hover:bg-gray-50">忽略</button>
+      <button onClick={() => resolve(true)} className="rounded-lg bg-red-600 px-2.5 md:px-3 py-1.5 md:py-1 text-[11px] md:text-xs font-semibold text-white hover:bg-red-700 min-h-[44px] md:min-h-0">屏蔽并删除</button>
+      <button onClick={() => resolve(false)} className="rounded-lg bg-emerald-600 px-2.5 md:px-3 py-1.5 md:py-1 text-[11px] md:text-xs font-semibold text-white hover:bg-emerald-700 min-h-[44px] md:min-h-0">标记已处理</button>
+      <button onClick={dismiss} className="rounded-lg border border-gray-200 px-2.5 md:px-3 py-1.5 md:py-1 text-[11px] md:text-xs font-medium text-gray-500 hover:bg-gray-50 min-h-[44px] md:min-h-0">忽略</button>
     </div>
   );
 }

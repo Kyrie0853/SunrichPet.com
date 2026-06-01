@@ -101,7 +101,7 @@ export function ProductForm({
         <input
           name="name"
           defaultValue={product?.name || ""}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-[16px] md:text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           placeholder="例：高黄豹纹守宫"
         />
       </div>
@@ -142,7 +142,7 @@ export function ProductForm({
       </div>
 
       {/* 价格 + 库存 */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 md:gap-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">
             价格 (¥) <span className="text-red-400">*</span>
@@ -233,7 +233,7 @@ export function ProductForm({
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-lg bg-emerald-600 py-3 md:py-2.5 text-[15px] md:text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 min-h-[44px]"
       >
         {loading ? "保存中..." : isEdit ? "保存修改" : "添加商品"}
       </button>

@@ -1,70 +1,95 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
-const REASONS = ["广告", "色情", "暴力", "辱骂", "虚假信息", "其他"];
-
-export default function ReportButton({ targetType, targetId }: { targetType: "post" | "comment"; targetId: string }) {
-  const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState("");
-  const [custom, setCustom] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+export default function ReportButton({ targetType, targetId, className = '' }: { targetType: string; targetId: string; className?: string }) {
+  const [showForm, setShowForm] = useState(false);
+  const [reason, setReason] = useState('');
+  const [detail, setDetail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
   const supabase = createClient();
 
-  async function submitReport() {
-    const r = reason === "其他" ? custom.trim() : reason;
-    if (!r) { setError("请选择或填写举报原因"); return; }
+  const reasons = [
+    { value: 'illegal', label: '违规内容（保护动物/联系方式）' },
+    { value: 'fake', label: '虚假信息' },
+    { value: 'harass', label: '骚扰/人身攻击' },
+    { value: 'spam', label: '垃圾广告' },
+    { value: 'other', label: '其他' },
+  ];
+
+  async function handleSubmit() {
+    if (!reason) return;
+    setSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError("请先登录"); return; }
-    const { error: insErr } = await supabase.from("reports").insert({
-      reporter_id: user.id, target_type: targetType, target_id: targetId, reason: r
+    if (!user) { setSubmitting(false); return; }
+    await supabase.from('reports').insert({
+      reporter_id: user.id,
+      target_type: targetType,
+      target_id: targetId,
+      report_reason: reason,
+      status: 'pending',
     });
-    if (insErr) { setError("提交失败"); return; }
-    // 检查是否达到自动隐藏阈值
-    const { count } = await supabase.from("reports").select("*", { count: "exact", head: true }).eq("target_type", targetType).eq("target_id", targetId).eq("status", "pending");
-    if ((count || 0) >= 5) {
-      if (targetType === "post") {
-        await supabase.from("community_posts").update({ status: "inactive" }).eq("id", targetId);
-      } else {
-        await supabase.from("community_comments").delete().eq("id", targetId);
-      }
-    }
-    setSubmitted(true);
+    setSubmitting(false);
+    setDone(true);
+    setTimeout(() => { setShowForm(false); setDone(false); }, 2000);
   }
 
-  if (submitted) return <span className="text-xs text-gray-400">已举报</span>;
-
   return (
-    <span className="relative">
-      <button onClick={() => setOpen(!open)} className="text-xs text-gray-400 hover:text-red-500" title="举报">
-        <svg className="inline h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+    <>
+      <button
+        onClick={() => setShowForm(true)}
+        className={'inline-flex items-center gap-1 text-[11px] text-[#9ca3af] hover:text-red-500 transition-colors ' + className}
+        title="举报"
+      >
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5" />
         </svg>
+        举报
       </button>
-      {open && (
-        <div className="absolute bottom-6 left-0 z-50 w-52 rounded-xl border border-gray-100 bg-white p-4 shadow-lg">
-          <p className="mb-2 text-xs font-semibold text-gray-700">举报{targetType === "post" ? "帖子" : "评论"}</p>
-          <div className="space-y-1">
-            {REASONS.map(r => (
-              <button key={r} onClick={() => { setReason(r); setCustom(""); }}
-                className={"block w-full rounded-lg px-2 py-1.5 text-left text-xs transition " + (reason === r ? "bg-red-50 text-red-700" : "text-gray-600 hover:bg-gray-50")}>
-                {r}
-              </button>
-            ))}
-          </div>
-          {reason === "其他" && (
-            <input type="text" value={custom} onChange={e => setCustom(e.target.value)} placeholder="请描述..."
-              className="mt-2 w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs outline-none focus:border-red-400" />
-          )}
-          {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-          <div className="mt-3 flex gap-2">
-            <button onClick={submitReport} className="flex-1 rounded-lg bg-red-600 py-1.5 text-xs font-semibold text-white hover:bg-red-700">提交</button>
-            <button onClick={() => setOpen(false)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-50">取消</button>
+
+      {showForm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[#1f2937] mb-4">举报</h3>
+            {done ? (
+              <div className="text-center py-4">
+                <p className="text-2xl mb-2">OK</p>
+                <p className="text-[14px] text-[#1a7f5a] font-medium">举报已提交，感谢您的反馈</p>
+              </div>
+            ) : (
+              <>
+                <label className="block text-[13px] font-medium text-[#4b5563] mb-2">举报原因</label>
+                <div className="space-y-1.5 mb-4">
+                  {reasons.map(r => (
+                    <label
+                      key={r.value}
+                      className={'flex items-center gap-2 p-2.5 rounded-lg cursor-pointer text-[13px] transition-colors ' + (reason === r.value ? 'bg-red-50 text-red-700' : 'hover:bg-[#f9fafb] text-[#4b5563]')}
+                    >
+                      <input type="radio" name="reason" value={r.value} checked={reason === r.value} onChange={e => setReason(e.target.value)} className="text-[#1a7f5a]" />
+                      {r.label}
+                    </label>
+                  ))}
+                </div>
+                <textarea
+                  value={detail}
+                  onChange={e => setDetail(e.target.value)}
+                  placeholder="补充说明（可选）"
+                  rows={2}
+                  className="w-full rounded-lg border border-[#e5e7eb] px-3 py-2 text-[13px] outline-none focus:border-[#1a7f5a] resize-none mb-4"
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => setShowForm(false)} className="flex-1 rounded-full border border-[#e5e7eb] py-2 text-[13px] text-[#6b7280] hover:bg-[#f9fafb]">取消</button>
+                  <button onClick={handleSubmit} disabled={!reason || submitting} className="flex-1 rounded-full bg-red-500 py-2 text-[13px] font-medium text-white hover:bg-red-600 disabled:opacity-50">
+                    {submitting ? '提交中...' : '提交举报'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
-    </span>
+    </>
   );
 }

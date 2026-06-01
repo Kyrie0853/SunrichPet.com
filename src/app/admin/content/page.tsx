@@ -43,20 +43,23 @@ export default function AdminContentPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-[#1f2937] mb-6">内容管理</h1>
-      <div className="flex gap-1 mb-4 border-b border-[#f3f4f6]">
-        {tabs.map(t=>(<button key={t.key} onClick={()=>setTab(t.key as any)} className={`px-4 py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors ${tab===t.key?"border-[#1a7f5a] text-[#1a7f5a]":"border-transparent text-[#6b7280] hover:text-[#1f2937]"}`}>{t.label}</button>))}
+      <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-4 md:mb-6">内容管理</h1>
+      {/* Tab 切换 - 移动端可横向滚动 */}
+      <div className="flex gap-0 mb-4 border-b border-[#f3f4f6] overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        {tabs.map(t=>(<button key={t.key} onClick={()=>setTab(t.key as any)} className={'shrink-0 px-3 md:px-4 py-2.5 md:py-2 text-[13px] font-medium border-b-2 -mb-px transition-colors min-h-[44px] flex items-center ' + (tab===t.key?"border-[#1a7f5a] text-[#1a7f5a]":"border-transparent text-[#6b7280] hover:text-[#1f2937]")}>{t.label}</button>))}
       </div>
       {loading ? <p className="py-8 text-center text-[#9ca3af]">加载中...</p> :
        tab==="posts" ? (
         <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] overflow-hidden">
-          <table className="w-full text-[13px]">
-            <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-4 py-3">标题</th><th className="text-left px-4 py-3">社区</th><th className="text-left px-4 py-3">时间</th><th className="text-right px-4 py-3">操作</th></tr></thead>
-            <tbody>{posts.map(p=>(<tr key={p.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]"><td className="px-4 py-3 font-medium">{p.title?.slice(0,40)}</td><td className="px-4 py-3 text-[#6b7280]">{p.barName||"-"}</td><td className="px-4 py-3 text-[#6b7280]">{new Date(p.created_at).toLocaleDateString("zh-CN")}</td><td className="px-4 py-3 text-right"><button onClick={()=>deletePost(p.id)} className="rounded-full px-3 py-1 text-[11px] text-red-500 hover:bg-red-50">删除</button></td></tr>))}</tbody>
-          </table>
+          <div className="table-responsive">
+            <table className="w-full text-[13px]">
+              <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-3 md:px-4 py-3">标题</th><th className="text-left px-3 md:px-4 py-3 hidden sm:table-cell">社区</th><th className="text-left px-3 md:px-4 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 md:px-4 py-3">操作</th></tr></thead>
+              <tbody>{posts.map(p=>(<tr key={p.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]"><td className="px-3 md:px-4 py-3"><span className="font-medium line-clamp-1">{p.title?.slice(0,40)}</span><span className="sm:hidden block text-[11px] text-[#9ca3af] mt-0.5">{p.barName||"-"} · {new Date(p.created_at).toLocaleDateString("zh-CN")}</span></td><td className="px-3 md:px-4 py-3 text-[#6b7280] hidden sm:table-cell">{p.barName||"-"}</td><td className="px-3 md:px-4 py-3 text-[#6b7280] hidden md:table-cell">{new Date(p.created_at).toLocaleDateString("zh-CN")}</td><td className="px-3 md:px-4 py-3 text-right"><button onClick={()=>deletePost(p.id)} className="rounded-full px-3 py-1.5 md:py-1 text-[11px] text-red-500 hover:bg-red-50 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center">删除</button></td></tr>))}</tbody>
+            </table>
+          </div>
         </div>
       ) : (
-        <div className="space-y-2">{reports.map((r:any)=>(<div key={r.id} className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] p-4"><div className="flex items-center justify-between"><div><span className="text-[13px] font-medium">{r.reporterName||"匿名"}</span><span className="text-[#9ca3af] mx-2">举报了</span><span className="text-[13px]">{r.target_type}</span><span className="text-[#9ca3af] ml-2 text-[11px]">{new Date(r.created_at).toLocaleString("zh-CN")}</span></div><div className="flex gap-1.5"><button onClick={()=>resolveReport(r.id,"approve")} className="rounded-full px-3 py-1 text-[11px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100">通过</button><button onClick={()=>resolveReport(r.id,"dismiss")} className="rounded-full px-3 py-1 text-[11px] bg-gray-100 text-[#6b7280] hover:bg-gray-200">驳回</button></div></div><p className="mt-1 text-[12px] text-[#6b7280]">原因: {r.reason||"未提供"}</p></div>))}</div>
+        <div className="space-y-2 md:space-y-3">{reports.map((r:any)=>(<div key={r.id} className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] p-3 md:p-4"><div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div className="flex flex-wrap items-center gap-x-2 gap-y-1"><span className="text-[13px] font-medium">{r.reporterName||"匿名"}</span><span className="text-[#9ca3af] text-[12px]">举报了</span><span className="text-[13px]">{r.target_type}</span><span className="text-[#9ca3af] text-[11px]">{new Date(r.created_at).toLocaleString("zh-CN")}</span></div><div className="flex gap-1.5"><button onClick={()=>resolveReport(r.id,"approve")} className="rounded-full px-3 py-1.5 md:py-1 text-[11px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center">通过</button><button onClick={()=>resolveReport(r.id,"dismiss")} className="rounded-full px-3 py-1.5 md:py-1 text-[11px] bg-gray-100 text-[#6b7280] hover:bg-gray-200 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center">驳回</button></div></div><p className="mt-1 text-[12px] text-[#6b7280]">原因: {r.reason||"未提供"}</p></div>))}</div>
       )}
     </div>
   );

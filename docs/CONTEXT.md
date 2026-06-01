@@ -495,4 +495,84 @@ main                    ← 生产环境 (Vercel 自动部署)
 
 ---
 
-*最后更新: 2026-05-31 — UI 设计规范 v2.0 升级完成*
+*最后更新: 2026-06-01 — 平台合规与信任体系升级 (Batch 1)*
+
+---
+
+## 🏛️ 平台合规与信任体系升级 (2026-06-01)
+
+### 已完成 — Batch 1（最高优先级）
+
+#### 数据库迁移
+- [x] `docs/platform-compliance.sql` — 全量合规迁移（blocked_keywords, violation_logs, user_penalties, user_agreements, bars, announcements, seller_scores, refund_requests, seller_applications, orders/products 扩展）
+- [x] `docs/cleanup-test-data.sql` — 测试数据清理脚本
+- [x] `docs/cleanup-sensitive-products.sql` — 敏感商品清理脚本
+
+#### 关键词拦截系统
+- [x] `src/lib/security/content-filter.ts` — 服务端内容过滤核心（filterContent, logViolation, penalizeUser, isUserMuted, isUserBanned）
+- [x] `src/hooks/useKeywordFilter.ts` — 客户端关键词验证 Hook
+- [x] `blocked_keywords` 表预设 40+ 敏感关键词（联系方式/保护动物/线下交易）
+- [x] 处罚阶梯：警告 → 禁言7天 → 永久封号
+
+#### 合规页面
+- [x] `/rules` — 平台规则（用户协议、交易规则、禁售清单、处罚阶梯）
+- [x] `/rules/prohibited` — 禁卖动物名单（分类详细列表）
+- [x] `/rules/after-sale` — 售后规则（担保交易流程、退款条件、平台介入）
+- [x] `/help` — 帮助中心（FAQ 手风琴、新手指南）
+- [x] `/report` — 举报中心（独立举报页面）
+- [x] `/seller/apply` — 商家入驻申请（基本信息、经营品类、承诺书）
+
+#### UI 组件
+- [x] `AnnouncementBar` — 顶部滚动公告栏（淡黄警示底、多条轮播）
+- [x] `Footer` — 桌面端底部导航（平台规则 | 举报中心 | 商家入驻 | 帮助中心）
+- [x] `PostingRulesModal` — 发帖前规则提醒弹窗（localStorage 7天记忆）
+- [x] `ReportButton` — 帖子/商品举报按钮 + 弹窗表单
+
+#### 页面升级
+- [x] 首页：平台担保标识、分类标签云、移除热度评分、添加举报按钮 + 浏览量
+- [x] 社区列表页：空状态文案优化
+- [x] 社区详情页：规则横幅 + 空状态优化（"快来发布第一条吧" + 按钮）
+- [x] 登录页：双入口提示、微信登录占位、忘记密码链接
+- [x] 全局布局：集成 AnnouncementBar + Footer
+
+#### 管理后台
+- [x] `/admin/sellers` — 商家入驻审核页（通过/拒绝 + 角色更新）
+- [x] `/admin/reports` — 举报管理（已存在，侧边栏新增入口）
+- [x] AdminSidebar 新增：商家审核、举报管理入口
+- [x] `/seller/dashboard` — 商家后台（数据概览、商品/订单、评分）
+
+#### 构建验证
+- [x] TypeScript 编译：通过（0 错误）
+- [x] Next.js 构建：通过（55/55 路由）
+- [x] 所有新路由正常生成
+
+### ⚠️ 需要手动执行
+
+1. **Supabase SQL Editor**（按顺序执行）:
+   - `docs/platform-compliance.sql` — **最高优先级**，所有新表 + 扩展
+   - `docs/cleanup-test-data.sql` — 清理测试数据（先确认管理员邮箱）
+   - `docs/cleanup-sensitive-products.sql` — 清理敏感商品
+
+2. **Supabase 配置**:
+   - 启用 Phone 提供商（手机验证码登录）
+   - 微信 OAuth 配置（后期对接）
+
+3. **Storage Bucket**:
+   - 卖家证件上传需要新的 Storage Bucket（或复用 community-images）
+
+### 待完成 — Batch 2（3天内）
+
+- [ ] 手机验证码登录（需 Supabase Phone 提供商启用）
+- [ ] 微信扫码登录对接（本期仅 UI 占位）
+- [ ] 商品详情页信任标识
+- [ ] 发帖页集成关键词过滤 + PostingRulesModal
+- [ ] 订单退款与纠纷流程
+- [ ] 活体商品必填信息 + 商品分类细化
+- [ ] 评论/私信关键词拦截集成
+
+### 待完成 — Batch 3（一周内）
+
+- [ ] 担保交易完整流程（自动确认收货）
+- [ ] 商家评分体系扣分逻辑
+- [ ] E2E 全流程测试
+- [ ] 商家订单发货/退款处理页面

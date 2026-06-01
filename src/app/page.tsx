@@ -1,7 +1,7 @@
 import { getHotPosts } from "@/lib/supabase/community";
 import Link from "next/link";
-import PostCard from "@/components/community/PostCard";
 import Avatar from "@/components/Avatar";
+import ReportButton from "@/components/ReportButton";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -27,6 +27,32 @@ export default async function HomePage() {
             🏘️ 探索社区
           </Link>
         </div>
+      </div>
+
+      {/* 平台担保标识 */}
+      <div className="mb-4 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-3 flex items-center gap-2.5 text-[13px] md:text-[14px]">
+        <span className="text-lg shrink-0">🛡️</span>
+        <span className="text-[#1a7f5a] font-medium">平台担保交易 · 收货验货后付款 · 保护动物禁止交易</span>
+      </div>
+
+      {/* 分类标签云 */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        {[
+          { key: '', label: '全部' },
+          { key: 'gecko', label: '🦎 守宫' },
+          { key: 'turtle', label: '🐢 龟类' },
+          { key: 'aquarium', label: '🐠 观赏鱼' },
+          { key: 'newbie', label: '💡 新手' },
+        ].map(tag => (
+          <Link
+            key={tag.key}
+            href={tag.key ? '/b/' + tag.key : '/'}
+            className={'rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 ' +
+              (tag.key === '' ? 'bg-[#1a7f5a] text-white' : 'border border-[#d1d5db] text-[#6b7280] hover:border-[#1a7f5a] hover:text-[#1a7f5a]')}
+          >
+            {tag.label}
+          </Link>
+        ))}
       </div>
 
       {/* 帖子流 */}
@@ -74,11 +100,11 @@ export default async function HomePage() {
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                   {post.comment_count}
                 </span>
-                {post.hot_score > 0 && (
-                  <span className="flex items-center gap-1 text-[#f0a04b] font-medium">
-                    🔥 {post.hot_score}
-                  </span>
-                )}
+                <span className="flex items-center gap-1">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  {post.view_count || 0}
+                </span>
+                <ReportButton targetType="post" targetId={post.id} />
               </span>
             </div>
           </article>

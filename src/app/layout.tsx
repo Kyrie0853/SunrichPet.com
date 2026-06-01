@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import MobileNav from "@/components/MobileNav";
 import PageTransition from "@/components/PageTransition";
 import SplashScreen from "@/components/SplashScreen";
+import AnnouncementBar from "@/components/AnnouncementBar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -41,9 +43,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#f8f9fa]">
         <SplashScreen />
         <Navbar />
+        <AnnouncementBar />
         <main className="flex-1 pb-16 md:pb-0">
           <PageTransition>{children}</PageTransition>
         </main>
+        <Footer />
         <MobileNav />
       </body>
     </html>

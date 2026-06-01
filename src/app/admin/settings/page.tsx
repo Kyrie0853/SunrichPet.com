@@ -34,14 +34,14 @@ export default function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-[#1f2937] mb-6">系统设置</h1>
+      <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-4 md:mb-6">系统设置</h1>
 
-      <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] p-5 mb-6">
+      <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] p-4 md:p-5 mb-4 md:mb-6">
         <h2 className="text-[15px] font-semibold text-[#1f2937] mb-4">商品分类管理</h2>
-        <div className="flex gap-2 mb-4">
-          <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="分类名称" className="h-9 rounded-lg border border-[#e5e7eb] px-3 text-[13px] outline-none focus:border-[#1a7f5a]" />
-          <input value={newSlug} onChange={e=>setNewSlug(e.target.value)} placeholder="slug (英文)" className="h-9 rounded-lg border border-[#e5e7eb] px-3 text-[13px] outline-none focus:border-[#1a7f5a]" />
-          <button onClick={addCategory} disabled={loading} className="rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] disabled:opacity-50">添加</button>
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="分类名称" className="h-10 md:h-9 rounded-lg border border-[#e5e7eb] px-3 text-[16px] md:text-[13px] outline-none focus:border-[#1a7f5a] w-full sm:flex-1" />
+          <input value={newSlug} onChange={e=>setNewSlug(e.target.value)} placeholder="slug (英文)" className="h-10 md:h-9 rounded-lg border border-[#e5e7eb] px-3 text-[16px] md:text-[13px] outline-none focus:border-[#1a7f5a] w-full sm:w-32" />
+          <button onClick={addCategory} disabled={loading} className="rounded-full bg-[#1a7f5a] px-4 py-2.5 md:py-2 text-[14px] md:text-[13px] font-medium text-white hover:bg-[#166b4b] disabled:opacity-50 min-h-[44px] md:min-h-0">添加</button>
         </div>
         <div className="space-y-1">
           {categories.map(c => (

@@ -45,12 +45,12 @@ export function AdminPanel({
   return (
     <div>
       {/* 操作栏 */}
-      <div className="mb-6 flex items-center justify-between">
-        <p className="text-sm text-gray-500">共 {products.length} 件商品</p>
+      <div className="mb-4 md:mb-6 flex items-center justify-between">
+        <p className="text-[13px] md:text-sm text-gray-500">共 {products.length} 件商品</p>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="rounded-lg bg-emerald-600 px-4 md:px-5 py-2.5 text-[14px] md:text-sm font-semibold text-white hover:bg-emerald-700 min-h-[44px] md:min-h-0 flex items-center"
           >
             添加商品
           </button>
@@ -59,14 +59,14 @@ export function AdminPanel({
 
       {/* 表单 */}
       {showForm && (
-        <div className="mb-8 rounded-xl border bg-white p-6">
+        <div className="mb-6 md:mb-8 rounded-xl border bg-white p-4 md:p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">
+            <h2 className="text-base md:text-lg font-semibold text-gray-800">
               {editingProduct ? "编辑商品" : "添加商品"}
             </h2>
             <button
               onClick={handleCloseForm}
-              className="text-sm text-gray-400 hover:text-gray-600"
+              className="text-[14px] md:text-sm text-gray-400 hover:text-gray-600 min-h-[44px] md:min-h-0 flex items-center"
             >
               取消
             </button>

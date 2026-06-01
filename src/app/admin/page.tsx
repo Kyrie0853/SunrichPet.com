@@ -27,14 +27,14 @@ export default async function AdminDashboard() {
     <div>
       <h1 className="text-xl font-semibold text-[#1f2937] mb-6">仪表盘</h1>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
         {stats.map(s => (
-          <div key={s.label} className="bg-white rounded-xl p-5 shadow-sm border border-[#f3f4f6]">
-            <div className="flex items-center justify-between">
-              <span className="text-2xl">{s.icon}</span>
-              <span className="text-2xl font-bold text-[#1f2937]">{s.value}</span>
+          <div key={s.label} className="bg-white rounded-xl p-3 md:p-5 shadow-sm border border-[#f3f4f6]">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1 md:gap-0">
+              <span className="text-xl md:text-2xl">{s.icon}</span>
+              <span className="text-xl md:text-2xl font-bold text-[#1f2937]">{s.value}</span>
             </div>
-            <p className="mt-2 text-[13px] text-[#6b7280]">{s.label}</p>
+            <p className="mt-1.5 md:mt-2 text-[11px] md:text-[13px] text-[#6b7280]">{s.label}</p>
           </div>
         ))}
       </div>

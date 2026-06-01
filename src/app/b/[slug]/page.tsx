@@ -76,6 +76,13 @@ export default async function BarPage({ params, searchParams }: {
         </div>
       </div>
 
+      {/* 社区规则横幅 */}
+      {bar.rules && (
+        <div className="mt-3 bg-[#f9fafb] border border-[#f3f4f6] rounded-lg px-4 py-2.5 text-[13px] text-[#6b7280]">
+          📋 {bar.rules}
+        </div>
+      )}
+
       {/* 排序 + 发帖 */}
       <div className="mt-6 flex items-center justify-between">
         <div className="flex gap-2">
@@ -104,13 +111,15 @@ export default async function BarPage({ params, searchParams }: {
       {/* 帖子列表 */}
       <div className="mt-4 space-y-3">
         {enriched.length === 0 && (
-          <div className="py-16 text-center text-gray-400">
+          <div className="py-16 text-center">
             <p className="text-4xl mb-3">📭</p>
-            <p>该社区暂无帖子</p>
-            {isMember && (
-              <Link href={`/community/new?bar=${bar.id}`} className="mt-3 inline-block text-emerald-600 hover:underline">
-                来发布第一个帖子
+            <p className="text-gray-500 mb-2">这个社区还没有帖子，快来发布第一条吧！</p>
+            {isMember ? (
+              <Link href={`/community/new?bar=${bar.id}`} className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#1a7f5a] px-5 py-2.5 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors">
+                发布帖子
               </Link>
+            ) : (
+              <p className="text-sm text-gray-400 mt-2">加入社区后即可发帖</p>
             )}
           </div>
         )}

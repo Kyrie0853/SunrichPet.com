@@ -27,27 +27,34 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-semibold text-[#1f2937] mb-6">订单管理</h1>
+      <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-4 md:mb-6">订单管理</h1>
       <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] overflow-hidden">
-        <table className="w-full text-[13px]">
-          <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-4 py-3">订单号</th><th className="text-left px-4 py-3">金额</th><th className="text-left px-4 py-3">状态</th><th className="text-left px-4 py-3">时间</th><th className="text-right px-4 py-3">操作</th></tr></thead>
-          <tbody>
-            {loading ? <tr><td colSpan={5} className="text-center py-8 text-[#9ca3af]">加载中...</td></tr>
-            : orders.map(o => (
-              <tr key={o.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
-                <td className="px-4 py-3 font-mono text-[12px]">{o.id.slice(0,12)}...</td>
-                <td className="px-4 py-3 font-medium">¥{o.total_amount}</td>
-                <td className="px-4 py-3"><span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[o.status]||""}`}>{STATUS_LABELS[o.status]||o.status}</span></td>
-                <td className="px-4 py-3 text-[#6b7280]">{new Date(o.created_at).toLocaleDateString("zh-CN")}</td>
-                <td className="px-4 py-3 text-right">
-                  <select value={o.status} onChange={e=>changeStatus(o.id,e.target.value)} className="rounded-lg border border-[#e5e7eb] px-2 py-1 text-[12px] outline-none">
-                    {Object.entries(STATUS_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
-                  </select>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-responsive">
+          <table className="w-full text-[13px]">
+            <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-3 md:px-4 py-3">订单号</th><th className="text-left px-3 md:px-4 py-3">金额</th><th className="text-left px-3 md:px-4 py-3">状态</th><th className="text-left px-3 md:px-4 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 md:px-4 py-3">操作</th></tr></thead>
+            <tbody>
+              {loading ? <tr><td colSpan={5} className="text-center py-8 text-[#9ca3af]">加载中...</td></tr>
+              : orders.map(o => (
+                <tr key={o.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                  <td className="px-3 md:px-4 py-3">
+                    <span className="font-mono text-[11px] md:text-[12px]">{o.id.slice(0,12)}...</span>
+                    <span className="md:hidden block text-[11px] text-[#9ca3af] mt-0.5">{new Date(o.created_at).toLocaleDateString("zh-CN")}</span>
+                  </td>
+                  <td className="px-3 md:px-4 py-3 font-medium">¥{o.total_amount}</td>
+                  <td className="px-3 md:px-4 py-3">
+                    <span className={'inline-block rounded-full px-1.5 md:px-2 py-0.5 text-[10px] md:text-[11px] font-medium ' + (STATUS_COLORS[o.status]||"")}>{STATUS_LABELS[o.status]||o.status}</span>
+                  </td>
+                  <td className="px-3 md:px-4 py-3 text-[#6b7280] hidden md:table-cell">{new Date(o.created_at).toLocaleDateString("zh-CN")}</td>
+                  <td className="px-3 md:px-4 py-3 text-right">
+                    <select value={o.status} onChange={e=>changeStatus(o.id,e.target.value)} className="rounded-lg border border-[#e5e7eb] px-2 py-1.5 md:py-1 text-[14px] md:text-[12px] outline-none min-h-[44px] md:min-h-0">
+                      {Object.entries(STATUS_LABELS).map(([k,v])=>(<option key={k} value={k}>{v}</option>))}
+                    </select>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

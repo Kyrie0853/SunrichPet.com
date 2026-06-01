@@ -102,6 +102,12 @@ export default function AuthPage(){
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
       <h1 className="mb-2 text-center text-2xl font-bold text-emerald-700">顺瑞益宠</h1>
       <p className="mb-6 text-center text-sm text-gray-400">登录或注册账号</p>
+
+      {/* 双入口提示 */}
+      <div className="mb-4 flex gap-2 text-[12px] text-[#9ca3af] justify-center">
+        <span className="bg-[#f3f4f6] rounded-full px-3 py-1">🐾 我是用户 · 浏览社区购买宠物</span>
+        <span className="bg-[#f3f4f6] rounded-full px-3 py-1">🏪 我是商家 · 入驻开店</span>
+      </div>
       {message&&(<div className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>)}
       {error&&(<div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>)}
       {step==="emailInput"&&(<form onSubmit={sendOtp} className="space-y-4">
@@ -109,6 +115,13 @@ export default function AuthPage(){
         <input type="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="your@email.com" className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100" /></div>
         <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"发送中...":"发送验证码"}</button>
         <button type="button" onClick={()=>{setStep("passwordLogin");setError("")}} className="w-full text-center text-sm text-gray-500 hover:underline">使用密码登录</button>
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#e5e7eb]"></div></div>
+          <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-[#9ca3af]">其他登录方式</span></div>
+        </div>
+        <button type="button" disabled className="w-full rounded-lg border border-[#e5e7eb] py-3 text-sm font-medium text-[#9ca3af] bg-[#f9fafb] cursor-not-allowed flex items-center justify-center gap-2">
+          <span className="text-lg">💬</span> 微信登录（即将上线）
+        </button>
       </form>)}
       {step==="otpInput"&&(<div className="space-y-4">
         <p className="text-sm text-gray-600">请输入发送到 <strong>{email}</strong> 的 6 位验证码</p>
@@ -141,6 +154,13 @@ export default function AuthPage(){
         <button type="submit" disabled={loading} className="w-full rounded-lg bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50">{loading?"登录中...":"登录"}</button>
         <button type="button" onClick={()=>{setStep("emailInput");setError("")}} className="w-full text-center text-sm text-emerald-600 hover:underline">使用验证码登录</button>
         <button type="button" onClick={forgotPassword} className="w-full text-center text-sm text-gray-500 hover:underline">忘记密码？</button>
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[#e5e7eb]"></div></div>
+          <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-[#9ca3af]">其他登录方式</span></div>
+        </div>
+        <button type="button" disabled className="w-full rounded-lg border border-[#e5e7eb] py-3 text-sm font-medium text-[#9ca3af] bg-[#f9fafb] cursor-not-allowed flex items-center justify-center gap-2">
+          <span className="text-lg">💬</span> 微信登录（即将上线）
+        </button>
       </form>)}
       {step==="setPassword"&&(<form onSubmit={setPasswordHandler} className="space-y-4">
         <div className="rounded-lg bg-emerald-50 p-3 text-center text-sm text-emerald-700">✅ 验证成功！</div>

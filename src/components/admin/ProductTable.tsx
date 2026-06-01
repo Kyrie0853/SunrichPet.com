@@ -46,7 +46,7 @@ export function ProductTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border bg-white">
+    <div className="table-responsive rounded-xl border bg-white">
       <table className="w-full text-left text-sm">
         <thead className="border-b bg-gray-50">
           <tr>
@@ -113,7 +113,7 @@ export function ProductTable({
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => onEdit(p)}
-                    className="rounded-md px-2.5 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                    className="rounded-md px-2.5 py-1.5 md:py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
                   >
                     编辑
                   </button>
@@ -122,13 +122,13 @@ export function ProductTable({
                       <button
                         onClick={() => handleDelete(p.id)}
                         disabled={deleting === p.id}
-                        className="rounded-md bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700"
+                        className="rounded-md bg-red-600 px-2 py-1.5 md:py-1 text-xs font-medium text-white hover:bg-red-700 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
                       >
                         确认
                       </button>
                       <button
                         onClick={() => setConfirmDelete(null)}
-                        className="rounded-md px-2 py-1 text-xs text-gray-400 hover:text-gray-600"
+                        className="rounded-md px-2 py-1.5 md:py-1 text-xs text-gray-400 hover:text-gray-600 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
                       >
                         取消
                       </button>
@@ -136,7 +136,7 @@ export function ProductTable({
                   ) : (
                     <button
                       onClick={() => setConfirmDelete(p.id)}
-                      className="rounded-md px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50"
+                      className="rounded-md px-2.5 py-1.5 md:py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center justify-center"
                     >
                       删除
                     </button>

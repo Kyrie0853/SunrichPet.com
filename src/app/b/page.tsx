@@ -28,7 +28,11 @@ export default async function BarsPage() {
       <p className="mb-8 text-gray-500">选择你感兴趣的社区，与同好一起交流</p>
 
       {!bars?.length ? (
-        <div className="py-20 text-center text-gray-400">暂无可用社区</div>
+        <div className="py-20 text-center">
+          <p className="text-4xl mb-3">🏗️</p>
+          <p className="text-gray-500 mb-2">社区正在搭建中，请稍后再来</p>
+          <p className="text-sm text-gray-400">管理员正在配置社区分类</p>
+        </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {bars.map((bar: any) => (
