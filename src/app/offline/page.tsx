@@ -15,7 +15,7 @@ export default function OfflinePage() {
           <Link href="/b" className="rounded-full border border-[#d1d5db] px-5 py-2 text-[13px] font-medium text-[#6b7280]">社区</Link>
           <Link href="/shop" className="rounded-full border border-[#d1d5db] px-5 py-2 text-[13px] font-medium text-[#6b7280]">商城</Link>
         </div>
-        <button onClick={() => window.location.reload()} className="text-[13px] text-[#1a7f5a] hover:underline">🔄 点击重试</button>
+        <Link href="/" className="text-[13px] text-[#1a7f5a] hover:underline">🔄 点击重试</Link>
       </div>
     </div>
   );
