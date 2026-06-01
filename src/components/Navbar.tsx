@@ -10,6 +10,7 @@ export default async function Navbar() {
 
   let user = null;
   let isAdmin = false;
+  let isSeller = false;
   let unreadCount = 0;
   let unreadMsgCount = 0;
   let profile: any = null;
@@ -29,6 +30,7 @@ export default async function Navbar() {
         .eq("id", user.id)
         .single();
       isAdmin = p?.role === "admin" || p?.role === "super_admin";
+      isSeller = p?.role === "seller";
       profile = p;
     } catch {
       // 忽略 profiles 查询失败
@@ -81,7 +83,7 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <UserMenu user={user} isAdmin={isAdmin} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} currentPoints={profile?.points||0} canCheckIn={profile?.check_in_date !== new Date().toISOString().slice(0,10)} streak={profile?.check_in_streak||0} />
+            <UserMenu user={user} isAdmin={isAdmin} isSeller={isSeller} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} currentPoints={profile?.points||0} canCheckIn={profile?.check_in_date !== new Date().toISOString().slice(0,10)} streak={profile?.check_in_streak||0} />
           ) : (
             <Link
               href="/auth"

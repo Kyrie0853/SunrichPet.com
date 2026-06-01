@@ -47,6 +47,12 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS shipping_address TEXT DEFAULT
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'manual';
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ;
 
+-- profiles 商家扩展字段
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS shop_notice TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS shipping_address TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS contact_wechat TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS contact_phone TEXT;
+
 -- 更新状态约束
 ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_status_check;
 ALTER TABLE public.orders ADD CONSTRAINT orders_status_check CHECK (
