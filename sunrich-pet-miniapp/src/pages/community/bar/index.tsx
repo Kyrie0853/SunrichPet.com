@@ -1,0 +1,1 @@
+import { View, Text } from '@tarojs/components';import Taro from '@tarojs/taro';export default function Page(){return(<View style={{padding:20}}><Text>社区帖子</Text><Text style={{color:'#999',fontSize:12,marginTop:8}}>某个社区下的帖子列表</Text></View>);}

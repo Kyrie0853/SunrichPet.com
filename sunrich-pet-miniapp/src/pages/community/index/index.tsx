@@ -1,0 +1,1 @@
+import { View, Text } from '@tarojs/components';import Taro from '@tarojs/taro';export default function Page(){return(<View style={{padding:20}}><Text>社区广场</Text><Text style={{color:'#999',fontSize:12,marginTop:8}}>展示所有社区列表</Text></View>);}

@@ -1,0 +1,1 @@
+import { View, Text } from '@tarojs/components';import Taro from '@tarojs/taro';export default function Page(){return(<View style={{padding:20}}><Text>帖子详情</Text><Text style={{color:'#999',fontSize:12,marginTop:8}}>帖子详细内容+评论</Text></View>);}

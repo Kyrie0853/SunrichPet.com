@@ -1,0 +1,18 @@
+{
+  "name": "sunrich-pet-miniapp",
+  "version": "1.0.0",
+  "description": "顺瑞益宠微信小程序",
+  "scripts": {
+    "build:weapp": "taro build --type weapp",
+    "dev:weapp": "taro build --type weapp --watch"
+  },
+  "dependencies": {
+    "@tarojs/components": "^3.6",
+    "@tarojs/taro": "^3.6",
+    "@supabase/supabase-js": "^2"
+  },
+  "devDependencies": {
+    "@tarojs/cli": "^3.6",
+    "typescript": "^5"
+  }
+}

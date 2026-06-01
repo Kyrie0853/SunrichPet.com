@@ -1,0 +1,1 @@
+export default { pages:['pages/community/index','pages/community/bar','pages/community/post','pages/user/index','pages/messages/index','pages/messages/chat'], window:{navigationBarTitleText:'顺瑞益宠',navigationBarBackgroundColor:'#1a7f5a',navigationBarTextStyle:'white',backgroundColor:'#f8f9fa'} };

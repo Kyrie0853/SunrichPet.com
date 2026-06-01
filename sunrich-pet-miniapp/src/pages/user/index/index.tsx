@@ -1,0 +1,1 @@
+import { View, Text } from '@tarojs/components';import Taro from '@tarojs/taro';export default function Page(){return(<View style={{padding:20}}><Text>个人中心</Text><Text style={{color:'#999',fontSize:12,marginTop:8}}>用户信息/帖子/勋章</Text></View>);}
