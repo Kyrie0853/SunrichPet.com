@@ -44,6 +44,7 @@ ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMPTZ;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS inspection_deadline TIMESTAMPTZ;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS shipping_address TEXT DEFAULT '';
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS payment_method TEXT DEFAULT 'manual';
 
 -- 更新状态约束
 ALTER TABLE public.orders DROP CONSTRAINT IF EXISTS orders_status_check;

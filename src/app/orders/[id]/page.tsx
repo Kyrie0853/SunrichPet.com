@@ -126,7 +126,13 @@ export default function OrderDetailPage() {
             </button>
           </div>
         )}
-        {order.status === 'paid' && <p className="text-[13px] text-[#9ca3af] text-center">等待商家发货</p>}
+        {order.status === 'pending' && (
+          <div className="text-center space-y-2">
+            <p className="text-[13px] text-[#f0a04b] font-medium">⏳ 等待管理员确认收款</p>
+            <p className="text-[12px] text-[#9ca3af]">请通过微信/支付宝向平台转账 ¥{Number(order.total_amount).toFixed(2)}，然后联系管理员确认</p>
+          </div>
+        )}
+        {order.status === 'paid' && <p className="text-[13px] text-[#9ca3af] text-center">✅ 收款已确认，等待商家发货</p>}
         {order.status === 'completed' && <p className="text-[13px] text-[#1a7f5a] text-center font-medium">交易已完成</p>}
         {order.status === 'refunding' && <p className="text-[13px] text-[#f0a04b] text-center font-medium">退款申请处理中</p>}
         {order.status === 'refunded' && <p className="text-[13px] text-[#6b7280] text-center">已退款</p>}

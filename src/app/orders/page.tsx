@@ -51,6 +51,9 @@ export default async function OrdersPage() {
                     {order.status === 'shipped' && (
                       <p className="text-[11px] text-[#1a7f5a] mt-1">待确认收货</p>
                     )}
+                    {order.status === 'pending' && (
+                      <p className="text-[11px] text-[#f0a04b] mt-1">待确认收款</p>
+                    )}
                     {order.status === 'paid' && (
                       <p className="text-[11px] text-[#6b7280] mt-1">等待发货</p>
                     )}

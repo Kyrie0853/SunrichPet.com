@@ -43,6 +43,11 @@ export default function AdminOrdersPage() {
     loadOrders();
   }
 
+  async function confirmPayment(orderId: string) {
+    await fetch('/api/admin/orders/' + orderId + '/confirm-payment', { method: 'POST' });
+    loadOrders();
+  }
+
   async function handleShip() {
     if (!shipModal || !shipModal.tracking) return;
     await fetch('/api/orders/' + shipModal.orderId + '/ship', {
@@ -106,6 +111,10 @@ export default function AdminOrdersPage() {
                     <td className="px-3 md:px-4 py-3 text-[#6b7280] hidden md:table-cell">{new Date(o.created_at).toLocaleDateString("zh-CN")}</td>
                     <td className="px-3 md:px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {o.status === 'pending' && (
+                          <button onClick={() => { if (confirm('确定确认收款 ¥' + Number(o.total_amount).toFixed(2) + '？')) confirmPayment(o.id); }}
+                            className="rounded-full bg-[#f0a04b] px-2.5 py-1.5 md:py-1 text-[11px] text-white hover:bg-[#d98a3b] min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center">确认收款</button>
+                        )}
                         {o.status === 'paid' && (
                           <button onClick={() => setShipModal({ orderId: o.id, tracking: '', company: '' })}
                             className="rounded-full bg-[#1a7f5a] px-2.5 py-1.5 md:py-1 text-[11px] text-white hover:bg-[#166b4b] min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 flex items-center">发货</button>
