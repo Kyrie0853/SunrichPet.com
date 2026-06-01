@@ -13,6 +13,19 @@ const PUBLIC_ROUTES = [
   { path: "/search?q=test", name: "搜索页" },
   { path: "/auth", name: "登录页" },
   { path: "/products", name: "商品列表" },
+  // 合规 + 内容页面
+  { path: "/rules", name: "平台规则" },
+  { path: "/rules/prohibited", name: "禁卖名单" },
+  { path: "/rules/after-sale", name: "售后规则" },
+  { path: "/help", name: "帮助中心" },
+  { path: "/help/newbie", name: "新手指南" },
+  { path: "/help/trade", name: "交易指南" },
+  { path: "/guide", name: "养宠指南" },
+  { path: "/encyclopedia", name: "品种百科" },
+  { path: "/encyclopedia/leopard-gecko", name: "豹纹守宫百科" },
+  { path: "/report", name: "举报中心" },
+  { path: "/seller/apply", name: "商家入驻" },
+  { path: "/offline", name: "离线页面" },
 ];
 
 // 需要登录的路由 — 未登录应 302→/auth，登录后应 200
