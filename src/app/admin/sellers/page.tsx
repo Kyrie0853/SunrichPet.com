@@ -20,27 +20,33 @@ export default function AdminSellersPage() {
 
   useEffect(() => { loadApps(); }, [loadApps]);
 
-  async function reviewApp(appId: string, userId: string, approved: boolean) {
-    const reason = approved ? '' : prompt('请输入拒绝原因：');
-    if (!approved && !reason) return;
+  const [rejectModal, setRejectModal] = useState<{ appId: string; userId: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
+  async function approveApp(appId: string, userId: string) {
     const { data: { user } } = await supabase.auth.getUser();
-
     await supabase.from('seller_applications').update({
-      status: approved ? 'approved' : 'rejected',
-      reject_reason: approved ? null : reason,
-      reviewed_by: user?.id,
-      reviewed_at: new Date().toISOString(),
+      status: 'approved', reviewed_by: user?.id, reviewed_at: new Date().toISOString(),
     }).eq('id', appId);
-
-    if (approved) {
-      // 更新用户角色为 seller
-      await supabase.from('profiles').update({ role: 'seller', seller_verified: true }).eq('id', userId);
-      // 初始化商家评分
-      await supabase.from('seller_scores').upsert({ seller_id: userId, score: 100, violation_count: 0 });
-    }
-
+    await supabase.from('profiles').update({ role: 'seller', seller_verified: true }).eq('id', userId);
+    await supabase.from('seller_scores').upsert({ seller_id: userId, score: 100, violation_count: 0 });
+    // 通知
+    await supabase.from('notifications').insert({ user_id: userId, type: 'seller_approved', target_type: 'seller_application', details: { message: '恭喜！您的商家入驻申请已通过审核。' } });
     loadApps();
+  }
+
+  async function rejectApp() {
+    if (!rejectModal || !rejectReason.trim()) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('seller_applications').update({
+      status: 'rejected', reject_reason: rejectReason, reviewed_by: user?.id, reviewed_at: new Date().toISOString(),
+    }).eq('id', rejectModal.appId);
+    await supabase.from('notifications').insert({ user_id: rejectModal.userId, type: 'seller_rejected', target_type: 'seller_application', details: { reason: rejectReason } });
+    setRejectModal(null); setRejectReason(''); loadApps();
+  }
+
+  function viewImage(url: string) {
+    if (url) window.open(url, '_blank');
   }
 
   return (
@@ -87,11 +93,19 @@ export default function AdminSellersPage() {
                   <p className="text-[11px] text-[#d1d5db]">申请时间：{new Date(app.created_at).toLocaleString('zh-CN')}</p>
                 </div>
 
+                {/* 证件图片 */}
+                <div className="flex gap-2 mt-1 mb-2">
+                  {app.id_card_front_url && <button onClick={() => viewImage(app.id_card_front_url)} className="text-[11px] text-[#1a7f5a] underline">身份证正面</button>}
+                  {app.id_card_back_url && <button onClick={() => viewImage(app.id_card_back_url)} className="text-[11px] text-[#1a7f5a] underline">身份证反面</button>}
+                  {app.business_license_url && <button onClick={() => viewImage(app.business_license_url)} className="text-[11px] text-[#1a7f5a] underline">营业执照</button>}
+                  {app.health_cert_url && <button onClick={() => viewImage(app.health_cert_url)} className="text-[11px] text-[#1a7f5a] underline">防疫证</button>}
+                </div>
+
                 {app.status === 'pending' && (
                   <div className="flex gap-2">
-                    <button onClick={() => reviewApp(app.id, app.user_id, true)}
+                    <button onClick={() => approveApp(app.id, app.user_id)}
                       className="rounded-full bg-[#1a7f5a] px-4 py-2 md:py-1.5 text-[13px] md:text-[12px] font-medium text-white hover:bg-[#166b4b] min-h-[44px] md:min-h-0 flex items-center">通过</button>
-                    <button onClick={() => reviewApp(app.id, app.user_id, false)}
+                    <button onClick={() => setRejectModal({ appId: app.id, userId: app.user_id })}
                       className="rounded-full border border-red-300 px-4 py-2 md:py-1.5 text-[13px] md:text-[12px] font-medium text-red-600 hover:bg-red-50 min-h-[44px] md:min-h-0 flex items-center">拒绝</button>
                   </div>
                 )}
@@ -100,6 +114,24 @@ export default function AdminSellersPage() {
           </div>
         )}
       </div>
+
+      {/* 拒绝原因弹窗 */}
+      {rejectModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={() => setRejectModal(null)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-[90%] sm:max-w-md p-6 animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[#1f2937] mb-4">拒绝入驻申请</h3>
+            <p className="text-[13px] text-[#6b7280] mb-3">请填写拒绝原因，申请者可修改后重新提交：</p>
+            <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} rows={3}
+              placeholder="如：证件信息不清晰，请重新上传"
+              className="w-full rounded-lg border px-3 py-2 text-[16px] outline-none focus:border-[#1a7f5a] resize-none mb-4" />
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
+              <button onClick={() => setRejectModal(null)} className="flex-1 rounded-full border py-2.5 text-[13px] min-h-[44px]">取消</button>
+              <button onClick={rejectApp} disabled={!rejectReason.trim()}
+                className="flex-1 rounded-full bg-red-500 py-2.5 text-[13px] font-medium text-white disabled:opacity-50 min-h-[44px]">确认拒绝</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

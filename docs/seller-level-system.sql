@@ -1,0 +1,1 @@
+-- Seller + Level System SQL -- Please execute in Supabase SQL Editor

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Avatar from "@/components/Avatar";
-import LevelBadge from "@/components/LevelBadge";
+import LevelBadge, { getLevelInfo, MEDAL_DEFS } from "@/components/LevelBadge";
 import { sendFollowIcebreaker } from "@/app/actions/messages";
 
 function timeFormat(d:string){return new Date(d).toLocaleDateString("zh-CN",{month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}
@@ -20,6 +20,8 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
   const [loading,setLoading]=useState(false);
   const [following,setFollowing]=useState(false);
   const [fCount,setFCount]=useState(profile.follower_count);
+  const [medals,setMedals]=useState<string[]>(profile.medals||[]);
+  const [userMedals,setUserMedals]=useState<any[]>([]);
   const supabase=createClient();
   const router=useRouter();
   const isOwn=currentUserId===profile.id;
@@ -27,6 +29,10 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
   useEffect(()=>{if(currentUserId){supabase.from("user_follows").select("id").eq("follower_id",currentUserId).eq("following_id",profile.id).single().then(({data})=>{if(data)setFollowing(true)});}},[profile.id,currentUserId,supabase]);
 
   const loadTabData=useCallback(async(t:string)=>{if(t==="posts"||posts.length>0&&t==="posts")return;setLoading(true);
+    if(t==="medals"&&userMedals.length===0){
+      const{data:m}=await supabase.from("user_medals").select("medal_id,awarded_at").eq("user_id",profile.id).order("awarded_at",{ascending:false});
+      setUserMedals(m||[]);
+    }
     if(t==="favorites"&&favorites.length===0){
       const{data:f}=await supabase.from("community_favorites").select("post_id,created_at").eq("user_id",profile.id).order("created_at",{ascending:false}).limit(50);
       if(f&&f.length>0){const ids=f.map(x=>x.post_id);const{data:p}=await supabase.from("community_posts").select("id,title,created_at,view_count,author_id").in("id",ids);
@@ -46,7 +52,7 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
 
   const handleDelete=async(postId:string)=>{if(!confirm("删除这篇帖子？"))return;await supabase.from("community_posts").delete().eq("id",postId);setPosts(prev=>prev.filter(p=>p.id!==postId))};
 
-  const tabs=[{key:"posts",label:"我的帖子"},{key:"favorites",label:"我的收藏"},{key:"likes",label:"点赞记录"},{key:"following",label:"我的关注"},{key:"followers",label:"我的粉丝"}];
+  const tabs=[{key:"posts",label:"我的帖子"},{key:"favorites",label:"我的收藏"},{key:"likes",label:"点赞记录"},{key:"medals",label:"我的勋章"},{key:"following",label:"我的关注"},{key:"followers",label:"我的粉丝"}];
   return (<div>
     {/* Profile header */}
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-gray-100 bg-white p-8 sm:flex-row">
@@ -55,7 +61,26 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
         <h1 className="text-2xl font-bold text-gray-900">{profile.display_name||"用户"}</h1>
         {profile.bio&&<p className="mt-1 text-sm text-gray-500">{profile.bio}</p>}
         <p className="mt-2 text-xs text-gray-400">加入于 {timeFormat(profile.created_at||profile.id)}</p>
-        <div className="mt-3 flex items-center gap-4 text-sm"><span className="text-gray-600"><strong className="text-gray-900">{profile.following_count}</strong> 关注</span><span className="text-gray-600"><strong className="text-gray-900">{fCount}</strong> 粉丝</span><span className="text-gray-600"><strong className="text-gray-900">⭐ {profile.points||0}</strong> <LevelBadge points={profile.points||0} /></span></div>
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <span className="text-gray-600"><strong className="text-gray-900">{profile.following_count}</strong> 关注</span>
+          <span className="text-gray-600"><strong className="text-gray-900">{fCount}</strong> 粉丝</span>
+          <span className="text-gray-600"><strong className="text-gray-900">⭐ {profile.points||0}</strong> 积分</span>
+          <span><LevelBadge xp={profile.xp||0} level={profile.level||undefined} /></span>
+        </div>
+        {/* XP 进度条 */}
+        {(() => {
+          const info = getLevelInfo(profile.xp || 0);
+          return info.nextXp < Infinity ? (
+            <div className="mt-2 w-full max-w-xs">
+              <div className="flex justify-between text-[11px] text-[#9ca3af] mb-0.5">
+                <span>{info.xp} XP</span><span>{info.nextXp} XP</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[#e5e7eb] overflow-hidden">
+                <div className="h-full rounded-full transition-all" style={{ width: info.progress + '%', backgroundColor: info.color }}></div>
+              </div>
+            </div>
+          ) : <p className="text-[11px] text-[#7c3aed] mt-1">🏆 已达最高等级！</p>;
+        })()}
       </div>
       {!isOwn&&(<Link href={"/messages/"+profile.id} className="rounded-xl border border-emerald-200 px-5 py-2.5 text-sm font-medium text-emerald-600 transition hover:bg-emerald-50 mr-2">发私信</Link>)}{isOwn?(<button onClick={()=>router.push("/profile/edit")} className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50">编辑资料</button>):(<button onClick={toggleFollow} className={"rounded-xl px-5 py-2.5 text-sm font-semibold transition "+(following?"border border-gray-200 text-gray-600 hover:bg-gray-50":"bg-emerald-600 text-white hover:bg-emerald-700")}>{following?"已关注":"+ 关注"}</button>)}
     </div>
@@ -86,6 +111,23 @@ export default function UserProfileTabs({profile,currentUserId}:{profile:any;cur
         {tab==="likes"&&(<div className="space-y-2">
           {likes.length===0&&<p className="py-8 text-center text-sm text-gray-400">暂无点赞记录</p>}
           {likes.map((p:any)=>(<Link key={p.id} href={"/community/post/"+p.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-5 py-3 transition hover:shadow-sm"><span className="font-medium text-gray-900 truncate">{p.title}</span><span className="text-xs text-gray-400">{p.liked_at?timeFormat(p.liked_at):""}</span></Link>))}
+        </div>)}
+
+        {tab==="medals"&&(<div>
+          {userMedals.length===0&&<p className="py-8 text-center text-sm text-gray-400">暂无勋章，继续努力！</p>}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {MEDAL_DEFS.map(def => {
+              const earned = userMedals.find((m:any) => m.medal_id === def.id);
+              return (
+                <div key={def.id} className={'rounded-xl border p-4 text-center transition ' + (earned ? 'bg-white border-[#1a7f5a]/20 shadow-sm' : 'bg-[#f9fafb] border-[#e5e7eb] opacity-50')}>
+                  <span className="text-3xl">{earned ? def.icon : '🔒'}</span>
+                  <p className="text-[13px] font-semibold text-[#1f2937] mt-1">{def.name}</p>
+                  <p className="text-[11px] text-[#9ca3af] mt-0.5">{def.desc}</p>
+                  {earned && <p className="text-[10px] text-[#1a7f5a] mt-1">已获得</p>}
+                </div>
+              );
+            })}
+          </div>
         </div>)}
 
         {tab==="following"&&(<div className="space-y-2">

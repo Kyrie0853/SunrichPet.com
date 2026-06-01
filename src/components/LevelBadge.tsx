@@ -1,25 +1,40 @@
-const LEVELS = ["", "Lv1 新手", "Lv2 学徒", "Lv3 达人", "Lv4 专家", "Lv5 大佬", "Lv6 传说"];
-const COLORS = ["", "#9ca3af", "#22c55e", "#3b82f6", "#8b5cf6", "#f59e0b", "#ef4444"];
+// Lv1-Lv7 based on XP
+const LEVELS = [
+  { level: 1, name: '初来乍到', icon: '🌱', color: '#9ca3af', xp: 0, next: 50 },
+  { level: 2, name: '见习玩家', icon: '🌿', color: '#6b7280', xp: 50, next: 150 },
+  { level: 3, name: '活跃宠友', icon: '🦎', color: '#1a7f5a', xp: 150, next: 400 },
+  { level: 4, name: '资深玩家', icon: '🐢', color: '#166b4b', xp: 400, next: 1000 },
+  { level: 5, name: '宠物达人', icon: '🐍', color: '#0d9488', xp: 1000, next: 2500 },
+  { level: 6, name: '爬宠专家', icon: '🦖', color: '#0891b2', xp: 2500, next: 6000 },
+  { level: 7, name: '传奇大师', icon: '👑', color: '#7c3aed', xp: 6000, next: Infinity },
+];
 
-export function getLevelInfo(points: number) {
-  let lv = 1;
-  if (points >= 2000) lv = 6;
-  else if (points >= 1000) lv = 5;
-  else if (points >= 600) lv = 4;
-  else if (points >= 300) lv = 3;
-  else if (points >= 100) lv = 2;
-  const nextThreshold = lv === 1 ? 100 : lv === 2 ? 300 : lv === 3 ? 600 : lv === 4 ? 1000 : lv === 5 ? 2000 : Infinity;
-  const progress = nextThreshold === Infinity ? 100 : Math.round((points / nextThreshold) * 100);
-  return { level: lv, label: LEVELS[lv], color: COLORS[lv], next: nextThreshold, progress };
+export function getLevelInfo(xp: number) {
+  let current = LEVELS[0];
+  for (let i = LEVELS.length - 1; i >= 0; i--) { if (xp >= LEVELS[i].xp) { current = LEVELS[i]; break; } }
+  const progress = current.next === Infinity ? 100 : Math.min(100, Math.round(((xp - current.xp) / (current.next - current.xp)) * 100));
+  return { ...current, progress, nextXp: current.next };
 }
 
-export default function LevelBadge({ points, size = "sm" }: { points?: number; size?: "sm" | "md" }) {
-  const { level, label, color } = getLevelInfo(points || 0);
-  if (!points || level <= 1) return null;
+export default function LevelBadge({ xp, level: explicitLevel, size = 'sm' }: { xp?: number; level?: number; size?: 'sm' | 'md' }) {
+  let current;
+  if (explicitLevel && explicitLevel >= 1 && explicitLevel <= 7) { current = LEVELS[explicitLevel - 1]; }
+  else { current = getLevelInfo(xp || 0); }
+  const isSm = size === 'sm';
   return (
-    <span className={"inline-flex items-center rounded-full px-2 py-0.5 font-bold " + (size === "sm" ? "text-[10px]" : "text-xs")}
-      style={{ backgroundColor: color + "20", color }}>
-      {label}
+    <span className={'inline-flex items-center gap-1 rounded-full px-1.5 md:px-2 py-0.5 font-bold ' + (isSm ? 'text-[10px]' : 'text-[11px] md:text-xs')}
+      style={{ backgroundColor: current.color + '18', color: current.color, border: '1px solid ' + current.color + '30' }}>
+      <span>{current.icon}</span><span>Lv{current.level}</span>
     </span>
   );
 }
+
+export const MEDAL_DEFS = [
+  { id: 'first_post', name: '初次发声', desc: '发布第一篇帖子', icon: '📝' },
+  { id: 'popular', name: '人气之星', desc: '获得100个点赞', icon: '⭐' },
+  { id: 'helper', name: '热心玩家', desc: '发表50条评论', icon: '💬' },
+  { id: 'first_trade', name: '首笔交易', desc: '完成第一笔交易', icon: '🤝' },
+  { id: 'checkin_master', name: '签到达人', desc: '连续签到30天', icon: '🔥' },
+  { id: 'featured_author', name: '精华作者', desc: '帖子被加精5次', icon: '🏆' },
+  { id: 'reptile_expert', name: '爬宠专家', desc: '达到Lv6等级', icon: '🦖' },
+];
