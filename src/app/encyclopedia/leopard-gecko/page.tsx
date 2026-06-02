@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '豹纹守宫 — 品种百科 | 顺瑞益宠',
   description: '豹纹守宫（Eublepharis macularius）品种百科：学名、原产地、成体尺寸、寿命、温度湿度要求、饲养要点、性格特点。',
-  keywords: '豹纹守宫,Leopard Gecko,守宫饲养,爬宠品种,豹纹守宫温度,豹纹守宫喂食',
+  keywords: '豹纹守宫,Leopard Gecko,守宫饲养,宠物品种,豹纹守宫温度,豹纹守宫喂食',
 };
 
 export default function LeopardGeckoPage() {
@@ -34,7 +34,7 @@ export default function LeopardGeckoPage() {
         <section>
           <h3 className="text-xl font-bold text-[#1f2937] mb-3">🏠 饲养箱选择</h3>
           <p>成体豹纹守宫推荐使用 60×40×30cm 的饲养箱。幼体可使用较小的饲养箱（30×20×15cm），太大的空间会让幼体感到不安。豹纹守宫是地栖型守宫，不需要太高的饲养箱，但需要足够的底面积供其活动。</p>
-          <p>垫材推荐使用厨房纸巾（幼体）、爬宠地毯或瓷砖。避免使用松散的沙粒垫材，以免误食导致肠梗阻。</p>
+          <p>垫材推荐使用厨房纸巾（幼体）、宠物地毯或瓷砖。避免使用松散的沙粒垫材，以免误食导致肠梗阻。</p>
         </section>
 
         <section>
@@ -59,12 +59,12 @@ export default function LeopardGeckoPage() {
 
         <section>
           <h3 className="text-xl font-bold text-[#1f2937] mb-3">😊 性格特点</h3>
-          <p>豹纹守宫性格温顺、容易驯化，是最适合新手的爬宠之一。它们通常不会咬人，经过一段时间适应后，可以轻松上手互动。每天花 5-10 分钟与守宫互动，有助于建立信任关系。</p>
+          <p>豹纹守宫性格温顺、容易驯化，是最适合新手的宠物之一。它们通常不会咬人，经过一段时间适应后，可以轻松上手互动。每天花 5-10 分钟与守宫互动，有助于建立信任关系。</p>
         </section>
 
         <section>
           <h3 className="text-xl font-bold text-[#1f2937] mb-3">👤 适合人群</h3>
-          <p>豹纹守宫非常适合以下人群：爬宠新手、儿童（需家长监督）、空间有限的饲养者、喜欢温和互动的人。它们不需要太大的空间，饲养成本相对较低，且不需要 UVB 灯（但有 UVB 更好）。</p>
+          <p>豹纹守宫非常适合以下人群：宠物新手、儿童（需家长监督）、空间有限的饲养者、喜欢温和互动的人。它们不需要太大的空间，饲养成本相对较低，且不需要 UVB 灯（但有 UVB 更好）。</p>
         </section>
       </div>
 

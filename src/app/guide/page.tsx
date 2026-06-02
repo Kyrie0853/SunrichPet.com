@@ -4,7 +4,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: '新手养宠指南 | 顺瑞益宠',
   description: '从零开始科学养宠。守宫、蛇类、龟类、观赏鱼新手入门全攻略。',
-  keywords: '新手养宠,守宫入门,宠物蛇饲养,龟类饲养,观赏鱼开缸,爬宠指南',
+  keywords: '新手养宠,守宫入门,宠物蛇饲养,龟类饲养,观赏鱼开缸,宠物指南',
 };
 
 const guides = [

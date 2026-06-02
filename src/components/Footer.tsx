@@ -6,7 +6,7 @@ const sections = [
     links: [
       { href: '/about', label: '关于我们' },
       { href: '/guide', label: '新手养宠指南' },
-      { href: '/encyclopedia', label: '爬宠品种百科' },
+      { href: '/encyclopedia', label: '宠物品种百科' },
       { href: '/shop', label: '宠物商城' },
     ],
   },
