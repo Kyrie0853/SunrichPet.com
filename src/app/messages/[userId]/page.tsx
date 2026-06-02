@@ -12,6 +12,8 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
   if (userId === user.id) redirect("/messages");
 
   const other = await getUserProfile(userId);
+  // Check if the other user is an admin — show "平台客服" as their name
+  const isAdmin = other?.role === 'admin' || other?.role === 'super_admin';
   if (!other) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
@@ -71,7 +73,7 @@ export default async function ChatPage({ params }: { params: Promise<{ userId: s
           <div className="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center text-sm font-bold text-emerald-600">
             {(other.display_name || "U").charAt(0)}
           </div>
-          <span className="font-semibold text-gray-900">{other.display_name || "用户"}</span>
+          <span className="font-semibold text-gray-900">{isAdmin ? "平台客服" : other.display_name || "用户"}</span>
         </Link>
       </div>
 

@@ -96,7 +96,7 @@ export default function ConversationList({ userId, initialData }: { userId: stri
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-gray-900">{conv.profile?.display_name || "用户"}</span>
+              <span className="font-semibold text-gray-900">{(conv.profile?.role === 'admin' || conv.profile?.role === 'super_admin') ? "平台客服" : (conv.profile?.display_name || "用户")}</span>
               <span className="text-xs text-gray-400">{formatConvTime(conv.lastTime)}</span>
             </div>
             <p className={"mt-0.5 truncate text-sm " + (conv.unread > 0 ? "font-medium text-gray-900" : "text-gray-500")}>

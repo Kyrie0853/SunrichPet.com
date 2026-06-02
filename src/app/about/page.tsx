@@ -82,7 +82,7 @@ export default function AboutPage() {
         <div className="bg-white rounded-xl border border-[#f3f4f6] p-6 space-y-3">
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
             <span className="text-lg">📧</span>
-            <span>合作邮箱：<a href="mailto:admin@sunrichpet.com" className="text-[#1a7f5a] hover:underline">admin@sunrichpet.com</a></span>
+            <span>联系邮箱：<a href="mailto:553043978@qq.com" className="text-[#1a7f5a] hover:underline">553043978@qq.com</a></span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
             <span className="text-lg">💬</span>

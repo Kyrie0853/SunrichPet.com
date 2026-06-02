@@ -24,7 +24,7 @@ export default function SellerApplyPage() {
     realName: '', idNumber: '', phone: '',
     categories: [] as string[],
     province: '', city: '',
-    commitment1: false, commitment2: false,
+    commitment2: false,
   });
 
   function update(field: string, value: any) {
@@ -48,8 +48,8 @@ export default function SellerApplyPage() {
     if (form.categories.length === 0) {
       setError('请至少选择一个经营品类'); return;
     }
-    if (!form.commitment1 || !form.commitment2) {
-      setError('请勾选所有承诺书'); return;
+    if (!form.commitment2) {
+      setError('请勾选承诺书'); return;
     }
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -73,7 +73,7 @@ export default function SellerApplyPage() {
       categories: form.categories,
       province: form.province,
       city: form.city,
-      commitment_1_agreed: form.commitment1,
+      commitment_1_agreed: false,
       commitment_2_agreed: form.commitment2,
       commitment_agreed_at: new Date().toISOString(),
     });
@@ -85,7 +85,6 @@ export default function SellerApplyPage() {
 
     // Record agreement
     await supabase.from('user_agreements').insert([
-      { user_id: user.id, agreement_type: 'seller_commitment_1' },
       { user_id: user.id, agreement_type: 'seller_commitment_2' },
     ]);
 
@@ -159,13 +158,16 @@ export default function SellerApplyPage() {
         </div>
       </div>
 
-      {/* Step 3: 证件上传提示 */}
+      {/* Step 3: 证件材料 */}
       <div className="bg-white rounded-xl p-6 shadow-sm border mb-4">
         <h2 className="text-[15px] font-semibold text-[#1f2937] mb-4">证件材料</h2>
         <div className="text-[13px] text-[#6b7280] space-y-2">
+          <div className="bg-[#e8f5ef] rounded-lg p-3 text-[#1a7f5a] mb-3">
+            请上传本人身份证正反面照片，用于平台实名认证。认证后您的店铺将获得「已认证」标识，买家更信任。您的信息仅供平台审核使用，绝不外泄。
+          </div>
           <p>📷 身份证正反面照片（必需）</p>
-          <p>📄 营业执照照片（企业卖家必需，个人卖家可选）</p>
-          <p>🏥 防疫/养殖相关证件（活体宠物卖家必需）</p>
+          <p>📄 营业执照照片（选填）</p>
+          <p>🏥 防疫/养殖相关证件（选填）</p>
           <div className="mt-3 bg-[#fef3c7] rounded-lg p-3 text-[#92400e]">
             审核通过后，管理员会联系您补充上传证件照片。请确保联系方式畅通。
           </div>
@@ -175,11 +177,6 @@ export default function SellerApplyPage() {
       {/* Step 4: 承诺书 */}
       <div className="bg-white rounded-xl p-6 shadow-sm border mb-6">
         <h2 className="text-[15px] font-semibold text-[#1f2937] mb-4">开店承诺书</h2>
-        <label className="flex items-start gap-2.5 mb-4 cursor-pointer">
-          <input type="checkbox" checked={form.commitment1} onChange={e => update('commitment1', e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1a7f5a]" />
-          <span className="text-[13px] text-[#4b5563]">我承诺不在平台外私下交易，所有交易通过平台担保完成</span>
-        </label>
         <label className="flex items-start gap-2.5 cursor-pointer">
           <input type="checkbox" checked={form.commitment2} onChange={e => update('commitment2', e.target.checked)}
             className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#1a7f5a]" />

@@ -32,9 +32,9 @@ const sections = [
     title: '联系方式',
     links: [
       { href: '/seller/apply', label: '商家入驻' },
-      { href: '/messages', label: '联系客服' },
+      { href: '/messages/support', label: '联系客服' },
       { href: '#', label: '工作时间：9:00-21:00' },
-      { href: '#', label: '邮箱：support@sunrichpet.com' },
+      { href: '#', label: '邮箱：553043978@qq.com' },
     ],
   },
 ];

@@ -307,7 +307,7 @@ export const getConversations = _cached(async function getConversations(userId:s
 
   // 🚀 批量获取 profiles + 所有最后消息 + 所有未读计数（各 1 次查询）
   const [profilesRes,allMsgs,allUnread]=await Promise.all([
-    supabase.from("profiles").select("id,display_name,avatar_url").in("id",otherIds),
+    supabase.from("profiles").select("id,display_name,avatar_url,role").in("id",otherIds),
     // 获取每个会话的最后一条消息：一次性查出所有会话的所有消息（限制每个会话 1 条比较复杂，先批量查最近消息）
     supabase.from("messages").select("conversation_id,content,created_at,sender_id").in("conversation_id",convIds).order("created_at",{ascending:false}).limit(convIds.length * 3),
     supabase.from("messages").select("conversation_id").in("conversation_id",convIds).neq("sender_id",userId).eq("is_read",false),
