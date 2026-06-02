@@ -96,26 +96,29 @@ export default function EditPostForm({ post }: { post: CommunityPost }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setError("请先登录"); setSubmitting(false); return; }
 
-    // Delete removed images from Storage
+    // ===== Phase 1: Delete removed images from Storage =====
+    let deleteErrors = 0;
     for (const url of deletedImages) {
       const path = storagePathFromUrl(url);
-      if (path) { await supabase.storage.from("community-images").remove([path]); }
+      if (!path) continue;
+      const { error: delErr } = await supabase.storage.from("community-images").remove([path]);
+      if (delErr) { console.error("Storage delete failed for", path, delErr); deleteErrors++; }
+    }
+    if (deleteErrors > 0) {
+      console.warn(`${deleteErrors} image(s) could not be deleted from Storage (may need RLS fix)`);
     }
 
-    // Upload new images
+    // ===== Phase 2: Upload new images =====
     const newUrls: string[] = [];
     for (const nf of newFiles) {
       const url = await uploadFile(nf.file, user.id);
-      if (url) newUrls.push(url);
-    }
-    if (newFiles.length > 0 && newUrls.length === 0) {
-      setError("图片上传失败，请重试"); setSubmitting(false); return;
+      if (url) { newUrls.push(url); }
+      else { setError("图片上传失败: " + nf.file.name + "，请重试"); setSubmitting(false); return; }
     }
 
-    // Final images array
+    // ===== Phase 3: Update database =====
     const finalImages = [...existingImages, ...newUrls];
 
-    // Update post
     const { error: updateErr } = await supabase.from("community_posts").update({
       title: title.trim(),
       content: content.trim(),
@@ -123,15 +126,19 @@ export default function EditPostForm({ post }: { post: CommunityPost }) {
       images: finalImages,
     }).eq("id", post.id);
 
-    if (updateErr) { setError("保存失败: " + updateErr.message); setSubmitting(false); return; }
+    if (updateErr) {
+      console.error("Post update failed:", updateErr);
+      setError("保存失败: " + updateErr.message); setSubmitting(false); return;
+    }
 
-    // Update tags
+    // ===== Phase 4: Update tags =====
     await supabase.from("community_post_tags").delete().eq("post_id", post.id);
     if (selectedTags.length > 0) {
       await supabase.from("community_post_tags").insert(selectedTags.map(tagId => ({ post_id: post.id, tag_id: tagId })));
     }
 
     router.push("/community/post/" + post.id);
+    router.refresh();
   }
 
   const totalImages = existingImages.length + newFiles.length;
