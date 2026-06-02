@@ -166,8 +166,9 @@ export const getComments = _cached(async function getComments(postId:string){
 
 export const getUserProfile = _cached(async function getUserProfile(userId:string){
   const supabase=await createClient();
-  const {data:profile}=await supabase.from("profiles").select("*").eq("id",userId).single();
-  if(!profile)return null;
+  const {data:profile,error}=await supabase.from("profiles").select("*").eq("id",userId).single();
+  if(error) console.error("[getUserProfile] Query error for", userId, ":", error.code, error.message);
+  if(!profile) { console.warn("[getUserProfile] No profile found for", userId); return null; }
   const [{count:followingCount},{count:followerCount},{data:posts}]=await Promise.all([
     supabase.from("user_follows").select("*",{count:"exact",head:true}).eq("follower_id",userId),
     supabase.from("user_follows").select("*",{count:"exact",head:true}).eq("following_id",userId),
