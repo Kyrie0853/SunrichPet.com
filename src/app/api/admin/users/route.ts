@@ -18,18 +18,8 @@ export async function GET(req: NextRequest) {
   const { data, count, error } = await query.range((page - 1) * 20, page * 20 - 1);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // 获取 auth.users 的 email
-  const userIds = (data || []).map(u => u.id);
-  let emailMap = new Map<string, string>();
-  if (userIds.length > 0) {
-    const { data: authUsers } = await supabase.auth.admin.listUsers();
-    (authUsers?.users || []).forEach((au: any) => {
-      if (userIds.includes(au.id)) emailMap.set(au.id, au.email || "");
-    });
-  }
-
   return NextResponse.json({
-    users: (data || []).map(u => ({ ...u, email: u.email || emailMap.get(u.id) || "" })),
+    users: (data || []),
     total: count || 0,
   });
 }
