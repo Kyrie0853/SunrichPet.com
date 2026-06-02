@@ -139,10 +139,14 @@ BEGIN
 END $$;
 
 INSERT INTO public.bars (name, slug, description, icon, rules) VALUES
-  ('守宫爬宠区', 'gecko', '守宫、蜥蜴类爬宠饲养交流，分享你的爬宠日常', '🦎', '本区交流守宫饲养经验，禁止留联系方式、禁止买卖保护动物。'),
-  ('龟类区', 'turtle', '水龟、陆龟、半水龟饲养经验交流，但禁止交易保护动物', '🐢', '本区交流龟类饲养经验，禁止留联系方式、禁止买卖保护动物。'),
-  ('观赏鱼水区', 'aquarium', '观赏鱼、水草、虾螺养殖交流，打造你的水世界', '🐠', '本区交流观赏鱼饲养经验，禁止留联系方式、禁止买卖保护动物。'),
-  ('新手交流避雷区', 'newbie', '新人报道、避坑指南、新手问答，老玩家帮你少走弯路', '💡', '欢迎新人！请先阅读平台规则，友好交流，禁止留联系方式。')
+  ('守宫区', 'gecko', '守宫、蜥蜴类爬宠饲养交流，分享你的爬宠日常', '🦎', '本区交流守宫饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('龟友区', 'turtle', '水龟、陆龟、半水龟饲养经验交流，但禁止交易保护动物', '🐢', '本区交流龟类饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('观赏鱼区', 'aquarium', '观赏鱼、水草、虾螺养殖交流，打造你的水世界', '🐠', '本区交流观赏鱼饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('新手交流避雷区', 'newbie', '新人报道、避坑指南、新手问答，老玩家帮你少走弯路', '💡', '欢迎新人！请先阅读平台规则，友好交流，禁止留联系方式。'),
+  ('蛇区', 'snake', '玉米蛇、球蟒等宠物蛇爱好者交流区', '🐍', '本区交流宠物蛇饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('猫区', 'cat', '猫咪铲屎官日常、品种交流、领养信息', '🐱', '本区交流猫咪饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('狗区', 'dog', '狗狗饲养、训练、健康知识分享', '🐶', '本区交流狗狗饲养经验，禁止留联系方式、禁止买卖保护动物。'),
+  ('鸟区', 'bird', '鹦鹉、文鸟等宠物鸟爱好者聚集地', '🐦', '本区交流宠物鸟饲养经验，禁止留联系方式、禁止买卖保护动物。')
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,
   description = EXCLUDED.description,
@@ -150,8 +154,8 @@ ON CONFLICT (slug) DO UPDATE SET
   rules = EXCLUDED.rules,
   is_active = true;
 
--- 清理多余社区：禁用不在4个社区中的旧吧
-UPDATE public.bars SET is_active = false WHERE slug NOT IN ('gecko', 'turtle', 'aquarium', 'newbie');
+-- 清理多余社区：禁用不在8个社区中的旧吧
+UPDATE public.bars SET is_active = false WHERE slug NOT IN ('gecko', 'turtle', 'aquarium', 'newbie', 'snake', 'cat', 'dog', 'bird');
 
 -- 7. announcements
 CREATE TABLE IF NOT EXISTS public.announcements (

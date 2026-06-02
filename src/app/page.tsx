@@ -1,4 +1,5 @@
 import { getHotPosts } from "@/lib/supabase/community";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import Avatar from "@/components/Avatar";
 import ReportButton from "@/components/ReportButton";
@@ -10,7 +11,15 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
+  const supabase = await createClient();
   const { posts } = await getHotPosts({ pageSize: 15 });
+
+  // 动态拉取所有活跃社区用于标签云
+  const { data: activeBars } = await supabase
+    .from("bars")
+    .select("slug, name, icon")
+    .eq("is_active", true)
+    .order("member_count", { ascending: false });
 
   return (
     <div className="mx-auto max-w-5xl px-3 md:px-4 py-10">
@@ -35,22 +44,21 @@ export default async function HomePage() {
         <span className="text-[#1a7f5a] font-medium">平台担保交易 · 收货验货后付款 · 保护动物禁止交易</span>
       </div>
 
-      {/* 分类标签云 */}
+      {/* 分类标签云 — 动态拉取活跃社区 */}
       <div className="mb-6 flex flex-wrap gap-2">
-        {[
-          { key: '', label: '全部' },
-          { key: 'gecko', label: '🦎 守宫' },
-          { key: 'turtle', label: '🐢 龟类' },
-          { key: 'aquarium', label: '🐠 观赏鱼' },
-          { key: 'newbie', label: '💡 新手' },
-        ].map(tag => (
+        <Link
+          href="/"
+          className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 bg-[#1a7f5a] text-white"
+        >
+          全部
+        </Link>
+        {(activeBars || []).map((bar: any) => (
           <Link
-            key={tag.key}
-            href={tag.key ? '/b/' + tag.key : '/'}
-            className={'rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 ' +
-              (tag.key === '' ? 'bg-[#1a7f5a] text-white' : 'border border-[#d1d5db] text-[#6b7280] hover:border-[#1a7f5a] hover:text-[#1a7f5a]')}
+            key={bar.slug}
+            href={'/b/' + bar.slug}
+            className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 border border-[#d1d5db] text-[#6b7280] hover:border-[#1a7f5a] hover:text-[#1a7f5a]"
           >
-            {tag.label}
+            {bar.icon} {bar.name}
           </Link>
         ))}
       </div>
