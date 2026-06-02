@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   author_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL CHECK (char_length(title) BETWEEN 2 AND 200),
-  content TEXT NOT NULL CHECK (char_length(content) >= 10),
+  content TEXT NOT NULL DEFAULT '' CHECK (char_length(content) <= 50000),
   category TEXT NOT NULL DEFAULT 'general'
     CHECK (category IN ('general','reptile','fish','bird','small-pet','qa','marketplace-discuss','showcase','guide')),
   images TEXT[] DEFAULT '{}',
