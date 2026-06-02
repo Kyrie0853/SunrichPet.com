@@ -93,13 +93,36 @@ export default function AdminSellersPage() {
                   <p className="text-[11px] text-[#d1d5db]">申请时间：{new Date(app.created_at).toLocaleString('zh-CN')}</p>
                 </div>
 
-                {/* 证件图片 */}
-                <div className="flex gap-2 mt-1 mb-2">
-                  {app.id_card_front_url && <button onClick={() => viewImage(app.id_card_front_url)} className="text-[11px] text-[#1a7f5a] underline">身份证正面</button>}
-                  {app.id_card_back_url && <button onClick={() => viewImage(app.id_card_back_url)} className="text-[11px] text-[#1a7f5a] underline">身份证反面</button>}
-                  {app.business_license_url && <button onClick={() => viewImage(app.business_license_url)} className="text-[11px] text-[#1a7f5a] underline">营业执照</button>}
-                  {app.health_cert_url && <button onClick={() => viewImage(app.health_cert_url)} className="text-[11px] text-[#1a7f5a] underline">防疫证</button>}
-                </div>
+                {/* 证件缩略图 */}
+                {(app.id_card_front_url || app.id_card_back_url || app.business_license_url || app.health_cert_url) && (
+                  <div className="flex gap-2 mt-1 mb-3 flex-wrap">
+                    {app.id_card_front_url && (
+                      <button onClick={() => viewImage(app.id_card_front_url)} className="group relative">
+                        <img src={app.id_card_front_url} alt="身份证正面" className="h-16 w-auto max-w-[100px] rounded-lg object-cover border hover:ring-2 hover:ring-[#1a7f5a] transition" />
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/60 text-white rounded-b-lg py-0.5">正面</span>
+                      </button>
+                    )}
+                    {app.id_card_back_url && (
+                      <button onClick={() => viewImage(app.id_card_back_url)} className="group relative">
+                        <img src={app.id_card_back_url} alt="身份证反面" className="h-16 w-auto max-w-[100px] rounded-lg object-cover border hover:ring-2 hover:ring-[#1a7f5a] transition" />
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/60 text-white rounded-b-lg py-0.5">反面</span>
+                      </button>
+                    )}
+                    {app.business_license_url && (
+                      <button onClick={() => viewImage(app.business_license_url)} className="group relative">
+                        <img src={app.business_license_url} alt="营业执照" className="h-16 w-auto max-w-[100px] rounded-lg object-cover border hover:ring-2 hover:ring-[#1a7f5a] transition" />
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/60 text-white rounded-b-lg py-0.5">执照</span>
+                      </button>
+                    )}
+                    {app.health_cert_url && (
+                      <button onClick={() => viewImage(app.health_cert_url)} className="group relative">
+                        <img src={app.health_cert_url} alt="防疫证" className="h-16 w-auto max-w-[100px] rounded-lg object-cover border hover:ring-2 hover:ring-[#1a7f5a] transition" />
+                        <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/60 text-white rounded-b-lg py-0.5">防疫</span>
+                      </button>
+                    )}
+                    <p className="text-[10px] text-[#9ca3af] self-end">点击放大查看</p>
+                  </div>
+                )}
 
                 {app.status === 'pending' && (
                   <div className="flex gap-2">

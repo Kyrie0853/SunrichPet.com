@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+type DocFile = { file: File | null; preview: string | null };
 
 const CATEGORIES = [
   '活体宠物-守宫', '活体宠物-龟类', '活体宠物-观赏鱼', '活体宠物-蛇类', '活体宠物-其他爬宠',
@@ -27,8 +31,40 @@ export default function SellerApplyPage() {
     commitment2: false,
   });
 
+  // File upload states
+  const [idCardFront, setIdCardFront] = useState<DocFile>({ file: null, preview: null });
+  const [idCardBack, setIdCardBack] = useState<DocFile>({ file: null, preview: null });
+  const [bizLicense, setBizLicense] = useState<DocFile>({ file: null, preview: null });
+  const [healthCert, setHealthCert] = useState<DocFile>({ file: null, preview: null });
+
   function update(field: string, value: any) {
     setForm(prev => ({ ...prev, [field]: value }));
+  }
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>, setter: (d: DocFile) => void) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > MAX_FILE_SIZE) { setError('文件不能超过 5MB'); return; }
+    if (!ALLOWED_TYPES.includes(file.type)) { setError('仅支持 JPG、PNG、WebP、PDF 格式'); return; }
+    setError('');
+    const preview = file.type === 'application/pdf' ? null : URL.createObjectURL(file);
+    setter({ file, preview });
+  }
+
+  function clearFile(setter: (d: DocFile) => void, current: DocFile) {
+    if (current.preview) URL.revokeObjectURL(current.preview);
+    setter({ file: null, preview: null });
+  }
+
+  async function uploadFile(file: File, userId: string, prefix: string): Promise<string | null> {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `${userId}/${prefix}-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from('seller-documents')
+      .upload(fileName, file, { contentType: file.type, upsert: true });
+    if (upErr) { console.error('Upload failed:', upErr); return null; }
+    const { data: urlData } = supabase.storage.from('seller-documents').getPublicUrl(fileName);
+    return urlData.publicUrl;
   }
 
   function toggleCategory(cat: string) {
@@ -44,6 +80,9 @@ export default function SellerApplyPage() {
     setError('');
     if (!form.realName || !form.idNumber || !form.phone) {
       setError('请填写所有必填信息'); return;
+    }
+    if (!idCardFront.file || !idCardBack.file) {
+      setError('请上传身份证正反面照片'); return;
     }
     if (form.categories.length === 0) {
       setError('请至少选择一个经营品类'); return;
@@ -65,6 +104,19 @@ export default function SellerApplyPage() {
       setLoading(false); return;
     }
 
+    // Upload all files in parallel
+    const [frontUrl, backUrl, bizUrl, healthUrl] = await Promise.all([
+      uploadFile(idCardFront.file!, user.id, 'id-front'),
+      uploadFile(idCardBack.file!, user.id, 'id-back'),
+      bizLicense.file ? uploadFile(bizLicense.file, user.id, 'biz-license') : Promise.resolve(null),
+      healthCert.file ? uploadFile(healthCert.file, user.id, 'health-cert') : Promise.resolve(null),
+    ]);
+
+    if (!frontUrl || !backUrl) {
+      setError('证件上传失败，请检查网络后重试');
+      setLoading(false); return;
+    }
+
     const { error: submitErr } = await supabase.from('seller_applications').insert({
       user_id: user.id,
       real_name: form.realName,
@@ -76,6 +128,10 @@ export default function SellerApplyPage() {
       commitment_1_agreed: false,
       commitment_2_agreed: form.commitment2,
       commitment_agreed_at: new Date().toISOString(),
+      id_card_front_url: frontUrl,
+      id_card_back_url: backUrl,
+      business_license_url: bizUrl,
+      health_cert_url: healthUrl,
     });
 
     if (submitErr) {
@@ -97,7 +153,7 @@ export default function SellerApplyPage() {
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
         <p className="text-5xl mb-4">🎉</p>
         <h1 className="text-2xl font-bold text-[#1f2937] mb-2">申请已提交</h1>
-        <p className="text-[#6b7280] mb-6">我们将在1-3个工作日内审核您的申请，请耐心等待。</p>
+        <p className="text-[#6b7280] mb-6">您的入驻申请已提交，管理员将在 1-3 个工作日内审核，请耐心等待。</p>
         <button onClick={() => router.push('/')} className="rounded-full bg-[#1a7f5a] px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#166b4b]">返回首页</button>
       </div>
     );
@@ -158,19 +214,36 @@ export default function SellerApplyPage() {
         </div>
       </div>
 
-      {/* Step 3: 证件材料 */}
+      {/* Step 3: 证件材料 — 直接上传 */}
       <div className="bg-white rounded-xl p-6 shadow-sm border mb-4">
         <h2 className="text-[15px] font-semibold text-[#1f2937] mb-4">证件材料</h2>
-        <div className="text-[13px] text-[#6b7280] space-y-2">
-          <div className="bg-[#e8f5ef] rounded-lg p-3 text-[#1a7f5a] mb-3">
-            请上传本人身份证正反面照片，用于平台实名认证。认证后您的店铺将获得「已认证」标识，买家更信任。您的信息仅供平台审核使用，绝不外泄。
-          </div>
-          <p>📷 身份证正反面照片（必需）</p>
-          <p>📄 营业执照照片（选填）</p>
-          <p>🏥 防疫/养殖相关证件（选填）</p>
-          <div className="mt-3 bg-[#fef3c7] rounded-lg p-3 text-[#92400e]">
-            审核通过后，管理员会联系您补充上传证件照片。请确保联系方式畅通。
-          </div>
+
+        <div className="bg-[#e8f5ef] rounded-lg p-3 text-[#1a7f5a] text-[13px] mb-5">
+          请上传本人身份证正反面照片，用于平台实名认证。认证后您的店铺将获得「已认证」标识，买家更信任。您的信息仅供平台审核使用，绝不外泄。
+        </div>
+
+        {/* 身份证正面 */}
+        <div className="mb-4">
+          <label className="block text-[13px] font-medium text-[#4b5563] mb-1.5">身份证正面 <span className="text-red-400">*</span></label>
+          <FileUploadBox doc={idCardFront} onChange={e => handleFile(e, setIdCardFront)} onClear={() => clearFile(setIdCardFront, idCardFront)} hint="点击或拖拽上传身份证人像面" />
+        </div>
+
+        {/* 身份证反面 */}
+        <div className="mb-4">
+          <label className="block text-[13px] font-medium text-[#4b5563] mb-1.5">身份证反面 <span className="text-red-400">*</span></label>
+          <FileUploadBox doc={idCardBack} onChange={e => handleFile(e, setIdCardBack)} onClear={() => clearFile(setIdCardBack, idCardBack)} hint="点击或拖拽上传身份证国徽面" />
+        </div>
+
+        {/* 营业执照 */}
+        <div className="mb-4">
+          <label className="block text-[13px] font-medium text-[#4b5563] mb-1.5">营业执照</label>
+          <FileUploadBox doc={bizLicense} onChange={e => handleFile(e, setBizLicense)} onClear={() => clearFile(setBizLicense, bizLicense)} hint="上传营业执照可提升店铺信誉（选填）" />
+        </div>
+
+        {/* 防疫/养殖证件 */}
+        <div className="mb-4">
+          <label className="block text-[13px] font-medium text-[#4b5563] mb-1.5">防疫/养殖相关证件</label>
+          <FileUploadBox doc={healthCert} onChange={e => handleFile(e, setHealthCert)} onClear={() => clearFile(setHealthCert, healthCert)} hint="如涉及活体宠物销售，建议上传相关证件（选填）" />
         </div>
       </div>
 
@@ -193,5 +266,47 @@ export default function SellerApplyPage() {
         提交即表示您已阅读并同意<Link href="/rules" className="text-[#1a7f5a]">《平台规则》</Link>
       </p>
     </div>
+  );
+}
+
+// Reusable file upload box
+function FileUploadBox({ doc, onChange, onClear, hint }: {
+  doc: DocFile;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+  hint: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      {doc.file ? (
+        <div className="rounded-xl border border-[#1a7f5a]/30 bg-[#f9fafb] p-3">
+          <div className="flex items-start gap-3">
+            {doc.preview ? (
+              <img src={doc.preview} alt="preview" className="h-20 w-auto max-w-[140px] rounded-lg object-cover border" />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gray-100 text-2xl">📄</div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-medium text-[#1f2937] truncate">{doc.file.name}</p>
+              <p className="text-[11px] text-[#9ca3af] mt-0.5">{(doc.file.size / 1024).toFixed(0)} KB</p>
+              <button type="button" onClick={onClear} className="mt-1.5 text-[11px] text-red-500 hover:underline">移除</button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#d1d5db] bg-[#f9fafb] px-4 py-5 text-center transition hover:border-[#1a7f5a] hover:bg-[#e8f5ef]/50"
+        >
+          <svg className="mb-1.5 h-7 w-7 text-[#9ca3af]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+          </svg>
+          <p className="text-[13px] text-[#6b7280]">{hint}</p>
+          <p className="text-[11px] text-[#9ca3af] mt-0.5">JPG / PNG / WebP / PDF · 最大 5MB</p>
+        </div>
+      )}
+      <input ref={inputRef} type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" onChange={onChange} className="hidden" />
+    </>
   );
 }
