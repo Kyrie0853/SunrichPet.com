@@ -50,14 +50,23 @@ export default function AdminUsersPage() {
   // 自定义确认弹窗
   const [confirm, setConfirm] = useState<{ message: string; label: string; cls: string; action: () => void } | null>(null);
 
+  const [apiError, setApiError] = useState("");
+
   const loadUsers = useCallback(async () => {
     setLoading(true);
+    setApiError("");
     const params = new URLSearchParams();
     if (search) params.set("q", search);
     if (roleFilter) params.set("role", roleFilter);
-    const res = await fetch("/api/admin/users?" + params.toString());
-    const data = await res.json();
-    setUsers(data.users || []);
+    try {
+      const res = await fetch("/api/admin/users?" + params.toString());
+      const data = await res.json();
+      if (data.error) { setApiError(data.error); setUsers([]); }
+      else { setUsers(data.users || []); }
+    } catch (e: any) {
+      setApiError(e.message || "请求失败");
+      setUsers([]);
+    }
     setLoading(false);
   }, [search, roleFilter]);
 
@@ -111,11 +120,20 @@ export default function AdminUsersPage() {
         <div className="text-center py-12 text-[#9ca3af] text-[14px]">加载中...</div>
       )}
 
+      {/* ---- API 错误 ---- */}
+      {!loading && apiError && (
+        <div className="rounded-xl bg-red-50 p-4 text-[13px] text-red-600 mb-4">
+          ⚠️ 加载失败: {apiError}
+          <p className="mt-1 text-[11px] text-red-400">请确认已在 Supabase SQL Editor 执行 docs/fix-admin-users-final.sql</p>
+        </div>
+      )}
+
       {/* ---- 空状态 ---- */}
-      {!loading && users.length === 0 && (
+      {!loading && !apiError && users.length === 0 && (
         <div className="text-center py-16 text-[#9ca3af]">
           <p className="text-4xl mb-2">🔍</p>
           <p className="text-[14px]">无匹配用户</p>
+          <p className="text-[12px] mt-1">请确认 profiles 表中有用户数据且 RLS 策略正确</p>
         </div>
       )}
 
