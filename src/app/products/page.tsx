@@ -30,13 +30,26 @@ export default async function ProductsPage({ searchParams }: Props) {
     .order("created_at", { ascending: false });
 
   if (category) {
+    // 查找分类（可能是父分类或子分类）
     const { data: catData } = await supabase
       .from("categories")
-      .select("id")
+      .select("id, parent_id")
       .eq("slug", category)
       .single();
+
     if (catData) {
-      query = query.eq("category_id", catData.id);
+      // 如果是父分类（无 parent_id），则查询所有子分类的商品
+      if (!catData.parent_id) {
+        const { data: childIds } = await supabase
+          .from("categories")
+          .select("id")
+          .eq("parent_id", catData.id);
+        const allIds = [catData.id, ...(childIds || []).map(c => c.id)];
+        query = query.in("category_id", allIds);
+      } else {
+        // 子分类直接过滤
+        query = query.eq("category_id", catData.id);
+      }
     }
   }
 

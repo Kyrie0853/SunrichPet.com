@@ -26,6 +26,17 @@ export default async function ShopPage() {
     .select("*")
     .order("sort_order", { ascending: true });
 
+  // 分离父分类和子分类
+  const parentCategories = (categories || []).filter((c: any) => !c.parent_id);
+  const childCategories = (categories || []).filter((c: any) => c.parent_id);
+
+  // 构建父分类 -> 子分类映射
+  const childrenMap = new Map<string, any[]>();
+  childCategories.forEach((c: any) => {
+    if (!childrenMap.has(c.parent_id)) childrenMap.set(c.parent_id, []);
+    childrenMap.get(c.parent_id)!.push(c);
+  });
+
   return (
     <div className="flex flex-1 flex-col">
       {/* Hero + 搜索 */}
@@ -58,35 +69,51 @@ export default async function ShopPage() {
           <span className="h-px flex-1 bg-gray-200" />
         </div>
 
-        {categories && categories.length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((cat, i) => (
-              <Link
-                key={cat.id}
-                href={`/products?category=${cat.slug}`}
-                className={`group rounded-2xl border bg-gradient-to-br p-6 text-center transition-all hover:shadow-md ${CATEGORY_COLORS[i % CATEGORY_COLORS.length]}`}
-              >
-                {cat.image_url ? (
-                  <img
-                    src={cat.image_url}
-                    alt={cat.name}
-                    className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-white/60 text-2xl">
-                    {cat.name.charAt(0)}
-                  </div>
-                )}
-                <span className="block font-semibold text-gray-800 group-hover:text-emerald-700">
-                  {cat.name}
-                </span>
-                {cat.description && (
-                  <span className="mt-1 block text-xs text-gray-500 line-clamp-2">
-                    {cat.description}
-                  </span>
-                )}
-              </Link>
-            ))}
+        {parentCategories.length > 0 ? (
+          <div className="space-y-10">
+            {parentCategories.map((parent: any, pi: number) => {
+              const subs = childrenMap.get(parent.id) || [];
+              return (
+                <div key={parent.id}>
+                  {/* 父分类标题 + 链接 */}
+                  <Link
+                    href={`/products?category=${parent.slug}`}
+                    className="group mb-3 inline-flex items-center gap-2 text-lg font-bold text-gray-800 hover:text-emerald-700 transition-colors"
+                  >
+                    <span className="text-2xl">{parent.name.charAt(0)}</span>
+                    {parent.name}
+                    <svg className="h-4 w-4 text-gray-400 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+
+                  {/* 子分类 */}
+                  {subs.length > 0 && (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                      {subs.map((sub: any, si: number) => (
+                        <Link
+                          key={sub.id}
+                          href={`/products?category=${sub.slug}`}
+                          className={`group rounded-xl border bg-gradient-to-br p-4 text-center transition-all hover:shadow-md ${CATEGORY_COLORS[(pi * 4 + si) % CATEGORY_COLORS.length]}`}
+                        >
+                          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-lg">
+                            {sub.name.charAt(0)}
+                          </div>
+                          <span className="block text-sm font-semibold text-gray-700 group-hover:text-emerald-700">
+                            {sub.name}
+                          </span>
+                          {sub.description && (
+                            <span className="mt-0.5 block text-xs text-gray-400 line-clamp-1">
+                              {sub.description}
+                            </span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <p className="py-12 text-center text-gray-400">

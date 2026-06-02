@@ -101,6 +101,59 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
           </div>
 
+          {/* 活体宠物详细信息 */}
+          {product.is_live_pet && (
+            <div className="mt-6 border-t pt-6">
+              <h2 className="mb-3 text-sm font-semibold text-gray-500">活体信息</h2>
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                {product.species && (
+                  <div className="flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">品种</span>
+                    <span className="text-gray-700 font-medium">{product.species}</span>
+                  </div>
+                )}
+                {product.size_weight && (
+                  <div className="flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">大小/体重</span>
+                    <span className="text-gray-700">{product.size_weight}</span>
+                  </div>
+                )}
+                {product.age_info && (
+                  <div className="flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">年龄</span>
+                    <span className="text-gray-700">{product.age_info}</span>
+                  </div>
+                )}
+                {product.gender && (
+                  <div className="flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">性别</span>
+                    <span className="text-gray-700">{product.gender === 'male' ? '公 ♂' : product.gender === 'female' ? '母 ♀' : product.gender}</span>
+                  </div>
+                )}
+                {product.vaccination && (
+                  <div className="flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">疫苗情况</span>
+                    <span className={`font-medium ${product.vaccination === 'vaccinated' ? 'text-emerald-600' : product.vaccination === 'not_vaccinated' ? 'text-amber-600' : 'text-blue-600'}`}>
+                      {product.vaccination === 'vaccinated' ? '✅ 已接种' : product.vaccination === 'not_vaccinated' ? '⚠️ 未接种' : '💉 接种中'}
+                    </span>
+                  </div>
+                )}
+                {product.defect_notes && (
+                  <div className="col-span-2 flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">瑕疵说明</span>
+                    <span className="text-gray-700">{product.defect_notes}</span>
+                  </div>
+                )}
+                {product.live_arrival_policy && (
+                  <div className="col-span-2 flex justify-between py-1.5 border-b border-gray-50">
+                    <span className="text-gray-400">包活规则</span>
+                    <span className="text-gray-700">{product.live_arrival_policy}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* 描述 */}
           <div className="mt-6 border-t pt-6">
             <h2 className="mb-3 text-sm font-semibold text-gray-500">商品描述</h2>

@@ -21,7 +21,7 @@ export default function SellerProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
-  const [form, setForm] = useState({ name: '', description: '', price: '', stock: '', category_id: '', status: 'active', species: '', size_weight: '', age_info: '', gender: '', shipping_regions: '', live_arrival_policy: '', defect_notes: '', is_live_pet: false });
+  const [form, setForm] = useState({ name: '', description: '', price: '', stock: '', category_id: '', status: 'active', species: '', size_weight: '', age_info: '', gender: '', vaccination: '', shipping_regions: '', live_arrival_policy: '', defect_notes: '', is_live_pet: false });
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -43,11 +43,11 @@ export default function SellerProductsPage() {
   function openForm(p?: any) {
     if (p) {
       setEditId(p.id);
-      setForm({ name: p.name || '', description: p.description || '', price: String(p.price || ''), stock: String(p.stock || ''), category_id: p.category_id || '', status: p.status || 'active', species: p.species || '', size_weight: p.size_weight || '', age_info: p.age_info || '', gender: p.gender || '', shipping_regions: (p.shipping_regions || []).join(','), live_arrival_policy: p.live_arrival_policy || '', defect_notes: p.defect_notes || '', is_live_pet: p.is_live_pet || false });
+      setForm({ name: p.name || '', description: p.description || '', price: String(p.price || ''), stock: String(p.stock || ''), category_id: p.category_id || '', status: p.status || 'active', species: p.species || '', size_weight: p.size_weight || '', age_info: p.age_info || '', gender: p.gender || '', vaccination: p.vaccination || '', shipping_regions: (p.shipping_regions || []).join(','), live_arrival_policy: p.live_arrival_policy || '', defect_notes: p.defect_notes || '', is_live_pet: p.is_live_pet || false });
       if (p.images?.length) setImagePreviews(p.images);
     } else {
       setEditId(null);
-      setForm({ name: '', description: '', price: '', stock: '', category_id: '', status: 'active', species: '', size_weight: '', age_info: '', gender: '', shipping_regions: '', live_arrival_policy: '', defect_notes: '', is_live_pet: false });
+      setForm({ name: '', description: '', price: '', stock: '', category_id: '', status: 'active', species: '', size_weight: '', age_info: '', gender: '', vaccination: '', shipping_regions: '', live_arrival_policy: '', defect_notes: '', is_live_pet: false });
       setImages([]);
       setImagePreviews([]);
     }
@@ -83,7 +83,8 @@ export default function SellerProductsPage() {
       images: uploadedUrls, image_url: uploadedUrls[0] || '',
       slug: form.name.toLowerCase().replace(/[^a-z0-9一-鿿]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now(),
       species: form.species, size_weight: form.size_weight, age_info: form.age_info,
-      gender: form.gender || null, shipping_regions: form.shipping_regions ? form.shipping_regions.split(',').map(s => s.trim()) : [],
+      gender: form.gender || null, vaccination: form.vaccination || null,
+      shipping_regions: form.shipping_regions ? form.shipping_regions.split(',').map(s => s.trim()) : [],
       live_arrival_policy: form.live_arrival_policy, defect_notes: form.defect_notes,
       is_live_pet: form.is_live_pet,
     };
@@ -156,6 +157,9 @@ export default function SellerProductsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div><label className="block text-[12px] font-medium text-[#4b5563] mb-1">年龄/孵化日期</label><input value={form.age_info} onChange={e => setForm({...form, age_info: e.target.value})} className="w-full h-10 rounded-lg border px-3 text-[14px] outline-none focus:border-[#1a7f5a]" placeholder="如：3个月" /></div>
                     <div><label className="block text-[12px] font-medium text-[#4b5563] mb-1">性别</label><select value={form.gender} onChange={e => setForm({...form, gender: e.target.value})} className="w-full h-10 rounded-lg border px-3 text-[14px] outline-none focus:border-[#1a7f5a]"><option value="">未知</option><option value="male">公</option><option value="female">母</option></select></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div><label className="block text-[12px] font-medium text-[#4b5563] mb-1">疫苗情况</label><select value={form.vaccination} onChange={e => setForm({...form, vaccination: e.target.value})} className="w-full h-10 rounded-lg border px-3 text-[14px] outline-none focus:border-[#1a7f5a]"><option value="">未指定</option><option value="vaccinated">已接种</option><option value="not_vaccinated">未接种</option><option value="in_progress">接种中</option></select></div>
                   </div>
                   <div><label className="block text-[12px] font-medium text-[#4b5563] mb-1">发货范围（省份逗号分隔）</label><input value={form.shipping_regions} onChange={e => setForm({...form, shipping_regions: e.target.value})} className="w-full h-10 rounded-lg border px-3 text-[14px] outline-none focus:border-[#1a7f5a]" placeholder="广东,广西,福建" /></div>
                   <div><label className="block text-[12px] font-medium text-[#4b5563] mb-1">包活规则</label><input value={form.live_arrival_policy} onChange={e => setForm({...form, live_arrival_policy: e.target.value})} className="w-full h-10 rounded-lg border px-3 text-[14px] outline-none focus:border-[#1a7f5a]" placeholder="如：开箱验货，24小时内提供开箱视频，死亡包赔" /></div>
