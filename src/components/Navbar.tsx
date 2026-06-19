@@ -61,7 +61,7 @@ export default async function Navbar() {
           href="/"
           className="text-lg font-semibold tracking-tight text-[#1a7f5a] hover:opacity-80 transition-opacity duration-200"
         >
-          Sunrich Pet
+          Sunrich Pet 爬宠工作室
         </Link>
 
         {/* 中间导航（桌面端可见，客户端动态高亮） */}

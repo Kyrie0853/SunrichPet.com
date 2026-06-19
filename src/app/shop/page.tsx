@@ -1,126 +1,114 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { SearchBar } from "@/components/SearchBar";
+import { getProductsByStatus, getAllSpecies } from "@/lib/studio/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "宠物商城 — 顺瑞益宠",
-  description: "精选好物，为你的宠物提供最好的照顾",
+  title: "在售个体 — Sunrich Pet 爬宠工作室",
+  description: "浏览所有在售爬宠个体。支付宝担保交易，安心购买。",
 };
 
-const CATEGORY_COLORS = [
-  "from-amber-100 to-orange-50 border-amber-200",
-  "from-green-100 to-emerald-50 border-green-200",
-  "from-lime-100 to-yellow-50 border-lime-200",
-  "from-cyan-100 to-blue-50 border-cyan-200",
-  "from-purple-100 to-pink-50 border-purple-200",
-  "from-rose-100 to-red-50 border-rose-200",
-  "from-teal-100 to-cyan-50 border-teal-200",
-  "from-sky-100 to-indigo-50 border-sky-200",
+type Props = { searchParams: Promise<{ status?: string; species?: string }> };
+
+const STATUSES = [
+  { key: "all", label: "全部" },
+  { key: "presale", label: "预售中" },
+  { key: "available", label: "可发货" },
+  { key: "sold", label: "已售出" },
 ];
 
-export default async function ShopPage() {
-  const supabase = await createClient();
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("sort_order", { ascending: true });
+const STATUS_STYLES: Record<string, string> = {
+  presale: "bg-orange-50 text-orange-600 border-orange-200",
+  available: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  sold: "bg-gray-100 text-gray-400 border-gray-200",
+};
+const STATUS_LABELS: Record<string, string> = {
+  presale: "预售中",
+  available: "可发货",
+  sold: "已售出",
+};
 
-  // 分离父分类和子分类
-  const parentCategories = (categories || []).filter((c: any) => !c.parent_id);
-  const childCategories = (categories || []).filter((c: any) => c.parent_id);
-
-  // 构建父分类 -> 子分类映射
-  const childrenMap = new Map<string, any[]>();
-  childCategories.forEach((c: any) => {
-    if (!childrenMap.has(c.parent_id)) childrenMap.set(c.parent_id, []);
-    childrenMap.get(c.parent_id)!.push(c);
-  });
+export default async function ShopPage({ searchParams }: Props) {
+  const { status, species } = await searchParams;
+  const products = await getProductsByStatus(status, species);
+  const allSpecies = await getAllSpecies();
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Hero + 搜索 */}
-      <section className="bg-gradient-to-b from-emerald-50 via-white to-white py-16 text-center">
-        <h1 className="mb-3 text-4xl font-bold tracking-tight text-gray-800">
-          精选好物
-        </h1>
-        <p className="mx-auto mb-8 max-w-lg text-gray-500">
-          为你的宠物伙伴找到最好的食物、用品和装备
-        </p>
+    <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
+      <h1 className="text-2xl md:text-3xl font-bold text-[#1f2937] mb-2">在售个体</h1>
+      <p className="text-[14px] text-[#6b7280] mb-6">每一只个体都经过精心养护，支付宝担保交易保障您的权益</p>
 
-        {/* 平台担保标识 */}
-        <div className="mx-auto mb-6 max-w-lg">
-          <div className="rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium inline-flex items-center gap-2">
-            🛡️ 平台担保交易：下单后由平台协调收款和发货，保障双方权益
-          </div>
+      <div className="mb-6 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
+        🛡️ 支付宝担保交易 · 收货验货后付款
+      </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {STATUSES.map((s) => {
+          const isActive = (s.key === "all" && !status) || s.key === status;
+          const href = s.key === "all"
+            ? "/shop" + (species ? "?species=" + species : "")
+            : "/shop?status=" + s.key + (species ? "&species=" + species : "");
+          return (
+            <Link key={s.key} href={href}
+              className={"rounded-full px-4 py-2 text-[13px] font-medium transition-all " +
+                (isActive ? "bg-[#1a7f5a] text-white" : "border border-[#d1d5db] text-[#6b7280] hover:border-[#1a7f5a] hover:text-[#1a7f5a]")}>
+              {s.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      {allSpecies.length > 0 && (
+        <div className="mb-6 flex flex-wrap gap-2">
+          <Link href={"/shop" + (status ? "?status=" + status : "")}
+            className={"rounded-full px-3 py-1.5 text-[12px] font-medium transition-all " +
+              (!species ? "bg-[#e8f5ef] text-[#1a7f5a]" : "border border-[#e5e7eb] text-[#6b7280] hover:border-[#1a7f5a]")}>
+            全部物种
+          </Link>
+          {allSpecies.map((sp) => {
+            const isActive = sp === species;
+            const href = "/shop?" + (status ? "status=" + status + "&" : "") + "species=" + sp;
+            return (
+              <Link key={sp} href={href}
+                className={"rounded-full px-3 py-1.5 text-[12px] font-medium transition-all " +
+                  (isActive ? "bg-[#e8f5ef] text-[#1a7f5a]" : "border border-[#e5e7eb] text-[#6b7280] hover:border-[#1a7f5a]")}>
+                {sp}
+              </Link>
+            );
+          })}
         </div>
+      )}
 
-        {/* 搜索框 */}
-        <div className="mx-auto max-w-xl px-4">
-          <SearchBar />
+      {products.length === 0 ? (
+        <div className="py-20 text-center">
+          <p className="text-5xl mb-4">🦎</p>
+          <p className="text-[#9ca3af] text-[15px]">暂无符合条件的个体</p>
         </div>
-      </section>
-
-      {/* 分类导航 */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-20">
-        <div className="mb-8 flex items-center gap-3">
-          <span className="h-px flex-1 bg-gray-200" />
-          <h2 className="text-lg font-semibold text-gray-600">分类浏览</h2>
-          <span className="h-px flex-1 bg-gray-200" />
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {products.map((product) => (
+            <Link key={product.id} href={`/shop/product/${product.id}`}
+              className="group bg-white rounded-xl border border-[#f3f4f6] overflow-hidden hover:shadow-md transition-all hover:border-[#1a7f5a]/20">
+              <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                {product.images && product.images.length > 0 ? (
+                  <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-5xl text-gray-300">🦎</div>
+                )}
+                <span className={"absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] md:text-[11px] font-medium border " +
+                  (STATUS_STYLES[product.status] || STATUS_STYLES.available)}>
+                  {STATUS_LABELS[product.status] || ""}
+                </span>
+              </div>
+              <div className="p-3">
+                <p className="text-[11px] text-[#9ca3af] font-mono mb-0.5">#{product.product_id}</p>
+                <h3 className="text-[14px] font-semibold text-[#1f2937] line-clamp-1 group-hover:text-[#1a7f5a] transition-colors">{product.name}</h3>
+                {product.morph && <p className="text-[12px] text-[#6b7280] mt-0.5 line-clamp-1">{product.morph}</p>}
+                <p className="mt-2 text-[17px] font-bold text-[#1a7f5a]">¥{product.price}</p>
+              </div>
+            </Link>
+          ))}
         </div>
-
-        {parentCategories.length > 0 ? (
-          <div className="space-y-10">
-            {parentCategories.map((parent: any, pi: number) => {
-              const subs = childrenMap.get(parent.id) || [];
-              return (
-                <div key={parent.id}>
-                  {/* 父分类标题 + 链接 */}
-                  <Link
-                    href={`/products?category=${parent.slug}`}
-                    className="group mb-3 inline-flex items-center gap-2 text-lg font-bold text-gray-800 hover:text-emerald-700 transition-colors"
-                  >
-                    <span className="text-2xl">{parent.name.charAt(0)}</span>
-                    {parent.name}
-                    <svg className="h-4 w-4 text-gray-400 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-
-                  {/* 子分类 */}
-                  {subs.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                      {subs.map((sub: any, si: number) => (
-                        <Link
-                          key={sub.id}
-                          href={`/products?category=${sub.slug}`}
-                          className={`group rounded-xl border bg-gradient-to-br p-4 text-center transition-all hover:shadow-md ${CATEGORY_COLORS[(pi * 4 + si) % CATEGORY_COLORS.length]}`}
-                        >
-                          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/60 text-lg">
-                            {sub.name.charAt(0)}
-                          </div>
-                          <span className="block text-sm font-semibold text-gray-700 group-hover:text-emerald-700">
-                            {sub.name}
-                          </span>
-                          {sub.description && (
-                            <span className="mt-0.5 block text-xs text-gray-400 line-clamp-1">
-                              {sub.description}
-                            </span>
-                          )}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="py-12 text-center text-gray-400">
-            暂无分类，请管理员在后台添加
-          </p>
-        )}
-      </section>
+      )}
     </div>
   );
 }

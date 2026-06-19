@@ -28,12 +28,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "顺瑞益宠 — 全国宠物玩家的聚集地",
-  description: "顺瑞益宠 — 全国宠物玩家的聚集地。加入社区，分享养宠经验，发现你的宠物伙伴。",
+  title: {
+    default: "Sunrich Pet 爬宠工作室 — 专注高品质守宫繁育",
+    template: "%s — Sunrich Pet 爬宠工作室",
+  },
+  description: "个人爬宠工作室直营商城，专注高品质守宫繁育。支付宝担保交易，每一只都是亲手养大的宝贝。",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "顺瑞益宠",
+    title: "Sunrich Pet",
     statusBarStyle: "black-translucent",
   },
   other: {

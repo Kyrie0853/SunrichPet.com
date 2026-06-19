@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
-  { href: "/", label: "热门" },
+  { href: "/", label: "首页" },
+  { href: "/shop", label: "在售个体" },
+  { href: "/blog", label: "繁育笔记" },
   { href: "/b", label: "社区" },
-  { href: "/shop", label: "商城" },
 ];
 
 export default function NavLinks() {

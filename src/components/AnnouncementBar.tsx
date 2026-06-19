@@ -23,7 +23,7 @@ export default async function AnnouncementBar() {
       <div className="bg-[#fef3c7] border-b border-[#fde68a]">
         <div className="mx-auto max-w-6xl px-4 py-1.5">
           <p className="text-center text-[12px] md:text-[13px] text-[#92400e] font-medium">
-            ⚠️ 平台严禁私下交易、禁止买卖保护动物。所有交易必须通过平台担保完成。违规者将永久封号。
+            ⚠️ 本店为个人工作室直营，所有交易通过支付宝担保完成。杜绝私下转账，违规者将不予处理。
           </p>
         </div>
       </div>

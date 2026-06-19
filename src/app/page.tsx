@@ -1,153 +1,212 @@
-import { getHotPosts } from "@/lib/supabase/community";
-import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import Avatar from "@/components/Avatar";
-import ReportButton from "@/components/ReportButton";
+import { getAvailableProducts } from "@/lib/studio/products";
+import { getLatestBlogPosts } from "@/lib/studio/blog";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "顺瑞益宠 — 全国宠物玩家的聚集地",
-  description: "加入你最爱的宠物社区，与同好交流分享养宠经验，发现你的宠物伙伴。",
+  title: "Sunrich Pet 爬宠工作室 — 专注高品质守宫繁育",
+  description: "个人爬宠工作室直营商城，专注高品质爬宠繁育。支付宝担保交易，每一只都是亲手养大的宝贝。",
+  openGraph: {
+    title: "Sunrich Pet 爬宠工作室",
+    description: "专注高品质守宫繁育，每一只都是亲手养大的宝贝",
+    type: "website",
+  },
+};
+
+const STATUS_STYLES: Record<string, string> = {
+  presale: "bg-orange-50 text-orange-600 border-orange-200",
+  available: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  sold: "bg-gray-100 text-gray-400 border-gray-200",
+};
+const STATUS_LABELS: Record<string, string> = {
+  presale: "预售中",
+  available: "可发货",
+  sold: "已售出",
 };
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const { posts } = await getHotPosts({ pageSize: 15 });
-
-  // 动态拉取所有活跃社区用于标签云
-  const { data: activeBars } = await supabase
-    .from("bars")
-    .select("slug, name, icon")
-    .eq("is_active", true)
-    .order("member_count", { ascending: false });
+  const products = await getAvailableProducts(6);
+  const blogPosts = await getLatestBlogPosts(3);
 
   return (
-    <div className="mx-auto max-w-5xl px-3 md:px-4 py-10">
-      {/* 头部 Hero */}
-      <div className="mb-8 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 p-6 md:p-8 text-white">
-        <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">🔥 热门广场</h1>
-        <p className="mt-2 text-emerald-100/90 text-[15px]">全国宠友都在看的热门内容，发现精彩帖子</p>
-        <div className="mt-4 flex items-center gap-3">
-          <Link href="/community/new" className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[13px] font-medium text-[#1a7f5a] transition-all duration-200 hover:bg-emerald-50 active:scale-[0.97]">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-            发布帖子
-          </Link>
-          <Link href="/b" className="inline-flex items-center gap-2 rounded-full border border-white/30 px-5 py-2.5 text-[13px] font-medium text-white transition-all duration-200 hover:bg-white/10 active:scale-[0.97]">
-            🏘️ 探索社区
+    <div className="mx-auto max-w-5xl px-3 md:px-4">
+      {/* ===== Hero ===== */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a7f5a] via-emerald-600 to-teal-700 mb-10 mt-6 p-6 md:p-10 text-white">
+        <div className="relative z-10 max-w-lg">
+          <p className="text-emerald-200/80 text-[13px] md:text-[14px] font-medium tracking-wide uppercase mb-2">
+            个人爬宠工作室
+          </p>
+          <h1 className="text-2xl md:text-4xl font-bold tracking-tight leading-tight">
+            Sunrich Pet 爬宠工作室
+          </h1>
+          <p className="mt-3 text-emerald-100/90 text-[14px] md:text-[16px] leading-relaxed">
+            专注高品质守宫繁育，每一只都是亲手养大的宝贝
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/shop"
+              className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-[14px] font-semibold text-[#1a7f5a] transition-all hover:bg-emerald-50 active:scale-[0.97]"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              查看在售个体
+            </Link>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-[14px] font-medium text-white transition-all hover:bg-white/10 active:scale-[0.97]"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              了解我的繁育故事
+            </Link>
+          </div>
+        </div>
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 hidden md:block">
+          <svg viewBox="0 0 200 200" className="h-full w-full" fill="white">
+            <circle cx="150" cy="30" r="60" />
+            <circle cx="170" cy="100" r="40" />
+            <circle cx="130" cy="160" r="50" />
+          </svg>
+        </div>
+      </section>
+
+      {/* ===== 担保交易标识 ===== */}
+      <div className="mb-8 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-3 flex items-center gap-2.5 text-[13px] md:text-[14px]">
+        <span className="text-lg shrink-0">🛡️</span>
+        <span className="text-[#1a7f5a] font-medium">支付宝担保交易 · 收货验货后付款 · 每一只个体都经过精心养护</span>
+      </div>
+
+      {/* ===== 在售个体推荐 ===== */}
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg md:text-xl font-bold text-[#1f2937] flex items-center gap-2">
+            <span className="w-1 h-5 bg-[#1a7f5a] rounded-full inline-block"></span>
+            在售个体推荐
+          </h2>
+          <Link
+            href="/shop"
+            className="text-[13px] text-[#1a7f5a] hover:text-[#166b4b] font-medium transition-colors flex items-center gap-1"
+          >
+            查看全部
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
-      </div>
 
-      {/* 平台担保标识 */}
-      <div className="mb-4 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-3 flex items-center gap-2.5 text-[13px] md:text-[14px]">
-        <span className="text-lg shrink-0">🛡️</span>
-        <span className="text-[#1a7f5a] font-medium">平台担保交易 · 收货验货后付款 · 保护动物禁止交易</span>
-      </div>
-
-      {/* 分类标签云 — 动态拉取活跃社区 */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <Link
-          href="/"
-          className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 bg-[#1a7f5a] text-white"
-        >
-          全部
-        </Link>
-        {(activeBars || []).map((bar: any) => (
-          <Link
-            key={bar.slug}
-            href={'/b/' + bar.slug}
-            className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-200 border border-[#d1d5db] text-[#6b7280] hover:border-[#1a7f5a] hover:text-[#1a7f5a]"
-          >
-            {bar.icon} {bar.name}
-          </Link>
-        ))}
-      </div>
-
-      {/* 帖子流 */}
-      <div className="space-y-4">
-        {posts.length === 0 && (
-          <div className="py-16 text-center text-gray-400">
-            <p className="text-4xl mb-3">📭</p>
-            <p>还没有帖子，快来发布第一条吧</p>
+        {products.length === 0 ? (
+          <div className="py-12 text-center rounded-xl bg-gray-50 border border-dashed border-gray-200">
+            <p className="text-4xl mb-3">🦎</p>
+            <p className="text-[#9ca3af] text-[14px]">在售个体即将上线，敬请期待</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            {products.map((product) => (
+              <Link
+                key={product.id}
+                href={`/shop/product/${product.id}`}
+                className="group bg-white rounded-xl border border-[#f3f4f6] overflow-hidden hover:shadow-md transition-all hover:border-[#1a7f5a]/20"
+              >
+                <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                  {product.images && product.images.length > 0 ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-5xl text-gray-300">🦎</div>
+                  )}
+                  <span className={`absolute top-2 left-2 rounded-full px-2 py-0.5 text-[10px] md:text-[11px] font-medium border ${STATUS_STYLES[product.status] || STATUS_STYLES.available}`}>
+                    {STATUS_LABELS[product.status] || "可发货"}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <p className="text-[11px] text-[#9ca3af] font-mono mb-0.5">#{product.product_id}</p>
+                  <h3 className="text-[14px] md:text-[15px] font-semibold text-[#1f2937] line-clamp-1 group-hover:text-[#1a7f5a] transition-colors">{product.name}</h3>
+                  {product.morph && (
+                    <p className="text-[12px] text-[#6b7280] mt-0.5 line-clamp-1">{product.morph}</p>
+                  )}
+                  <p className="mt-2 text-[18px] md:text-[20px] font-bold text-[#1a7f5a]">¥{product.price}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         )}
+      </section>
 
-        {posts.map((post: any, i: number) => {
-          const imgs = post.images || [];
-          const hasImage = imgs.length > 0;
-          const showImgs = imgs.slice(0, 3);
-          const remaining = Math.max(0, imgs.length - 3);
-          return (
-          <Link key={post.id} href={"/community/post/" + post.id} className={`card-interactive block rounded-xl bg-white overflow-hidden animate-fade-in-up stagger-${Math.min(i + 1, 5)}`}>
-            {/* Image grid — same layout as PostCard */}
-            {hasImage && (
-              <div className="w-full overflow-hidden rounded-t-xl bg-gray-100">
-                {imgs.length === 1 && (
-                  <div className="relative w-full aspect-[4/3] md:aspect-[16/9]">
-                    <img src={showImgs[0]} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
-                  </div>
-                )}
-                {imgs.length === 2 && (
-                  <div className="flex gap-0.5 h-[160px] md:h-[200px]">
-                    {showImgs.map((url: string, j: number) => (
-                      <div key={j} className="relative flex-1 overflow-hidden">
-                        <img src={url} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {imgs.length >= 3 && (
-                  <div className="flex gap-0.5 h-[180px] md:h-[220px]">
-                    <div className="relative flex-[2] overflow-hidden">
-                      <img src={showImgs[0]} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-[1] flex flex-col gap-0.5">
-                      <div className="relative flex-1 overflow-hidden">
-                        <img src={showImgs[1]} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="relative flex-1 overflow-hidden">
-                        <img src={showImgs[2]} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
-                        {remaining > 0 && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">+{remaining}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className={hasImage ? "p-4" : "p-4 md:p-5"}>
-              {post.bar && (
-                <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-[#e8f5ef] px-2 py-0.5 text-[11px] md:text-[12px] font-medium text-[#1a7f5a]">
-                  {post.bar.icon} {post.bar.name}
-                </span>
-              )}
-              <h2 className="text-[15px] md:text-[18px] font-semibold text-[#1f2937] line-clamp-1 md:line-clamp-1 group-hover:text-[#1a7f5a] transition-colors">
-                {post.is_pinned && "📌 "}{post.is_featured && "⭐ "}{post.title}
-              </h2>
-              {!hasImage && post.content && (
-                <p className="mt-1 text-[13px] md:text-[15px] text-[#6b7280] line-clamp-2">{post.content.replace(/<[^>]*>/g, "").substring(0, 100)}</p>
-              )}
-              <div className="mt-3 flex items-center gap-2 md:gap-3 text-[12px] md:text-[13px] text-[#9ca3af]">
-                <div className="flex items-center gap-1 md:gap-1.5">
-                  <Avatar userId={post.author_id} avatarUrl={post.author?.avatar_url} displayName={post.author?.display_name} size={20} />
-                  <span>{post.author?.display_name || "匿名"}</span>
-                </div>
-                <span className="text-[#e5e7eb]">·</span>
-                <span>{(() => { const d = (Date.now() - new Date(post.created_at).getTime()) / 60000; return d < 1 ? "刚刚" : d < 60 ? Math.floor(d) + "分钟前" : d < 1440 ? Math.floor(d / 60) + "小时前" : Math.floor(d / 1440) + "天前"; })()}</span>
-                <span className="ml-auto flex items-center gap-2 md:gap-3">
-                  <span className="flex items-center gap-0.5"><svg className="h-3 w-3 md:h-3.5 md:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>{post.like_count}</span>
-                  <span className="flex items-center gap-0.5"><svg className="h-3 w-3 md:h-3.5 md:w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>{post.comment_count}</span>
-                  <ReportButton targetType="post" targetId={post.id} />
-                </span>
-              </div>
-            </div>
+      {/* ===== 最新繁育笔记 ===== */}
+      <section className="mb-12">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg md:text-xl font-bold text-[#1f2937] flex items-center gap-2">
+            <span className="w-1 h-5 bg-[#1a7f5a] rounded-full inline-block"></span>
+            最新繁育笔记
+          </h2>
+          <Link
+            href="/blog"
+            className="text-[13px] text-[#1a7f5a] hover:text-[#166b4b] font-medium transition-colors flex items-center gap-1"
+          >
+            查看全部
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
-        );})}
-      </div>
+        </div>
+
+        {blogPosts.length === 0 ? (
+          <div className="py-12 text-center rounded-xl bg-gray-50 border border-dashed border-gray-200">
+            <p className="text-4xl mb-3">📝</p>
+            <p className="text-[#9ca3af] text-[14px]">繁育笔记即将上线</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {blogPosts.map((post) => (
+              <Link
+                key={post.id}
+                href={`/blog/${post.slug}`}
+                className="block bg-white rounded-xl border border-[#f3f4f6] p-4 md:p-5 hover:border-[#1a7f5a]/20 hover:shadow-sm transition-all group"
+              >
+                <h3 className="text-[15px] md:text-[17px] font-semibold text-[#1f2937] group-hover:text-[#1a7f5a] transition-colors">{post.title}</h3>
+                {post.excerpt && (
+                  <p className="mt-1.5 text-[13px] text-[#6b7280] line-clamp-2">{post.excerpt}</p>
+                )}
+                <p className="mt-2 text-[12px] text-[#9ca3af]">
+                  {post.published_at
+                    ? new Date(post.published_at).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" })
+                    : ""}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* ===== 工作室信息 ===== */}
+      <section className="mb-12 rounded-2xl bg-white border border-[#f3f4f6] p-5 md:p-6">
+        <div className="grid gap-5 md:grid-cols-3">
+          <div>
+            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">工作室实名信息</h3>
+            <p className="text-[13px] text-[#6b7280] leading-relaxed">
+              Sunrich Pet 爬宠工作室 · 个人繁育者实名认证<br />专注于豹纹守宫、睫角守宫等高品质爬宠繁育
+            </p>
+          </div>
+          <div>
+            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">联系方式</h3>
+            <p className="text-[13px] text-[#6b7280] leading-relaxed">
+              邮箱：553043978@qq.com<br />工作时间：9:00-21:00<br />所有交易请通过支付宝担保完成
+            </p>
+          </div>
+          <div>
+            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">担保交易说明</h3>
+            <p className="text-[13px] text-[#6b7280] leading-relaxed">
+              本店所有交易通过支付宝担保交易<br />付款 → 发货 → 验货 → 确认收货<br />杜绝私下转账，保障双方权益
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
