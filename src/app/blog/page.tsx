@@ -3,7 +3,7 @@ import { getAllBlogPosts } from "@/lib/studio/blog";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "繁育笔记 — Sunrich Pet 爬宠工作室",
+  title: "繁育笔记 — 给我爬",
   description: "记录爬宠繁育点滴，分享饲养经验和心得。",
 };
 
@@ -27,7 +27,16 @@ export default async function BlogPage() {
               )}
               <h2 className="text-[17px] md:text-[19px] font-semibold text-[#1f2937] group-hover:text-[#1a7f5a] transition-colors">{post.title}</h2>
               {post.excerpt && <p className="mt-2 text-[13px] text-[#6b7280] line-clamp-2">{post.excerpt}</p>}
-              <p className="mt-3 text-[12px] text-[#9ca3af]">{post.published_at ? new Date(post.published_at).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
+              <div className="mt-3 flex items-center justify-between">
+                <p className="text-[12px] text-[#9ca3af]">{post.published_at ? new Date(post.published_at).toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" }) : ""}</p>
+                {(post.tags || []).length > 0 && (
+                  <div className="flex gap-1">
+                    {(post.tags || []).slice(0, 3).map((tag: string) => (
+                      <span key={tag} className="rounded-full bg-[#e8f5ef] px-2 py-0.5 text-[10px] text-[#1a7f5a]">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </Link>
           ))}
         </div>

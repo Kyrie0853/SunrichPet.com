@@ -29,14 +29,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Sunrich Pet 爬宠工作室 — 专注高品质守宫繁育",
-    template: "%s — Sunrich Pet 爬宠工作室",
+    default: "给我爬 — 个人爬宠工作室直营商城",
+    template: "%s — 给我爬",
   },
-  description: "个人爬宠工作室直营商城，专注高品质守宫繁育。支付宝担保交易，每一只都是亲手养大的宝贝。",
+  description: "给我爬 · 个人爬宠工作室直营商城。专注高品质爬宠繁育，支付宝担保交易，每一只都是亲手养大的宝贝。",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    title: "Sunrich Pet",
+    title: "给我爬",
     statusBarStyle: "black-translucent",
   },
   other: {

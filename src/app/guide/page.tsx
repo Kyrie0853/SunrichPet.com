@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '新手养宠指南 | 顺瑞益宠',
+  title: '新手养宠指南 | 给我爬',
   description: '从零开始科学养宠。守宫、蛇类、龟类、观赏鱼新手入门全攻略。',
   keywords: '新手养宠,守宫入门,宠物蛇饲养,龟类饲养,观赏鱼开缸,宠物指南',
 };
@@ -42,7 +42,7 @@ export default function GuidePage() {
         <Link href="/b" className="inline-block rounded-full bg-[#1a7f5a] px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#166b4b]">探索社区</Link>
       </div>
 
-      <p className="text-center text-[11px] text-[#d1d5db] mt-10">内容由顺瑞益宠整理，转载请注明出处</p>
+      <p className="text-center text-[11px] text-[#d1d5db] mt-10">内容由给我爬整理，转载请注明出处</p>
     </div>
   );
 }

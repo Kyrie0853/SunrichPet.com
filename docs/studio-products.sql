@@ -47,9 +47,11 @@ CREATE TRIGGER trigger_studio_products_updated_at
 -- 4. RLS
 ALTER TABLE public.studio_products ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "所有人可读取在售商品" ON public.studio_products;
 CREATE POLICY "所有人可读取在售商品" ON public.studio_products
   FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "管理员可管理所有商品" ON public.studio_products;
 CREATE POLICY "管理员可管理所有商品" ON public.studio_products
   FOR ALL TO authenticated USING (public.is_admin());
 
@@ -102,16 +104,27 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
   excerpt TEXT NOT NULL DEFAULT '',
   content TEXT NOT NULL DEFAULT '',
   cover_image TEXT,
+  tags TEXT[] DEFAULT '{}',
   published_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- 补加 tags 列（如果表已存在但缺少 tags 列）
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='blog_posts' AND column_name='tags') THEN
+    ALTER TABLE public.blog_posts ADD COLUMN tags TEXT[] DEFAULT '{}';
+  END IF;
+END $$;
+
 ALTER TABLE public.blog_posts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "所有人可读取已发布博客" ON public.blog_posts;
 CREATE POLICY "所有人可读取已发布博客" ON public.blog_posts
   FOR SELECT TO anon, authenticated
   USING (published_at IS NOT NULL AND published_at <= now());
 
+DROP POLICY IF EXISTS "管理员可管理博客" ON public.blog_posts;
 CREATE POLICY "管理员可管理博客" ON public.blog_posts
   FOR ALL TO authenticated USING (public.is_admin());

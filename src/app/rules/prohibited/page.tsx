@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: '禁卖动物名单 — 顺瑞益宠' };
+export const metadata: Metadata = { title: '禁卖动物名单 — 给我爬' };
 
 const animals = [
   { category: '龟类', items: ['陆龟（所有种类）', '缅甸陆龟', '辐射陆龟', '安哥洛卡象龟', '苏卡达陆龟', '豹纹陆龟', '赫曼陆龟', '印度星龟', '缅甸星龟', '凹甲陆龟', '四爪陆龟', '黄缘闭壳龟', '黄喉拟水龟（野生种群）', '玳瑁'] },

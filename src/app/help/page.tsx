@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: '帮助中心 — 顺瑞益宠' };
+export const metadata: Metadata = { title: '帮助中心 — 给我爬' };
 
 const faqs = [
   { q: '如何注册账号？', a: '点击右上角登录按钮，输入邮箱地址，获取验证码即可注册。也可以使用手机号验证码注册。' },

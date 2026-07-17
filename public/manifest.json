@@ -1,7 +1,7 @@
 {
-  "name": "顺瑞益宠",
-  "short_name": "顺瑞益宠",
-  "description": "全国宠物玩家的聚集地 — 加入社区，分享养宠经验，发现你的宠物伙伴",
+  "name": "给我爬",
+  "short_name": "给我爬",
+  "description": "个人爬宠工作室直营商城。专注高品质爬宠繁育，支付宝担保交易。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8f9fa",
@@ -33,24 +33,18 @@
   ],
   "shortcuts": [
     {
-      "name": "社区",
-      "url": "/b",
-      "description": "浏览宠物社区"
-    },
-    {
       "name": "商城",
-      "url": "/shop",
-      "description": "宠物商城"
+      "url": "/",
+      "description": "浏览在售爬宠个体"
     },
     {
-      "name": "发布帖子",
-      "url": "/community/new",
-      "description": "发布新帖子"
+      "name": "繁育笔记",
+      "url": "/blog",
+      "description": "阅读繁育故事"
     }
   ],
   "categories": [
-    "social",
-    "lifestyle",
-    "shopping"
+    "shopping",
+    "lifestyle"
   ]
 }

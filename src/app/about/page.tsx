@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '关于我 — Sunrich Pet 爬宠工作室',
-  description: '了解Sunrich Pet爬宠工作室的品牌故事、繁育理念和担保交易承诺。',
+  title: '关于我 — 给我爬',
+  description: '了解给我爬爬宠工作室的品牌故事、繁育理念和担保交易承诺。',
 };
 
 export default function AboutPage() {
@@ -11,7 +11,7 @@ export default function AboutPage() {
     <div className="mx-auto max-w-[800px] px-4 py-10 md:py-16">
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold text-[#1f2937] mb-3">
-          关于 Sunrich Pet 爬宠工作室
+          关于 给我爬
         </h1>
         <p className="text-[#6b7280] text-[15px] md:text-lg">
           个人繁育者 · 专注高品质守宫繁育
@@ -24,7 +24,7 @@ export default function AboutPage() {
           品牌故事
         </h2>
         <p className="text-[15px] text-[#4b5563] leading-relaxed">
-          Sunrich Pet 爬宠工作室是一个个人繁育者经营的专业爬宠工作室，专注于豹纹守宫、睫角守宫等高品质爬宠的繁育与销售。
+          给我爬是一个个人繁育者经营的专业爬宠工作室，专注于豹纹守宫、睫角守宫等高品质爬宠的繁育与销售。
           每一只个体都经过精心养护，从孵化到出壳、从幼苗到成体，每一个环节都倾注了繁育者的心血。
         </p>
         <p className="mt-4 text-[15px] text-[#4b5563] leading-relaxed">

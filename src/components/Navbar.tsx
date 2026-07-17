@@ -3,16 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import UserMenu from "./UserMenu";
 import { SearchBar } from "./SearchBar";
 import NavLinks from "./NavLinks";
-import { getUnreadMessageCount } from "@/lib/supabase/community";
 
 export default async function Navbar() {
   const supabase = await createClient();
 
   let user = null;
   let isAdmin = false;
-  let isSeller = false;
-  let unreadCount = 0;
-  let unreadMsgCount = 0;
   let profile: any = null;
 
   try {
@@ -26,30 +22,13 @@ export default async function Navbar() {
     try {
       const { data: p } = await supabase
         .from("profiles")
-        .select("role, display_name, avatar_url, points, level, check_in_date, check_in_streak")
+        .select("role, display_name, avatar_url")
         .eq("id", user.id)
         .single();
       isAdmin = p?.role === "admin" || p?.role === "super_admin";
-      isSeller = p?.role === "seller";
       profile = p;
     } catch {
       // 忽略 profiles 查询失败
-    }
-
-    try {
-      const { count } = await supabase
-        .from("notifications")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id)
-        .eq("is_read", false);
-      unreadCount = count || 0;
-    } catch {
-      // notifications 表可能尚未创建，忽略
-    }
-    try {
-      unreadMsgCount = await getUnreadMessageCount(user.id);
-    } catch {
-      // messages 表可能尚未迁移，忽略
     }
   }
 
@@ -61,7 +40,7 @@ export default async function Navbar() {
           href="/"
           className="text-lg font-semibold tracking-tight text-[#1a7f5a] hover:opacity-80 transition-opacity duration-200"
         >
-          Sunrich Pet 爬宠工作室
+          给我爬
         </Link>
 
         {/* 中间导航（桌面端可见，客户端动态高亮） */}
@@ -83,7 +62,7 @@ export default async function Navbar() {
           </Link>
 
           {user ? (
-            <UserMenu user={user} isAdmin={isAdmin} isSeller={isSeller} unreadCount={unreadCount} unreadMsgCount={unreadMsgCount} profile={profile} currentPoints={profile?.points||0} canCheckIn={profile?.check_in_date !== new Date().toISOString().slice(0,10)} streak={profile?.check_in_streak||0} />
+            <UserMenu user={user} isAdmin={isAdmin} profile={profile} />
           ) : (
             <Link
               href="/auth"

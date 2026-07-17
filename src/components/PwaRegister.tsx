@@ -76,7 +76,7 @@ export default function PwaRegister() {
   const bannerText: Record<EnvType, { title: string; sub: string; btn: string }> = {
     wechat_ios: { title: '在 Safari 中打开，即可添加到桌面', sub: '微信内不支持添加到桌面', btn: '查看指引' },
     safari_ios: { title: '添加到桌面，使用更便捷', sub: '点击底部分享按钮 → 添加到主屏幕', btn: '查看指引' },
-    chrome_android: { title: '添加到桌面，使用更便捷', sub: '像 App 一样打开顺瑞益宠', btn: deferredPrompt ? '立即添加' : '查看指引' },
+    chrome_android: { title: '添加到桌面，使用更便捷', sub: '像 App 一样打开给我爬', btn: deferredPrompt ? '立即添加' : '查看指引' },
     other_android: { title: '在 Chrome 中打开，可添加到桌面', sub: '当前浏览器不支持', btn: '查看指引' },
     other: { title: '', sub: '', btn: '' },
   };
@@ -88,7 +88,7 @@ export default function PwaRegister() {
       <div className="fixed bottom-20 md:bottom-4 left-2 right-2 md:left-auto md:right-4 md:w-80 z-40 animate-fade-in-up">
         <div className="bg-[#1a7f5a] rounded-2xl shadow-xl p-4 text-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">SR</div>
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg shrink-0">GP</div>
             <div className="flex-1 min-w-0">
               <p className="text-[14px] font-semibold">{txt.title}</p>
               <p className="text-[11px] text-white/70 mt-0.5">{txt.sub}</p>

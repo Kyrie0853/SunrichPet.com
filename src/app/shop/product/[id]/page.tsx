@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProductById, STATUS_LABELS } from "@/lib/studio/products";
 import ProductReviewSection from "@/components/ProductReviewSection";
+import ProductGallery from "@/components/studio/ProductGallery";
 import { getProductReviews, getProductRating } from "@/app/actions/reviews";
 import type { Metadata } from "next";
 
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductById(id);
   if (!product) return { title: "个体不存在" };
   return {
-    title: product.name + " — Sunrich Pet 爬宠工作室",
+    title: product.name + " — 给我爬",
     description: product.species + " | " + (product.morph || "") + " | ¥" + product.price,
     openGraph: { title: product.name, description: product.description?.slice(0, 160), images: product.images?.length > 0 ? [product.images[0]] : [] },
   };
@@ -47,41 +48,21 @@ export default async function ProductDetailPage({ params }: Props) {
       availability: product.status === "available" ? "https://schema.org/InStock"
         : product.status === "presale" ? "https://schema.org/PreOrder"
         : "https://schema.org/SoldOut",
-      seller: { "@type": "Person", name: "Sunrich Pet 爬宠工作室" },
+      seller: { "@type": "Person", name: "给我爬" },
     },
   };
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <Link href="/shop" className="text-[13px] text-[#6b7280] hover:text-[#1a7f5a] mb-4 inline-block">&larr; 返回在售列表</Link>
+      <Link href="/" className="text-[13px] text-[#6b7280] hover:text-[#1a7f5a] mb-4 inline-block">&larr; 返回商城首页</Link>
       <div className="grid gap-6 md:gap-10 md:grid-cols-2">
         {/* 图片区域 */}
-        <div className="space-y-3">
-          <div className="overflow-hidden rounded-2xl bg-gray-100 aspect-square" id="gallery-main-container">
-            {product.images && product.images.length > 0 ? (
-              <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" id="gallery-main" />
-            ) : (
-              <div className="flex aspect-square items-center justify-center text-6xl text-gray-300">🦎</div>
-            )}
-          </div>
-          {product.images && product.images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {product.images.map((img: string, i: number) => (
-                <button key={i}
-                  onClick={() => { const el = document.getElementById("gallery-main") as HTMLImageElement; if (el) el.src = img; }}
-                  className={"shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden border-2 " + (i === 0 ? "border-[#1a7f5a]" : "border-transparent hover:border-[#1a7f5a]/30")}>
-                  <img src={img} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
-                </button>
-              ))}
-            </div>
-          )}
-          {product.video_url && (
-            <div className="overflow-hidden rounded-2xl bg-black aspect-video">
-              <video src={product.video_url} controls className="w-full h-full" preload="metadata" />
-            </div>
-          )}
-        </div>
+        <ProductGallery
+          images={product.images || []}
+          name={product.name}
+          videoUrl={product.video_url}
+        />
 
         {/* 信息区域 */}
         <div>

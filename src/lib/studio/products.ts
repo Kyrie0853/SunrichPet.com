@@ -36,9 +36,15 @@ export async function getAvailableProducts(limit = 6) {
   return (data || []) as StudioProduct[];
 }
 
-export async function getProductsByStatus(status?: string, species?: string) {
+export async function getProductsByStatus(
+  status?: string,
+  species?: string,
+  morph?: string,
+  minPrice?: string,
+  maxPrice?: string
+) {
   const supabase = await createClient();
-  let query = supabase.from("studio_products").select("*").order("created_at", { ascending: false });
+  let query = supabase.from("studio_products").select("*");
 
   if (status && status !== "all") {
     query = query.eq("status", status);
@@ -46,9 +52,24 @@ export async function getProductsByStatus(status?: string, species?: string) {
   if (species && species !== "all") {
     query = query.eq("species", species);
   }
+  if (morph && morph !== "all") {
+    query = query.eq("morph", morph);
+  }
+  if (minPrice) {
+    query = query.gte("price", parseFloat(minPrice));
+  }
+  if (maxPrice) {
+    query = query.lte("price", parseFloat(maxPrice));
+  }
 
-  const { data } = await query;
-  return (data || []) as StudioProduct[];
+  // 排序：非已售出的在前，按创建时间倒序
+  const { data } = await query.order("created_at", { ascending: false });
+
+  // 把已售出的排到最后
+  const products = (data || []) as StudioProduct[];
+  const active = products.filter(p => p.status !== "sold");
+  const sold = products.filter(p => p.status === "sold");
+  return [...active, ...sold];
 }
 
 export async function getAllSpecies() {
@@ -56,9 +77,19 @@ export async function getAllSpecies() {
   const { data } = await supabase
     .from("studio_products")
     .select("species");
-  
+
   const species = [...new Set((data || []).map((d: any) => d.species))];
   return species.filter(Boolean);
+}
+
+export async function getAllMorphs() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("studio_products")
+    .select("morph");
+
+  const morphs = [...new Set((data || []).map((d: any) => d.morph))];
+  return morphs.filter(Boolean);
 }
 
 export async function getProductById(id: string) {

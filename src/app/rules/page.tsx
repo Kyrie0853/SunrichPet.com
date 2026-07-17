@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: '平台规则 — 顺瑞益宠' };
+export const metadata: Metadata = { title: '平台规则 — 给我爬' };
 
 export default function RulesPage() {
   return (
@@ -12,8 +12,8 @@ export default function RulesPage() {
       <section className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-[#f3f4f6]">
         <h2 className="text-xl font-semibold text-[#1f2937] mb-4">用户协议</h2>
         <div className="text-[15px] text-[#4b5563] leading-relaxed space-y-3">
-          <p>欢迎使用顺瑞益宠平台。在使用本平台服务前，请您仔细阅读以下协议。</p>
-          <p><strong>1. 平台定位：</strong>顺瑞益宠是一个宠物爱好者交流社区及宠物用品交易平台。所有交易必须在平台内完成，禁止任何形式的私下交易。</p>
+          <p>欢迎使用给我爬平台。在使用本平台服务前，请您仔细阅读以下协议。</p>
+          <p><strong>1. 平台定位：</strong>给我爬是一个宠物爱好者交流社区及宠物用品交易平台。所有交易必须在平台内完成，禁止任何形式的私下交易。</p>
           <p><strong>2. 用户责任：</strong>您承诺在平台上发布的信息真实、合法、准确。不得发布违法、侵权、虚假或误导性内容。</p>
           <p><strong>3. 交易规则：</strong>所有买卖交易必须通过平台担保完成。买家付款后款项由平台暂存，买家验货确认后款项转入卖家账户。</p>
           <p><strong>4. 违规处理：</strong>违反平台规则的用户将受到警告、禁言或永久封号处理。平台有权删除违规内容。</p>

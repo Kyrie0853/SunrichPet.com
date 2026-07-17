@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: '售后规则 — 顺瑞益宠' };
+export const metadata: Metadata = { title: '售后规则 — 给我爬' };
 
 export default function AfterSalePage() {
   return (
