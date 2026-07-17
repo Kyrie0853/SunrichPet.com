@@ -11,6 +11,8 @@ export default function EditProductPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState("");
   const [form, setForm] = useState<any>({});
+  const [categories, setCategories] = useState<any[]>([]);
+  const [topCatId, setTopCatId] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -23,14 +25,35 @@ export default function EditProductPage() {
           personality_tags: (data.personality_tags || []).join(", "),
           images: (data.images || []).join(String.fromCharCode(10)),
           price: String(data.price),
+          category_id: data.category_id || "",
         });
+        // 根据当前 category_id 反查顶级分类
+        if (data.category_id) {
+          fetch("/api/studio/categories").then(r => r.json()).then((cats: any[]) => {
+            setCategories(cats || []);
+            const current = (cats || []).find((c: any) => c.id === data.category_id);
+            if (current?.parent_id) setTopCatId(current.parent_id);
+          }).catch(() => {});
+        }
       }
       setPageLoading(false);
     }
     load();
   }, [id, supabase]);
 
+  // 如果 categories 还没加载，首次渲染时加载
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetch("/api/studio/categories").then(r => r.json()).then(data => {
+        if (Array.isArray(data)) setCategories(data);
+      }).catch(() => {});
+    }
+  }, []);
+
   function update(field: string, value: string) { setForm((prev: any) => ({ ...prev, [field]: value })); }
+
+  const topCategories = categories.filter((c: any) => !c.parent_id);
+  const subCategories = categories.filter((c: any) => c.parent_id === topCatId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,6 +70,7 @@ export default function EditProductPage() {
           price: parseFloat(form.price), status: form.status,
           images: form.images ? form.images.split(String.fromCharCode(10)).map((u: string) => u.trim()).filter(Boolean) : [],
           video_url: form.video_url || null, description: form.description,
+          category_id: form.category_id || null,
         }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error || "保存失败"); setLoading(false); return; }
@@ -68,6 +92,29 @@ export default function EditProductPage() {
       <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-6">编辑个体</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl bg-white rounded-xl border border-[#f3f4f6] p-6 space-y-4">
         {error && <div className="rounded-lg bg-red-50 p-3 text-[13px] text-red-600">{error}</div>}
+
+        {/* 分类选择器 */}
+        {categories.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 p-3 bg-[#e8f5ef] rounded-lg">
+            <div>
+              <label className="block text-[13px] font-medium text-[#4b5563] mb-1">顶级分类</label>
+              <select value={topCatId} onChange={e => { setTopCatId(e.target.value); update("category_id", ""); }}
+                className="w-full h-11 rounded-lg border px-3 text-[16px] outline-none focus:border-[#1a7f5a]">
+                <option value="">选择顶级分类</option>
+                {topCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-medium text-[#4b5563] mb-1">二级分类</label>
+              <select value={form.category_id || ""} onChange={e => update("category_id", e.target.value)}
+                className="w-full h-11 rounded-lg border px-3 text-[16px] outline-none focus:border-[#1a7f5a]" disabled={!topCatId}>
+                <option value="">选择二级分类</option>
+                {subCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           {fields.map(fld => (
             <div key={fld.field}>
