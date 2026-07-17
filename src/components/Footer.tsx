@@ -5,7 +5,6 @@ const sections = [
     title: '商城',
     links: [
       { href: '/shop', label: '在售个体' },
-      { href: '/blog', label: '繁育笔记' },
       { href: '/reviews', label: '买家评价' },
       { href: '/about', label: '关于我' },
     ],
