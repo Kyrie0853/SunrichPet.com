@@ -1,19 +1,30 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function NewProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [topCatId, setTopCatId] = useState("");
   const [form, setForm] = useState({
     product_id: "", name: "", species: "", morph: "",
     birth_date: "", current_weight: "", personality_tags: "",
     estimated_ship_date: "", price: "", status: "presale",
-    images: "", video_url: "", description: "",
+    images: "", video_url: "", description: "", category_id: "",
   });
 
+  useEffect(() => {
+    fetch("/api/studio/categories").then(r => r.json()).then(data => {
+      if (Array.isArray(data)) setCategories(data);
+    }).catch(() => {});
+  }, []);
+
   function update(field: string, value: string) { setForm(prev => ({ ...prev, [field]: value })); }
+
+  const topCategories = categories.filter((c: any) => !c.parent_id);
+  const subCategories = categories.filter((c: any) => c.parent_id === topCatId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +44,7 @@ export default function NewProductPage() {
           price: parseFloat(form.price), status: form.status,
           images: form.images ? form.images.split(String.fromCharCode(10)).map((u: string) => u.trim()).filter(Boolean) : [],
           video_url: form.video_url || null, description: form.description,
+          category_id: form.category_id || null,
         }),
       });
       if (!res.ok) { const d = await res.json(); setError(d.error || "创建失败"); setLoading(false); return; }
@@ -52,6 +64,29 @@ export default function NewProductPage() {
       <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-6">添加新个体</h1>
       <form onSubmit={handleSubmit} className="max-w-2xl bg-white rounded-xl border border-[#f3f4f6] p-6 space-y-4">
         {error && <div className="rounded-lg bg-red-50 p-3 text-[13px] text-red-600">{error}</div>}
+
+        {/* 分类选择器 */}
+        {categories.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 p-3 bg-[#e8f5ef] rounded-lg">
+            <div>
+              <label className="block text-[13px] font-medium text-[#4b5563] mb-1">顶级分类</label>
+              <select value={topCatId} onChange={e => { setTopCatId(e.target.value); update("category_id", ""); }}
+                className="w-full h-11 rounded-lg border px-3 text-[16px] outline-none focus:border-[#1a7f5a]">
+                <option value="">选择顶级分类</option>
+                {topCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-medium text-[#4b5563] mb-1">二级分类</label>
+              <select value={form.category_id} onChange={e => update("category_id", e.target.value)}
+                className="w-full h-11 rounded-lg border px-3 text-[16px] outline-none focus:border-[#1a7f5a]" disabled={!topCatId}>
+                <option value="">选择二级分类</option>
+                {subCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          </div>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           {textFields.map(fld => (
             <div key={fld.field}>

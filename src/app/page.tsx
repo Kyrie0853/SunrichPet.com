@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getSpeciesCategories, type SpeciesCategory } from "@/lib/studio/products";
+import { getTopCategories, type CategoryWithCount } from "@/lib/studio/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "给我爬 — 个人爬宠工作室直营商城",
-  description: "给我爬 · 个人爬宠工作室直营商城。专注高品质爬宠繁育，支付宝担保交易，每一只都是亲手养大的宝贝。",
+  description: "给我爬 · 个人爬宠工作室直营商城。专注高品质爬宠繁育，支付宝担保交易。",
   openGraph: {
     title: "给我爬",
     description: "专注高品质爬宠繁育，每一只都是亲手养大的宝贝",
@@ -29,7 +29,7 @@ export default async function HomePage() {
     }
   } catch { /* ignore */ }
 
-  const categories = await getSpeciesCategories();
+  const categories = await getTopCategories();
 
   return (
     <div className="mx-auto max-w-5xl px-3 md:px-4">
@@ -62,7 +62,7 @@ export default async function HomePage() {
         </div>
         {isAdmin && (
           <Link
-            href="/studio/dashboard"
+            href="/studio/dashboard/products/new"
             className="inline-flex items-center gap-1.5 rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -73,7 +73,7 @@ export default async function HomePage() {
         )}
       </div>
 
-      {/* 分类卡片 */}
+      {/* 顶级分类卡片 */}
       <section className="mb-12">
         <h2 className="text-lg md:text-xl font-bold text-[#1f2937] mb-5 flex items-center gap-2">
           <span className="w-1 h-5 bg-[#1a7f5a] rounded-full inline-block"></span>
@@ -83,26 +83,31 @@ export default async function HomePage() {
         {categories.length === 0 ? (
           <div className="py-20 text-center rounded-xl bg-gray-50 border border-dashed border-gray-200">
             <p className="text-5xl mb-4">🦎</p>
-            <p className="text-[#9ca3af] text-[15px]">暂无在售爬宠，请耐心等待上架</p>
+            <p className="text-[#9ca3af] text-[15px]">暂无在售分类，请耐心等待上架</p>
+            {isAdmin && (
+              <p className="text-[12px] text-[#9ca3af] mt-2">管理员请先在 Supabase 执行 docs/migrations/categories-init.sql 初始化分类数据</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {categories.map((cat) => (
               <Link
-                key={cat.species}
-                href={`/shop?species=${encodeURIComponent(cat.species)}`}
+                key={cat.id}
+                href={`/shop?category=${encodeURIComponent(cat.slug)}`}
                 className="group bg-white rounded-2xl border border-[#f3f4f6] overflow-hidden hover:shadow-lg hover:border-[#1a7f5a]/30 transition-all duration-300"
               >
                 <div className="aspect-[4/3] bg-gray-100 overflow-hidden relative">
                   {cat.firstImage ? (
                     <img
                       src={cat.firstImage}
-                      alt={cat.species}
+                      alt={cat.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-6xl text-gray-300">🦎</div>
+                    <div className="flex h-full w-full items-center justify-center text-6xl text-gray-300">
+                      {cat.slug === 'gecko' ? '🦎' : cat.slug === 'snake' ? '🐍' : '🦎'}
+                    </div>
                   )}
                   <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent" />
                   <span className="absolute bottom-3 left-3 rounded-full bg-white/90 backdrop-blur-sm px-2.5 py-0.5 text-[11px] font-medium text-[#1a7f5a]">
@@ -111,8 +116,13 @@ export default async function HomePage() {
                 </div>
                 <div className="p-4">
                   <h3 className="text-[16px] font-semibold text-[#1f2937] group-hover:text-[#1a7f5a] transition-colors">
-                    {cat.species}
+                    {cat.name}
                   </h3>
+                  {cat.children && cat.children.length > 0 && (
+                    <p className="text-[12px] text-[#9ca3af] mt-1 line-clamp-1">
+                      {cat.children.map(c => c.name).join(' · ')}
+                    </p>
+                  )}
                   <div className="mt-2 flex items-center text-[13px] text-[#1a7f5a] font-medium">
                     查看全部
                     <svg className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -25,13 +25,93 @@ export const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   sold: { label: "已售出", color: "bg-gray-100 text-gray-400 border-gray-200" },
 };
 
-export interface SpeciesCategory {
-  species: string;
-  count: number;
-  firstImage: string | null;
+// ---- 分类类型 ----
+export interface ProductCategory {
+  id: string;
+  name: string;
+  slug: string;
+  parent_id: string | null;
 }
 
-export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
+export interface CategoryWithCount {
+  id: string;
+  name: string;
+  slug: string;
+  count: number;
+  firstImage: string | null;
+  children?: CategoryWithCount[];
+}
+
+// 获取所有顶级分类（parent_id IS NULL），含商品数量和首图
+export async function getTopCategories(): Promise<CategoryWithCount[]> {
+  const supabase = await createClient();
+  // 先获取分类表
+  const { data: cats, error } = await supabase
+    .from("product_categories")
+    .select("*")
+    .is("parent_id", null)
+    .order("name");
+
+  // 表不存在或为空时，回退到从产品 species 聚合
+  if (error || !cats || cats.length === 0) {
+    return getSpeciesCategoriesFallback();
+  }
+
+  // 获取每个顶级分类的子分类 ID
+  const { data: allChildren } = await supabase
+    .from("product_categories")
+    .select("id, parent_id, slug, name")
+    .not("parent_id", "is", null);
+
+  const childIdsByParent = new Map<string, string[]>();
+  (allChildren || []).forEach((c: any) => {
+    if (!childIdsByParent.has(c.parent_id)) childIdsByParent.set(c.parent_id, []);
+    childIdsByParent.get(c.parent_id)!.push(c.id);
+  });
+
+  const result: CategoryWithCount[] = [];
+
+  for (const cat of cats) {
+    const childIds = childIdsByParent.get(cat.id) || [];
+    // 该顶级分类下所有子分类的 ID
+    const allIds = [cat.id, ...childIds];
+
+    // 查询这些分类下的在售商品
+    const { data: products } = await supabase
+      .from("studio_products")
+      .select("images, status, category_id")
+      .in("status", ["available", "presale"])
+      .in("category_id", allIds);
+
+    const activeProducts = (products || []).filter((p: any) => allIds.includes(p.category_id));
+    const firstImg = activeProducts.find((p: any) => p.images?.length > 0)?.images?.[0] || null;
+
+    // 也获取子分类信息
+    const children = (allChildren || [])
+      .filter((c: any) => c.parent_id === cat.id)
+      .map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        count: 0,
+        firstImage: null as string | null,
+      }));
+
+    result.push({
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      count: activeProducts.length,
+      firstImage: firstImg,
+      children,
+    });
+  }
+
+  return result;
+}
+
+// 回退方案：当 product_categories 表不存在时，从产品 species 聚合
+async function getSpeciesCategoriesFallback(): Promise<CategoryWithCount[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("studio_products")
@@ -47,18 +127,40 @@ export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
         existing.firstImage = p.images[0];
       }
     } else {
-      speciesMap.set(p.species, {
-        count: 1,
-        firstImage: p.images?.length > 0 ? p.images[0] : null,
-      });
+      speciesMap.set(p.species, { count: 1, firstImage: p.images?.length > 0 ? p.images[0] : null });
     }
   });
 
   return Array.from(speciesMap.entries()).map(([species, info]) => ({
-    species,
+    id: species,
+    name: species,
+    slug: species.toLowerCase().replace(/\s+/g, '-'),
     count: info.count,
     firstImage: info.firstImage,
   }));
+}
+
+// 获取所有分类（树形，供表单选择器使用）
+export async function getAllCategories(): Promise<ProductCategory[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select("*")
+    .order("name");
+  if (error) return [];
+  return (data || []) as ProductCategory[];
+}
+
+// 旧版兼容
+export interface SpeciesCategory {
+  species: string;
+  count: number;
+  firstImage: string | null;
+}
+
+export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
+  const top = await getTopCategories();
+  return top.map(c => ({ species: c.name, count: c.count, firstImage: c.firstImage }));
 }
 
 export async function getAvailableProducts(limit = 6) {
@@ -77,7 +179,8 @@ export async function getProductsByStatus(
   species?: string,
   morph?: string,
   minPrice?: string,
-  maxPrice?: string
+  maxPrice?: string,
+  categorySlug?: string
 ) {
   const supabase = await createClient();
   let query = supabase.from("studio_products").select("*");
@@ -98,10 +201,32 @@ export async function getProductsByStatus(
     query = query.lte("price", parseFloat(maxPrice));
   }
 
-  // 排序：非已售出的在前，按创建时间倒序
+  // 按分类筛选：先查出该分类 slug 对应的 ID 及其所有子分类 ID
+  if (categorySlug && categorySlug !== "all") {
+    const { data: catData } = await supabase
+      .from("product_categories")
+      .select("id, parent_id")
+      .or(`slug.eq.${categorySlug},parent_id.eq.(select id from product_categories where slug = '${categorySlug}')`);
+
+    if (catData && catData.length > 0) {
+      // 包括自身和子分类
+      const catIds = catData.map((c: any) => c.id);
+      // 如果该分类有子分类，也包括子分类
+      const parentCat = catData.find((c: any) => c.slug === undefined);
+      const allIds = catData.map((c: any) => c.id);
+
+      if (allIds.length > 0) {
+        query = query.in("category_id", allIds);
+      }
+    } else {
+      // 回退: 用 species 字段模糊匹配
+      query = query.ilike("species", `%${categorySlug.replace(/-/g, ' ')}%`);
+    }
+  }
+
+  // 排序
   const { data } = await query.order("created_at", { ascending: false });
 
-  // 把已售出的排到最后
   const products = (data || []) as StudioProduct[];
   const active = products.filter(p => p.status !== "sold");
   const sold = products.filter(p => p.status === "sold");
