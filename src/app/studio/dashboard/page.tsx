@@ -56,9 +56,9 @@ export default async function StudioDashboardPage() {
               <p className="text-[14px] font-semibold text-[#1f2937]">📦 处理订单</p>
               <p className="text-[12px] text-[#6b7280] mt-1">查看订单，确认发货</p>
             </Link>
-            <Link href="/studio/dashboard/blog" className="block rounded-xl bg-white border border-[#f3f4f6] p-4 hover:border-[#1a7f5a]/30 transition-colors">
-              <p className="text-[14px] font-semibold text-[#1f2937]">📝 管理笔记</p>
-              <p className="text-[12px] text-[#6b7280] mt-1">发布繁育笔记（第二期）</p>
+            <Link href="/studio/dashboard/products" className="block rounded-xl bg-white border border-[#f3f4f6] p-4 hover:border-[#1a7f5a]/30 transition-colors">
+              <p className="text-[14px] font-semibold text-[#1f2937]">🦎 管理个体</p>
+              <p className="text-[12px] text-[#6b7280] mt-1">查看和管理所有在售/预售/已售个体</p>
             </Link>
           </div>
         </div>

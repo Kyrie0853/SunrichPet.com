@@ -25,6 +25,42 @@ export const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   sold: { label: "已售出", color: "bg-gray-100 text-gray-400 border-gray-200" },
 };
 
+export interface SpeciesCategory {
+  species: string;
+  count: number;
+  firstImage: string | null;
+}
+
+export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("studio_products")
+    .select("species, images, status")
+    .in("status", ["available", "presale"]);
+
+  const speciesMap = new Map<string, { count: number; firstImage: string | null }>();
+  (data || []).forEach((p: any) => {
+    const existing = speciesMap.get(p.species);
+    if (existing) {
+      existing.count++;
+      if (!existing.firstImage && p.images?.length > 0) {
+        existing.firstImage = p.images[0];
+      }
+    } else {
+      speciesMap.set(p.species, {
+        count: 1,
+        firstImage: p.images?.length > 0 ? p.images[0] : null,
+      });
+    }
+  });
+
+  return Array.from(speciesMap.entries()).map(([species, info]) => ({
+    species,
+    count: info.count,
+    firstImage: info.firstImage,
+  }));
+}
+
 export async function getAvailableProducts(limit = 6) {
   const supabase = await createClient();
   const { data } = await supabase

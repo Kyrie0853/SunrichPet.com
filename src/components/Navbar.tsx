@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import UserMenu from "./UserMenu";
 import { SearchBar } from "./SearchBar";
-import NavLinks from "./NavLinks";
 
 export default async function Navbar() {
   const supabase = await createClient();
@@ -34,23 +33,20 @@ export default async function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm" style={{ height: 56 }}>
-      <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-full max-w-6xl items-center gap-3 px-4">
         {/* Logo */}
         <Link
           href="/"
-          className="text-lg font-semibold tracking-tight text-[#1a7f5a] hover:opacity-80 transition-opacity duration-200"
+          className="text-lg font-semibold tracking-tight text-[#1a7f5a] hover:opacity-80 transition-opacity duration-200 shrink-0"
         >
           给我爬
         </Link>
 
-        {/* 中间导航（桌面端可见，客户端动态高亮） */}
-        <NavLinks />
+        {/* 搜索框 — 占据剩余空间 */}
+        <SearchBar className="hidden flex-1 max-w-sm md:block" />
 
-        {/* 搜索框 */}
-        <SearchBar className="hidden flex-1 max-w-sm mx-6 md:block" />
-
-        {/* 右侧 */}
-        <div className="flex items-center gap-2">
+        {/* 右侧图标 */}
+        <div className="flex items-center gap-1 ml-auto">
           {/* 购物车 */}
           <Link
             href="/cart"
