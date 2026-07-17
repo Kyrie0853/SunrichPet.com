@@ -100,14 +100,8 @@ export default function AuthPage(){
 
   return(<div className="flex min-h-[80vh] px-2 items-center justify-center px-4">
     <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
-      <h1 className="mb-2 text-center text-2xl font-bold text-emerald-700">顺瑞益宠</h1>
-      <p className="mb-6 text-center text-sm text-gray-400">登录或注册账号</p>
-
-      {/* 双入口提示 */}
-      <div className="mb-4 flex gap-2 text-[12px] text-[#9ca3af] justify-center">
-        <span className="bg-[#f3f4f6] rounded-full px-3 py-1">🐾 我是用户 · 浏览社区购买宠物</span>
-        <span className="bg-[#f3f4f6] rounded-full px-3 py-1">🏪 我是商家 · 入驻开店</span>
-      </div>
+      <h1 className="mb-2 text-center text-2xl font-bold text-emerald-700">给我爬</h1>
+      <p className="mb-6 text-center text-sm text-gray-400">登录或注册账号，开启爬宠之旅</p>
       {message&&(<div className="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>)}
       {error&&(<div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>)}
       {step==="emailInput"&&(<form onSubmit={sendOtp} className="space-y-4">

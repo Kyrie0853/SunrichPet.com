@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: '离线 — 顺瑞益宠' };
+export const metadata: Metadata = { title: '离线 — 给我爬' };
 
 export default function OfflinePage() {
   return (

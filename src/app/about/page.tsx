@@ -2,47 +2,48 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '关于我们 — 顺瑞益宠',
-  description: '顺瑞益宠 — 全国宠物玩家的聚集地。了解我们的品牌故事、平台特色，加入最温暖的宠物社区。',
+  title: '关于我 — 给我爬',
+  description: '了解给我爬爬宠工作室的品牌故事、繁育理念和担保交易承诺。',
 };
 
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-[800px] px-4 py-10 md:py-16">
-      {/* Hero */}
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold text-[#1f2937] mb-3">
-          关于顺瑞益宠
+          关于 给我爬
         </h1>
         <p className="text-[#6b7280] text-[15px] md:text-lg">
-          全国宠物玩家的聚集地
+          个人繁育者 · 专注高品质守宫繁育
         </p>
       </div>
 
-      {/* 品牌故事 */}
       <section className="mb-12">
         <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#1a7f5a] rounded-full inline-block"></span>
           品牌故事
         </h2>
         <p className="text-[15px] text-[#4b5563] leading-relaxed">
-          顺瑞益宠创立于 2026 年，致力于打造一个专业、可信、有温度的宠物玩家社区和交易平台。
-          在这里，你可以找到志同道合的宠友，分享养宠经验，也可以放心购买心仪的宠物。
+          给我爬是一个个人繁育者经营的专业爬宠工作室，专注于豹纹守宫、睫角守宫等高品质爬宠的繁育与销售。
+          每一只个体都经过精心养护，从孵化到出壳、从幼苗到成体，每一个环节都倾注了繁育者的心血。
+        </p>
+        <p className="mt-4 text-[15px] text-[#4b5563] leading-relaxed">
+          我们坚持&quot;养成系&quot;理念，不追求数量而注重品质。每一只在售个体都有详细的生长记录，
+          包括出生日期、基因品系、体重变化、性格特征等，让你买得放心、养得安心。
         </p>
       </section>
 
-      {/* 平台特色 */}
       <section className="mb-12">
         <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#1a7f5a] rounded-full inline-block"></span>
-          平台特色
+          繁育理念
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {[
-            { icon: '🛡️', title: '平台担保交易', desc: '资金托管，收货验货后再结算，保障买卖双方权益' },
-            { icon: '🏘️', title: '垂直兴趣社区', desc: '守宫、蛇类、龟友、观赏鱼、猫、狗、鸟等多个社区，精准找到同好' },
-            { icon: '⭐', title: '真实用户评价', desc: '基于真实交易的商家评价体系，好坏一目了然' },
-            { icon: '📱', title: '全平台覆盖', desc: 'Web、移动端、PWA，随时随地畅享养宠乐趣' },
+            { icon: '🦎', title: '品质优先', desc: '严格筛选种源，确保基因健康。每只个体单独记录，建立完整的繁育谱系' },
+            { icon: '🏠', title: '家庭式养护', desc: '小规模精细化管理，每一只都有充足的生长空间和个性化照料' },
+            { icon: '🛡️', title: '担保交易', desc: '全站交易通过支付宝担保完成，杜绝私下转账，保障买卖双方权益' },
+            { icon: '📦', title: '安全包装', desc: '专业爬宠运输包装，恒温恒湿，确保活体安全抵达' },
           ].map(feature => (
             <div key={feature.title} className="bg-white rounded-xl border border-[#f3f4f6] p-5 hover:shadow-sm transition-shadow">
               <span className="text-2xl">{feature.icon}</span>
@@ -53,27 +54,43 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 核心数据 */}
       <section className="mb-12">
         <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#1a7f5a] rounded-full inline-block"></span>
-          核心数据
+          担保交易说明
         </h2>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { value: '8+', label: '宠物品类' },
-            { value: '1,000+', label: '宠物玩家' },
-            { value: '50+', label: '优质商家' },
-          ].map(stat => (
-            <div key={stat.label} className="bg-gradient-to-br from-[#e8f5ef] to-white rounded-xl border border-[#1a7f5a]/10 p-4 text-center">
-              <div className="text-2xl md:text-3xl font-bold text-[#1a7f5a]">{stat.value}</div>
-              <div className="text-[12px] text-[#6b7280] mt-1">{stat.label}</div>
+        <div className="bg-[#e8f5ef] rounded-xl border border-[#1a7f5a]/20 p-6 space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">1️⃣</span>
+            <div>
+              <p className="font-semibold text-[#1f2937] text-[14px]">下单付款</p>
+              <p className="text-[13px] text-[#4b5563]">通过支付宝担保交易接口付款，款项由支付宝托管</p>
             </div>
-          ))}
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">2️⃣</span>
+            <div>
+              <p className="font-semibold text-[#1f2937] text-[14px]">商家发货</p>
+              <p className="text-[13px] text-[#4b5563]">收到订单后精心打包发货，录入物流单号供实时追踪</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">3️⃣</span>
+            <div>
+              <p className="font-semibold text-[#1f2937] text-[14px]">验货签收</p>
+              <p className="text-[13px] text-[#4b5563]">收到后6小时内凭完整开箱视频验货，确认无误后点击确认收货</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">4️⃣</span>
+            <div>
+              <p className="font-semibold text-[#1f2937] text-[14px]">结算完成</p>
+              <p className="text-[13px] text-[#4b5563]">买家确认收货后，款项自动结算。若有问题，依据开箱视频友好协商</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 联系方式 */}
       <section className="mb-12">
         <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#1a7f5a] rounded-full inline-block"></span>
@@ -82,45 +99,29 @@ export default function AboutPage() {
         <div className="bg-white rounded-xl border border-[#f3f4f6] p-6 space-y-3">
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
             <span className="text-lg">📧</span>
-            <span>联系邮箱：<a href="mailto:553043978@qq.com" className="text-[#1a7f5a] hover:underline">553043978@qq.com</a></span>
+            <span>邮箱：<a href="mailto:553043978@qq.com" className="text-[#1a7f5a] hover:underline">553043978@qq.com</a></span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
-            <span className="text-lg">💬</span>
-            <span>客服微信：SunrichPet_Official</span>
+            <span className="text-lg">🕐</span>
+            <span>工作时间：9:00 - 21:00</span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
-            <span className="text-lg">📱</span>
-            <span>关注我们：抖音 @SunrichPet · 小红书 @顺瑞益宠</span>
+            <span className="text-lg">🛡️</span>
+            <span>所有交易请通过本站支付宝担保完成，杜绝私下转账</span>
           </div>
         </div>
       </section>
 
-      {/* 加入我们 */}
       <section className="text-center bg-gradient-to-br from-[#e8f5ef] to-white rounded-2xl border border-[#1a7f5a]/10 p-8 md:p-10">
-        <h2 className="text-xl font-bold text-[#1f2937] mb-2">加入我们</h2>
+        <h2 className="text-xl font-bold text-[#1f2937] mb-2">感谢信任</h2>
         <p className="text-[14px] text-[#6b7280] mb-6">
-          无论你是宠物商家还是宠物玩家，都欢迎加入顺瑞益宠大家庭
+          每一份信任都来之不易，我会用心对待每一只个体、每一个订单
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/seller/apply"
-            className="inline-flex items-center justify-center rounded-full bg-[#1a7f5a] px-6 py-3 text-[14px] font-medium text-white hover:bg-[#166b4b] transition-colors min-h-[44px]"
-          >
-            商家入驻申请
-          </Link>
-          <Link
-            href="/b"
-            className="inline-flex items-center justify-center rounded-full border border-[#1a7f5a] px-6 py-3 text-[14px] font-medium text-[#1a7f5a] hover:bg-[#e8f5ef] transition-colors min-h-[44px]"
-          >
-            开始探索社区
-          </Link>
-        </div>
+        <Link href="/shop"
+          className="inline-flex items-center justify-center rounded-full bg-[#1a7f5a] px-6 py-3 text-[14px] font-medium text-white hover:bg-[#166b4b] transition-colors min-h-[44px]">
+          查看在售个体
+        </Link>
       </section>
-
-      {/* 页脚 */}
-      <p className="text-center text-[11px] text-[#d1d5db] mt-10">
-        © 2026 顺瑞益宠 SunrichPet.com · 保留所有权利
-      </p>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: '交易指南 | 顺瑞益宠', description: '顺瑞益宠交易指南：浏览商品、下单购买、担保交易流程、收货验货、确认收货。' };
+export const metadata: Metadata = { title: '交易指南 | 给我爬', description: '给我爬交易指南：浏览商品、下单购买、担保交易流程、收货验货、确认收货。' };
 
 const NAV = [
   { href: '/help/newbie', label: '新手指南' }, { href: '/help/trade', label: '交易指南' },

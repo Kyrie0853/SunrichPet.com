@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '豹纹守宫 — 品种百科 | 顺瑞益宠',
+  title: '豹纹守宫 — 品种百科 | 给我爬',
   description: '豹纹守宫（Eublepharis macularius）品种百科：学名、原产地、成体尺寸、寿命、温度湿度要求、饲养要点、性格特点。',
   keywords: '豹纹守宫,Leopard Gecko,守宫饲养,宠物品种,豹纹守宫温度,豹纹守宫喂食',
 };
@@ -73,7 +73,7 @@ export default function LeopardGeckoPage() {
         <Link href="/shop" className="text-[13px] text-[#1a7f5a] hover:underline">商城相关商品 →</Link>
       </div>
 
-      <p className="text-center text-[11px] text-[#d1d5db] mt-10">内容由顺瑞益宠整理，转载请注明出处</p>
+      <p className="text-center text-[11px] text-[#d1d5db] mt-10">内容由给我爬整理，转载请注明出处</p>
     </div>
   );
 }

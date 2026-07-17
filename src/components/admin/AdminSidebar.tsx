@@ -20,7 +20,7 @@ export default function AdminSidebar({ currentRole }: { currentRole: string }) {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 bg-white border-r border-[#f3f4f6] flex flex-col z-40">
       <div className="h-14 flex items-center gap-2 px-5 border-b border-[#f3f4f6]">
-        <span className="text-lg font-semibold text-[#1a7f5a]">顺瑞益宠</span>
+        <span className="text-lg font-semibold text-[#1a7f5a]">给我爬</span>
         <span className="text-[11px] text-[#9ca3af] bg-[#f3f4f6] px-1.5 py-0.5 rounded">后台</span>
       </div>
       <nav className="flex-1 py-3 px-2 space-y-0.5">

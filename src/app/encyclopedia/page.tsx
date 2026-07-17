@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: '宠物品种百科 | 顺瑞益宠',
+  title: '宠物品种百科 | 给我爬',
   description: '全面了解宠物品种：守宫、蛇类、龟类、观赏鱼、猫、狗、鸟类品种百科，含学名、饲养难度、原产地等详细信息。',
   keywords: '宠物品种,守宫品种,宠物蛇品种,龟类品种,观赏鱼品种,猫品种,狗品种,鸟品种,饲养难度,品种百科',
 };
@@ -56,7 +56,7 @@ export default function EncyclopediaPage() {
         ))}
       </div>
 
-      <p className="text-center text-[11px] text-[#d1d5db] mt-12">内容由顺瑞益宠整理，转载请注明出处</p>
+      <p className="text-center text-[11px] text-[#d1d5db] mt-12">内容由给我爬整理，转载请注明出处</p>
     </div>
   );
 }

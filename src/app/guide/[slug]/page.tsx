@@ -25,7 +25,7 @@ const FALLBACKS: Record<string, { title: string; content: string }> = {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const f = FALLBACKS[slug];
-  return { title: (f?.title || "指南") + " — 顺瑞益宠" };
+  return { title: (f?.title || "指南") + " — 给我爬" };
 }
 
 function renderContent(text: string) {

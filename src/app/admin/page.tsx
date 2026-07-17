@@ -6,18 +6,16 @@ export default async function AdminDashboard() {
   const supabase = await createClient();
 
   // 基础统计
-  const [users, posts, orders, reports] = await Promise.all([
+  const [users, products, orders] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
-    supabase.from("community_posts").select("*", { count: "exact", head: true }),
+    supabase.from("studio_products").select("*", { count: "exact", head: true }),
     supabase.from("orders").select("*", { count: "exact", head: true }),
-    supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const stats = [
     { label: "用户总数", value: users.count || 0, icon: "👥", color: "bg-blue-50 text-blue-700" },
-    { label: "帖子总数", value: posts.count || 0, icon: "📝", color: "bg-emerald-50 text-emerald-700" },
+    { label: "商品总数", value: products.count || 0, icon: "🦎", color: "bg-emerald-50 text-emerald-700" },
     { label: "订单总数", value: orders.count || 0, icon: "📦", color: "bg-amber-50 text-amber-700" },
-    { label: "待处理举报", value: reports.count || 0, icon: "🚨", color: "bg-red-50 text-red-700" },
   ];
 
   // 最近日志

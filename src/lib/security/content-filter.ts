@@ -3,6 +3,23 @@
 import { createClient } from '@/lib/supabase/server';
 import { cache } from 'react';
 
+/**
+ * 简单的 XSS 过滤 — 移除 HTML 标签和危险字符
+ * 用于商品名称、描述等用户可编辑的文本
+ */
+export function sanitizeText(input: string): string {
+  if (!input) return '';
+  return input
+    .replace(/<[^>]*>/g, '')           // 移除 HTML 标签
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;')
+    .trim();
+}
+
 export interface FilterResult {
   passed: boolean;
   matchedKeyword?: string;

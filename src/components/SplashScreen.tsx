@@ -44,7 +44,7 @@ export default function SplashScreen() {
           className="text-5xl md:text-6xl font-bold tracking-wider text-[#1a7f5a] select-none"
           style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}
         >
-          顺瑞益宠
+          给我爬
         </h1>
       </div>
 
@@ -54,7 +54,7 @@ export default function SplashScreen() {
           fadeOut ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"
         }`}
       >
-        全国宠物玩家的聚集地
+        个人爬宠工作室直营商城
       </p>
 
       {/* 底部呼吸箭头 */}

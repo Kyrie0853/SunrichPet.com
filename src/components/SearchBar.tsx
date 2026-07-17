@@ -23,7 +23,7 @@ export function SearchBar({ className }: { className?: string }) {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="搜索帖子、商品..."
+          placeholder="搜索爬宠个体..."
           maxLength={100}
           className="w-full h-9 rounded-full border border-[#e5e7eb] bg-[#f3f4f6] py-2 pl-4 pr-10 text-[13px] outline-none transition-all duration-200 focus:border-[#1a7f5a] focus:bg-white focus:ring-1 focus:ring-[#1a7f5a]/15 placeholder:text-[#9ca3af]"
         />
