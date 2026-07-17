@@ -149,7 +149,7 @@ export default function AdminUsersPage() {
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[#1f2937] text-[15px] truncate">{u.display_name || "未知"}</span>
                     <RoleBadge role={u.role} />
-                    {u.is_banned && <span className="text-[10px] bg-red-50 text-red-600 rounded-full px-1.5 py-0.5 font-medium">已封禁</span>}
+                    {u.banned && <span className="text-[10px] bg-red-50 text-red-600 rounded-full px-1.5 py-0.5 font-medium">已封禁</span>}
                   </div>
                   {/* 第二行：邮箱 */}
                   <p className="text-[12px] text-[#9ca3af] truncate mt-0.5">{u.email || "无邮箱"}</p>
@@ -178,14 +178,14 @@ export default function AdminUsersPage() {
                   {/* 封禁按钮 */}
                   <button onClick={() =>
                     setConfirm({
-                      message: u.is_banned ? "确定解封该用户？" : "确定封禁该用户？封禁后该用户无法登录。",
-                      label: u.is_banned ? "确认解封" : "确认封禁",
-                      cls: u.is_banned ? "bg-emerald-500 hover:bg-emerald-600" : "bg-red-500 hover:bg-red-600",
-                      action: () => { toggleBan(u.id, !u.is_banned); setConfirm(null); }
+                      message: u.banned ? "确定解封该用户？" : "确定封禁该用户？封禁后该用户无法登录。",
+                      label: u.banned ? "确认解封" : "确认封禁",
+                      cls: u.banned ? "bg-emerald-500 hover:bg-emerald-600" : "bg-red-500 hover:bg-red-600",
+                      action: () => { toggleBan(u.id, !u.banned); setConfirm(null); }
                     })
                   } className={"rounded-full px-4 py-2 text-[12px] font-medium min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0 " +
-                    (u.is_banned ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500")}>
-                    {u.is_banned ? "解封" : "封禁"}
+                    (u.banned ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500")}>
+                    {u.banned ? "解封" : "封禁"}
                   </button>
                 </div>
               )}
@@ -228,9 +228,9 @@ export default function AdminUsersPage() {
                         <div className="flex items-center justify-end gap-1.5">
                           <button onClick={() => setConfirm({ message: `确定将用户角色改为「管理员」?`, label: "确认", cls: "bg-[#1a7f5a] hover:bg-[#166b4b]", action: () => { changeRole(u.id, "admin"); setConfirm(null); } })}
                             className="rounded-full px-2.5 py-1 text-[11px] text-[#6b7280] hover:bg-[#f3f4f6]">改角色</button>
-                          <button onClick={() => setConfirm({ message: u.is_banned ? "确定解封？" : "确定封禁？", label: u.is_banned ? "解封" : "封禁", cls: u.is_banned ? "bg-emerald-500 hover:bg-emerald-600" : "bg-red-500 hover:bg-red-600", action: () => { toggleBan(u.id, !u.is_banned); setConfirm(null); } })}
-                            className={"rounded-full px-2.5 py-1 text-[11px] " + (u.is_banned ? "text-emerald-600 hover:bg-emerald-50" : "text-red-500 hover:bg-red-50")}>
-                            {u.is_banned ? "解封" : "封禁"}
+                          <button onClick={() => setConfirm({ message: u.banned ? "确定解封？" : "确定封禁？", label: u.banned ? "解封" : "封禁", cls: u.banned ? "bg-emerald-500 hover:bg-emerald-600" : "bg-red-500 hover:bg-red-600", action: () => { toggleBan(u.id, !u.banned); setConfirm(null); } })}
+                            className={"rounded-full px-2.5 py-1 text-[11px] " + (u.banned ? "text-emerald-600 hover:bg-emerald-50" : "text-red-500 hover:bg-red-50")}>
+                            {u.banned ? "解封" : "封禁"}
                           </button>
                         </div>
                       )}

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const role = searchParams.get("role") || "";
   const page = parseInt(searchParams.get("page") || "1");
 
-  let query = supabase.from("profiles").select("id,display_name,email,avatar_url,role,created_at,points", { count: "estimated" }).order("created_at", { ascending: false });
+  let query = supabase.from("profiles").select("id,display_name,email,avatar_url,role,created_at,points,banned", { count: "estimated" }).order("created_at", { ascending: false });
 
   if (q) query = query.ilike("display_name", `%${q}%`);
   if (role) query = query.eq("role", role);
