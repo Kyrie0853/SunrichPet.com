@@ -85,10 +85,13 @@ export default async function ProfilePage() {
             {profileError.code === "42703" && (
               <p className="text-gray-600"><b>列不存在。</b>请执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code></p>
             )}
+            {profileError.code === "42P17" && (
+              <p className="text-gray-600"><b>RLS 策略无限递归。</b>请立即执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-rls-recursion.sql</code> 清除旧策略并重建</p>
+            )}
             {profileError.code === "PGRST116" && (
               <p className="text-gray-600"><b>无记录。</b>请执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code></p>
             )}
-            {!["42P01", "42501", "42703", "PGRST116", "EXCEPTION"].includes(profileError.code) && (
+            {!["42P01", "42P17", "42501", "42703", "PGRST116", "EXCEPTION"].includes(profileError.code) && (
               <p className="text-gray-600"><b>未知错误。</b>请在 Supabase SQL Editor 手动运行：<code className="mx-1 rounded bg-gray-100 px-1 break-all">SELECT * FROM profiles WHERE id = '{user.id}';</code></p>
             )}
           </div>

@@ -64,19 +64,24 @@ WHERE id IN (
 );
 */
 
--- Step 8: 补充 RLS 策略 — 允许用户自行创建/补建 profile
+-- Step 8: 删除所有旧 RLS 策略（防止递归）
+DROP POLICY IF EXISTS "管理员可管理所有用户资料" ON public.profiles;
+DROP POLICY IF EXISTS "用户可读取自己的资料" ON public.profiles;
+DROP POLICY IF EXISTS "用户可更新自己的资料" ON public.profiles;
 DROP POLICY IF EXISTS "允许触发器创建用户资料" ON public.profiles;
-CREATE POLICY "允许触发器创建用户资料" ON public.profiles
+
+-- Step 9: 重建无递归 RLS 策略
+-- SELECT: 所有认证用户可读（profile 不含密码等敏感数据）
+CREATE POLICY "认证用户可读所有资料" ON public.profiles
+  FOR SELECT TO authenticated
+  USING (true);
+
+-- INSERT: 用户只能创建自己的 profile
+CREATE POLICY "用户可创建自己的资料" ON public.profiles
   FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = id);
 
--- Step 9: 修复 RLS 策略 — 确保用户能读写自己的 profile
-DROP POLICY IF EXISTS "用户可读取自己的资料" ON public.profiles;
-CREATE POLICY "用户可读取自己的资料" ON public.profiles
-  FOR SELECT TO authenticated
-  USING (auth.uid() = id);
-
-DROP POLICY IF EXISTS "用户可更新自己的资料" ON public.profiles;
+-- UPDATE: 用户只能更新自己的 profile
 CREATE POLICY "用户可更新自己的资料" ON public.profiles
   FOR UPDATE TO authenticated
   USING (auth.uid() = id)
