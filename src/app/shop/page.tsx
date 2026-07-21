@@ -38,16 +38,28 @@ export default async function ShopPage({ searchParams }: Props) {
         .from("profiles")
         .select("role")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       isAdmin = p?.role === "admin" || p?.role === "super_admin";
     }
   } catch { /* ignore */ }
 
   const { status, species, morph, min_price, max_price } = await searchParams;
 
-  const products = await getProductsByStatus(status, species, morph, min_price, max_price);
-  const allSpecies = await getAllSpecies();
-  const allMorphs = await getAllMorphs();
+  let products: StudioProduct[] = [];
+  let allSpecies: string[] = [];
+  let allMorphs: string[] = [];
+  let shopError: { code: string; message: string } | null = null;
+
+  try {
+    products = await getProductsByStatus(status, species, morph, min_price, max_price);
+    allSpecies = await getAllSpecies();
+    allMorphs = await getAllMorphs();
+  } catch (err: any) {
+    shopError = {
+      code: err?.code || "UNKNOWN",
+      message: err?.message || String(err),
+    };
+  }
 
   const activeStatus = status;
 
@@ -172,6 +184,15 @@ export default async function ShopPage({ searchParams }: Props) {
           </Link>
         ))}
       </div>
+
+      {/* 错误展示 */}
+      {shopError && (
+        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5 text-[13px]">
+          <p className="font-bold text-red-600 mb-2">数据加载失败</p>
+          <div className="font-mono text-red-500">错误码: {shopError.code}</div>
+          <div className="font-mono text-red-500 mt-1">{shopError.message}</div>
+        </div>
+      )}
 
       {/* 产品网格 */}
       {products.length === 0 ? (
