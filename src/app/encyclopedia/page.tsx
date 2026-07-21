@@ -11,7 +11,6 @@ const species = [
   { slug: 'leopard-gecko', name: '豹纹守宫', latin: 'Eublepharis macularius', category: '守宫', difficulty: 2, origin: '巴基斯坦/印度', desc: '最受欢迎的入门宠物之一，性格温顺、体型适中、饲养简单。', color: '#f0a04b' },
   { slug: 'crested-gecko', name: '睫角守宫', latin: 'Correlophus ciliatus', category: '守宫', difficulty: 2, origin: '新喀里多尼亚', desc: '无需UVB灯，可喂食专用果泥饲料，非常适合新手。', color: '#e8795e' },
   { slug: 'gargoyle-gecko', name: '盖勾亚守宫', latin: 'Rhacodactylus auriculatus', category: '守宫', difficulty: 3, origin: '新喀里多尼亚', desc: '独特的外观和花纹变化，适合有一定经验的饲养者。', color: '#8b5cf6' },
-  { slug: 'ball-python', name: '球蟒', latin: 'Python regius', category: '蛇类', difficulty: 3, origin: '西非/中非', desc: '性格温顺的宠物蛇，体型适中，丰富的基因变异使其备受欢迎。', color: '#d4a853' },
   { slug: 'corn-snake', name: '玉米蛇', latin: 'Pantherophis guttatus', category: '蛇类', difficulty: 2, origin: '北美', desc: '最受欢迎的宠物蛇品种之一，色彩丰富、性格温顺、饲养简单。', color: '#e8793e' },
   { slug: 'red-eared-slider', name: '巴西龟', latin: 'Trachemys scripta elegans', category: '龟类', difficulty: 1, origin: '北美', desc: '最常见的宠物龟，适应性强，但需要充足的阳光和清洁的水质。', color: '#4d8c5e' },
   { slug: 'russian-tortoise', name: '四爪陆龟', latin: 'Testudo horsfieldii', category: '龟类', difficulty: 3, origin: '中亚', desc: '体型较小的陆龟，适合室内饲养，但需要特定的温湿度环境。', color: '#6b8e4e' },

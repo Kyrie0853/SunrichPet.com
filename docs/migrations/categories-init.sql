@@ -41,7 +41,6 @@ FROM top, (VALUES
   ('玉米蛇', 'corn-snake'),
   ('猪鼻蛇', 'hognose-snake'),
   ('束带蛇', 'garter-snake'),
-  ('球蟒', 'ball-python')
 ) AS v(name, slug)
 WHERE NOT EXISTS (SELECT 1 FROM product_categories WHERE slug = v.slug);
 
