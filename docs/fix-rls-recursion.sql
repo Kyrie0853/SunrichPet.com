@@ -50,7 +50,7 @@ DO $$
 DECLARE
   uid UUID := '7019c3e3-26df-4142-aec8-2a1f1eee5bc8';
   p RECORD;
-  policies TEXT[];
+  r RECORD;
 BEGIN
   -- 检查该用户的 profile
   SELECT * INTO p FROM public.profiles WHERE id = uid;
@@ -67,10 +67,10 @@ BEGIN
   -- 列出当前所有 policies
   RAISE NOTICE '----------------------------------------';
   RAISE NOTICE '当前 profiles RLS 策略:';
-  FOR rec IN (
+  FOR r IN (
     SELECT policyname, cmd FROM pg_policies WHERE tablename = 'profiles'
   ) LOOP
-    RAISE NOTICE '  - % (%)', rec.policyname, rec.cmd;
+    RAISE NOTICE '  - % (%)', r.policyname, r.cmd;
   END LOOP;
   RAISE NOTICE '========================================';
   RAISE NOTICE '✅ RLS 递归问题已修复，请刷新页面验证';
