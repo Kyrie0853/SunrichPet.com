@@ -129,7 +129,7 @@ export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
 
         result.push({ species: cat.name, count: active.length, firstImage: firstImg });
       }
-      if (result.length > 0) return result;
+      if (result.some(c => c.count > 0)) return result;
     }
 
     // 回退方案：直接从 products species 字段聚合
