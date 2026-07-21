@@ -90,32 +90,79 @@ export interface SpeciesCategory {
 
 export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("studio_products")
-    .select("species, images, status")
-    .in("status", ["available", "presale"]);
 
-  const speciesMap = new Map<string, { count: number; firstImage: string | null }>();
-  (data || []).forEach((p: any) => {
-    const existing = speciesMap.get(p.species);
-    if (existing) {
-      existing.count++;
-      if (!existing.firstImage && p.images?.length > 0) {
-        existing.firstImage = p.images[0];
-      }
-    } else {
-      speciesMap.set(p.species, {
-        count: 1,
-        firstImage: p.images?.length > 0 ? p.images[0] : null,
+  try {
+    // 优先从 product_categories 分类表获取
+    const { data: cats, error: catErr } = await supabase
+      .from("product_categories")
+      .select("*")
+      .is("parent_id", null)
+      .order("name");
+
+    if (!catErr && cats && cats.length > 0) {
+      // 按顶级分类聚合在售商品
+      const { data: allChildren } = await supabase
+        .from("product_categories")
+        .select("id, parent_id")
+        .not("parent_id", "is", null)
+        .throwOnError();
+
+      const childIdsByParent = new Map<string, string[]>();
+      (allChildren || []).forEach((c: any) => {
+        if (!childIdsByParent.has(c.parent_id)) childIdsByParent.set(c.parent_id, []);
+        childIdsByParent.get(c.parent_id)!.push(c.id);
       });
-    }
-  });
 
-  return Array.from(speciesMap.entries()).map(([species, info]) => ({
-    species,
-    count: info.count,
-    firstImage: info.firstImage,
-  }));
+      const result: SpeciesCategory[] = [];
+      for (const cat of cats) {
+        const childIds = childIdsByParent.get(cat.id) || [];
+        const allIds = [cat.id, ...childIds];
+
+        const { data: products } = await supabase
+          .from("studio_products")
+          .select("images, status, category_id")
+          .in("status", ["available", "presale"])
+          .in("category_id", allIds);
+
+        const active = (products || []).filter((p: any) => allIds.includes(p.category_id));
+        const firstImg = active.find((p: any) => p.images?.length > 0)?.images?.[0] || null;
+
+        result.push({ species: cat.name, count: active.length, firstImage: firstImg });
+      }
+      if (result.length > 0) return result;
+    }
+
+    // 回退方案：直接从 products species 字段聚合
+    const { data: fallback } = await supabase
+      .from("studio_products")
+      .select("species, images, status")
+      .in("status", ["available", "presale"]);
+
+    const speciesMap = new Map<string, { count: number; firstImage: string | null }>();
+    (fallback || []).forEach((p: any) => {
+      const existing = speciesMap.get(p.species);
+      if (existing) {
+        existing.count++;
+        if (!existing.firstImage && p.images?.length > 0) existing.firstImage = p.images[0];
+      } else {
+        speciesMap.set(p.species, { count: 1, firstImage: p.images?.length > 0 ? p.images[0] : null });
+      }
+    });
+
+    const fallbackResult = Array.from(speciesMap.entries()).map(([species, info]) => ({
+      species, count: info.count, firstImage: info.firstImage,
+    }));
+    if (fallbackResult.length > 0) return fallbackResult;
+  } catch (err) {
+    console.error("getSpeciesCategories error:", err);
+    // 继续往下走，返回占位分类
+  }
+
+  // 最终兜底：返回硬编码的占位分类（数据库无数据时保证首页不空白）
+  return [
+    { species: "守宫", count: 0, firstImage: null },
+    { species: "蛇类", count: 0, firstImage: null },
+  ];
 }
 
 export async function getAllMorphs() {

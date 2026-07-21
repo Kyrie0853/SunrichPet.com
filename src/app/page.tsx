@@ -80,10 +80,18 @@ export default async function HomePage() {
           全部爬宠分类
         </h2>
 
-        {categories.length === 0 ? (
-          <div className="py-20 text-center rounded-xl bg-gray-50 border border-dashed border-gray-200">
+        {categories.filter(c => c.count > 0).length === 0 ? (
+          <div className="py-12 text-center rounded-xl bg-gradient-to-b from-[#f0faf5] to-white border border-dashed border-[#1a7f5a]/30">
             <p className="text-5xl mb-4">🦎</p>
-            <p className="text-[#9ca3af] text-[15px]">暂无在售爬宠，请耐心等待上架</p>
+            <p className="text-[#1f2937] text-[16px] font-medium mb-2">即将上架，敬请期待</p>
+            <p className="text-[#9ca3af] text-[13px] mb-4">首批高品质爬宠正在精心准备中</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {categories.map(c => (
+                <span key={c.species} className="rounded-full bg-[#e8f5ef] px-3 py-1 text-[12px] font-medium text-[#1a7f5a]">
+                  {c.species}
+                </span>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -132,13 +140,7 @@ export default async function HomePage() {
 
       {/* ===== 工作室信息 ===== */}
       <section className="mb-12 rounded-2xl bg-white border border-[#f3f4f6] p-5 md:p-6">
-        <div className="grid gap-5 md:grid-cols-3">
-          <div>
-            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">工作室实名信息</h3>
-            <p className="text-[13px] text-[#6b7280] leading-relaxed">
-              给我爬 · 个人繁育者实名认证<br />专注于豹纹守宫、睫角守宫等高品质爬宠繁育
-            </p>
-          </div>
+        <div className="grid gap-5 md:grid-cols-2">
           <div>
             <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">联系方式</h3>
             <p className="text-[13px] text-[#6b7280] leading-relaxed">
