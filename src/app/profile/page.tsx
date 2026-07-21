@@ -10,24 +10,32 @@ export default async function ProfilePage() {
   if (!user) redirect("/auth");
 
   let profile: any = null;
-  let profileError: string | null = null;
+  let profileError: { code: string; message: string; hint: string } | null = null;
 
   try {
-    const { data: p, error: profileErr } = await supabase
+    // 使用 maybeSingle() 而非 single() — 0行返回null不抛异常
+    const { data: p, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
-    // PGRST116 = 0 rows, 是预期情况而非错误
-    if (profileErr && profileErr.code !== "PGRST116") {
-      console.error("Profile query error:", profileErr.message, profileErr.code);
-      profileError = "用户信息加载失败，请重试";
+    if (error) {
+      // 真正的数据库错误（非0行）
+      profileError = {
+        code: error.code || "UNKNOWN",
+        message: error.message || String(error),
+        hint: (error as any).hint || "",
+      };
+    } else {
+      profile = p; // p 可能是 null
     }
-    profile = p;
   } catch (err: any) {
-    console.error("Profile query exception:", err?.message || err);
-    profileError = "用户信息加载失败，请重试";
+    profileError = {
+      code: "EXCEPTION",
+      message: err?.message || String(err),
+      hint: err?.cause || "",
+    };
   }
 
   const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "用户";
@@ -35,11 +43,59 @@ export default async function ProfilePage() {
   if (profileError) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10">
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-          <p className="text-5xl mb-4">😥</p>
-          <p className="text-[16px] font-medium text-red-700 mb-2">{profileError}</p>
-          <p className="text-[13px] text-red-500 mb-4">请在 Supabase SQL Editor 中执行 <code className="rounded bg-red-100 px-1 text-[12px]">docs/fix-profiles-missing.sql</code></p>
-          <Link href="/" className="inline-block rounded-xl bg-[#1a7f5a] px-5 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors">返回首页</Link>
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-6 md:p-8">
+          <p className="text-5xl mb-4 text-center">😥</p>
+          <h2 className="text-[16px] font-bold text-red-700 mb-4 text-center">profiles 表查询失败</h2>
+
+          {/* 错误详情 */}
+          <div className="mb-4 rounded-xl bg-white border border-red-100 p-4 text-[13px] font-mono">
+            <div className="mb-1">
+              <span className="text-red-500 font-bold">错误码：</span>
+              <span className="text-gray-700">{profileError.code}</span>
+            </div>
+            <div className="mb-1">
+              <span className="text-red-500 font-bold">消息：</span>
+              <span className="text-gray-700">{profileError.message}</span>
+            </div>
+            {profileError.hint && (
+              <div className="mb-1">
+                <span className="text-red-500 font-bold">提示：</span>
+                <span className="text-gray-600">{profileError.hint}</span>
+              </div>
+            )}
+            <div className="mt-2 pt-2 border-t border-red-50">
+              <span className="text-red-500 font-bold">用户 ID：</span>
+              <span className="text-gray-500 break-all">{user.id}</span>
+            </div>
+            <div>
+              <span className="text-red-500 font-bold">邮箱：</span>
+              <span className="text-gray-500">{user.email}</span>
+            </div>
+          </div>
+
+          {/* 修复指引 */}
+          <div className="mb-4 rounded-xl bg-white border border-red-100 p-4 text-[13px]">
+            <p className="font-bold text-red-600 mb-2">修复指引：</p>
+            {profileError.code === "42P01" && (
+              <p className="text-gray-600"><b>表不存在。</b>请在 Supabase SQL Editor 执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/schema.sql</code> 然后 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code></p>
+            )}
+            {profileError.code === "42501" && (
+              <p className="text-gray-600"><b>权限拒绝 (RLS)。</b>请执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code> 中的 Step 9</p>
+            )}
+            {profileError.code === "42703" && (
+              <p className="text-gray-600"><b>列不存在。</b>请执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code></p>
+            )}
+            {profileError.code === "PGRST116" && (
+              <p className="text-gray-600"><b>无记录。</b>请执行 <code className="mx-1 rounded bg-gray-100 px-1">docs/fix-profiles-missing.sql</code></p>
+            )}
+            {!["42P01", "42501", "42703", "PGRST116", "EXCEPTION"].includes(profileError.code) && (
+              <p className="text-gray-600"><b>未知错误。</b>请在 Supabase SQL Editor 手动运行：<code className="mx-1 rounded bg-gray-100 px-1 break-all">SELECT * FROM profiles WHERE id = '{user.id}';</code></p>
+            )}
+          </div>
+
+          <div className="text-center">
+            <Link href="/" className="inline-block rounded-xl bg-[#1a7f5a] px-5 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors">返回首页</Link>
+          </div>
         </div>
       </div>
     );
