@@ -138,13 +138,7 @@ export default async function HomePage() {
 
       {/* 工作室信息 */}
       <section className="mb-12 rounded-2xl bg-white border border-[#f3f4f6] p-5 md:p-6">
-        <div className="grid gap-5 md:grid-cols-3">
-          <div>
-            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">工作室实名信息</h3>
-            <p className="text-[13px] text-[#6b7280] leading-relaxed">
-              给我爬 · 个人繁育者实名认证<br />专注于豹纹守宫、睫角守宫等高品质爬宠繁育
-            </p>
-          </div>
+        <div className="grid gap-5 md:grid-cols-2">
           <div>
             <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">联系方式</h3>
             <p className="text-[13px] text-[#6b7280] leading-relaxed">

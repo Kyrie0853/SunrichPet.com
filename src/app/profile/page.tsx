@@ -9,13 +9,43 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  let profile: any = null;
+  let profileError: string | null = null;
+
+  try {
+    const { data: p, error: profileErr } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileErr && profileErr.code !== "PGRST116") {
+      // PGRST116 = 0 rows (预期情况：用户没有 profile 记录)
+      console.error("Profile query error:", profileErr);
+      profileError = "用户信息加载失败，请重试";
+    }
+    profile = p;
+  } catch (err) {
+    console.error("Profile query exception:", err);
+    profileError = "用户信息加载失败，请重试";
+  }
 
   const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "用户";
+
+  if (profileError) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+          <p className="text-5xl mb-4">😥</p>
+          <p className="text-[16px] font-medium text-red-700 mb-2">{profileError}</p>
+          <p className="text-[13px] text-red-500 mb-4">请确认 Supabase 数据库中 profiles 表已初始化，并执行 docs/fix-profiles-missing.sql</p>
+          <Link href="/" className="inline-block rounded-xl bg-[#1a7f5a] px-5 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors">
+            返回首页
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -27,6 +57,12 @@ export default async function ProfilePage() {
             <p className="text-[13px] text-[#9ca3af]">{user.email}</p>
           </div>
         </div>
+
+        {!profile && (
+          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-700">
+            ⚠️ 用户资料记录不存在，部分功能可能受限。请在 Supabase SQL Editor 中执行 <code className="rounded bg-amber-100 px-1 text-[12px]">docs/fix-profiles-missing.sql</code>
+          </div>
+        )}
 
         <div className="space-y-2">
           <Link href="/orders" className="flex items-center gap-3 rounded-xl border border-[#f3f4f6] p-4 hover:bg-[#f9fafb] transition-colors">
