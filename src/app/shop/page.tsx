@@ -46,6 +46,7 @@ export default async function ShopPage({ searchParams }: Props) {
   } catch { /* ignore */ }
 
   const sp = await searchParams;
+  console.log("[ShopPage] searchParams:", JSON.stringify(sp));
   const status = sp?.status || "";
   const species = sp?.species || "";
   const morph = sp?.morph || "";
@@ -53,24 +54,30 @@ export default async function ShopPage({ searchParams }: Props) {
   const subcategory = sp?.subcategory || "";
   const min_price = sp?.min_price || "";
   const max_price = sp?.max_price || "";
+  console.log("[ShopPage] parsed:", { status, category, subcategory });
 
   let products: StudioProduct[] = [];
   let subcategories: Subcategory[] = [];
   let categoryName = "";
-  let shopError: { code: string; message: string } | null = null;
+  let shopError: { code: string; message: string; detail: string } | null = null;
 
   try {
+    console.log("[ShopPage] fetching products with category:", category, "subcategory:", subcategory);
     if (category) {
       products = await getProductsByStatus(status || undefined, species || undefined, morph || undefined, min_price || undefined, max_price || undefined, category, subcategory || undefined);
+      console.log("[ShopPage] products count:", products.length);
       subcategories = await getSubcategories(category);
       categoryName = await getCategoryName(category);
     } else {
       products = await getProductsByStatus(status || undefined, species || undefined, morph || undefined, min_price || undefined, max_price || undefined);
+      console.log("[ShopPage] products count (no category):", products.length);
     }
   } catch (err: any) {
+    console.error("[ShopPage] FATAL ERROR:", err?.message, err?.code, err?.stack?.split("\n")?.[0]);
     shopError = {
       code: err?.code || "UNKNOWN",
       message: err?.message || String(err),
+      detail: err?.stack?.split("\n")?.slice(0, 3)?.join(" | ") || "",
     };
   }
 
@@ -183,6 +190,7 @@ export default async function ShopPage({ searchParams }: Props) {
           <p className="font-bold text-red-600 mb-2">数据加载失败</p>
           <div className="font-mono text-red-500">错误码: {shopError.code}</div>
           <div className="font-mono text-red-500 mt-1">{shopError.message}</div>
+        {shopError.detail && <div className="font-mono text-red-400 mt-1 text-[11px]">{shopError.detail}</div>}
         </div>
       )}
 

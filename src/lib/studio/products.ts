@@ -46,7 +46,10 @@ export async function getProductsByStatus(
   subcategory?: string
 ) {
   const supabase = await createClient();
-  let query = supabase.from("studio_products").select("*");
+  console.log("[getProductsByStatus] called with:", { status, species, morph, minPrice, maxPrice, category, subcategory });
+
+  try {
+    let query = supabase.from("studio_products").select("*");
 
   if (status && status !== "all") {
     query = query.eq("status", status);
@@ -97,10 +100,14 @@ export async function getProductsByStatus(
 
   const { data } = await query.order("created_at", { ascending: false });
 
-  const products = (data || []) as StudioProduct[];
-  const active = products.filter(p => p.status !== "sold");
-  const sold = products.filter(p => p.status === "sold");
-  return [...active, ...sold];
+    const products = (data || []) as StudioProduct[];
+    const active = products.filter(p => p.status !== "sold");
+    const sold = products.filter(p => p.status === "sold");
+    return [...active, ...sold];
+  } catch (err: any) {
+    console.error("[getProductsByStatus] ERROR:", err?.message, err?.code, err?.stack);
+    throw new Error(`getProductsByStatus failed: ${err?.message || err}`);
+  }
 }
 
 // 获取子分类列表
@@ -112,21 +119,28 @@ export interface Subcategory {
 
 export async function getSubcategories(parentSlug: string): Promise<Subcategory[]> {
   const supabase = await createClient();
-  const { data: parent } = await supabase
-    .from("product_categories")
-    .select("id")
-    .eq("slug", parentSlug)
-    .maybeSingle();
+  console.log("[getSubcategories] called with parentSlug:", parentSlug);
+  try {
+    const { data: parent } = await supabase
+      .from("product_categories")
+      .select("id")
+      .eq("slug", parentSlug)
+      .maybeSingle();
 
-  if (!parent) return [];
+    if (!parent) { console.log("[getSubcategories] parent not found for slug:", parentSlug); return []; }
 
-  const { data } = await supabase
-    .from("product_categories")
-    .select("id, name, slug")
-    .eq("parent_id", parent.id)
-    .order("name");
+    const { data } = await supabase
+      .from("product_categories")
+      .select("id, name, slug")
+      .eq("parent_id", parent.id)
+      .order("name");
 
-  return (data || []) as Subcategory[];
+    console.log("[getSubcategories] found", data?.length || 0, "subcategories");
+    return (data || []) as Subcategory[];
+  } catch (err: any) {
+    console.error("[getSubcategories] ERROR:", err?.message, err?.code);
+    throw new Error(`getSubcategories failed: ${err?.message || err}`);
+  }
 }
 
 // 根据 slug 获取分类名称
