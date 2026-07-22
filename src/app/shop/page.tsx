@@ -103,17 +103,6 @@ export default async function ShopPage({ searchParams }: Props) {
           </h1>
           <p className="text-[14px] text-[#6b7280] mt-0.5">每一只个体都经过精心养护，支付宝担保交易保障您的权益</p>
         </div>
-        {isAdmin && (
-          <Link
-            href="/studio/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors shrink-0"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            添加新个体
-          </Link>
-        )}
       </div>
 
       <div className="mb-6 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
