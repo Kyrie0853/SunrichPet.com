@@ -16,6 +16,19 @@ export default async function StudioDashboardPage() {
   return (
     <div>
       <h1 className="text-lg md:text-xl font-semibold text-[#1f2937] mb-6">工作室仪表盘</h1>
+      {/* 快捷发布入口 */}
+      <Link href="/studio/dashboard/products/new"
+        className="mb-6 flex items-center gap-4 rounded-2xl bg-gradient-to-r from-[#1a7f5a] to-emerald-500 p-5 text-white hover:from-[#166b4b] hover:to-emerald-600 transition-all shadow-md hover:shadow-lg">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-2xl">+</div>
+        <div>
+          <p className="text-[16px] font-bold">添加新个体</p>
+          <p className="text-[13px] text-white/80">上传图片，填写信息，一键发布在售爬宠</p>
+        </div>
+        <svg className="ml-auto h-5 w-5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </Link>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
         {[{ label: "总个体数", value: productCount || 0, color: "bg-[#e8f5ef] text-[#1a7f5a]" }, { label: "可发货", value: available, color: "bg-emerald-50 text-emerald-600" }, { label: "预售中", value: presale, color: "bg-orange-50 text-orange-600" }, { label: "总订单", value: orderCount || 0, color: "bg-blue-50 text-blue-600" }].map(stat => (
           <div key={stat.label} className={"rounded-xl p-4 " + stat.color}>

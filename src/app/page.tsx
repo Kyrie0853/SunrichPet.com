@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import { getSpeciesCategories, type SpeciesCategory } from "@/lib/studio/products";
 import type { Metadata } from "next";
 
@@ -14,21 +13,6 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const supabase = await createClient();
-
-  let isAdmin = false;
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: p } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      isAdmin = p?.role === "admin" || p?.role === "super_admin";
-    }
-  } catch { /* ignore */ }
-
   const categories = await getSpeciesCategories();
 
   return (
@@ -55,22 +39,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== 担保交易标识 + 管理按钮 ===== */}
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+      {/* ===== 担保交易标识 ===== */}
+      <div className="mb-8">
         <div className="rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
           🛡️ 支付宝担保交易 · 收货验货后付款
         </div>
-        {isAdmin && (
-          <Link
-            href="/studio/dashboard"
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] transition-colors"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            添加新个体
-          </Link>
-        )}
       </div>
 
       {/* ===== 分类卡片 ===== */}

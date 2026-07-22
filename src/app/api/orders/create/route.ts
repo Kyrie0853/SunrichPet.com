@@ -8,8 +8,16 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "请先登录" }, { status: 401 });
 
-    const { product_id, shipping_address, buyer_message } = await req.json();
+    const body = await req.json();
+    const { product_id, buyer_message } = body;
     if (!product_id) return NextResponse.json({ error: "缺少商品ID" }, { status: 400 });
+
+    // 支持新版独立字段 + 旧版合并字段
+    const recipientName = body.recipient_name || "";
+    const recipientPhone = body.recipient_phone || "";
+    const recipientAddress = body.recipient_address || "";
+    const shippingAddress = body.shipping_address
+      || [recipientName, recipientPhone, recipientAddress].filter(Boolean).join(" · ");
 
     const { data: product } = await supabase
       .from("studio_products")
@@ -28,7 +36,7 @@ export async function POST(req: Request) {
       product_name: product.name,
       status: "pending",
       total_amount: product.price,
-      shipping_address: shipping_address || "",
+      shipping_address: shippingAddress,
       payment_method: "alipay",
     }).select("id").single();
 
@@ -40,7 +48,12 @@ export async function POST(req: Request) {
       order_id: order.id,
       action: "created",
       operator_id: user.id,
-      details: { productId: product_id, amount: product.price, method: "alipay" },
+      details: {
+        productId: product_id,
+        amount: product.price,
+        method: "alipay",
+        recipient: { name: recipientName, phone: recipientPhone, address: recipientAddress },
+      },
     });
 
     let payUrl: string | null = null;
