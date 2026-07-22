@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams?: { status?: string; species?: string; morph?: string; category?: string; subcategory?: string; min_price?: string; max_price?: string };
+  searchParams: Promise<{ status?: string; species?: string; morph?: string; category?: string; subcategory?: string; min_price?: string; max_price?: string }>;
 };
 
 const STATUSES = [
@@ -45,14 +45,14 @@ export default async function ShopPage({ searchParams }: Props) {
     }
   } catch { /* ignore */ }
 
-  const sp = searchParams || {};
-  const status = sp.status || "";
-  const species = sp.species || "";
-  const morph = sp.morph || "";
-  const category = sp.category || "";
-  const subcategory = sp.subcategory || "";
-  const min_price = sp.min_price || "";
-  const max_price = sp.max_price || "";
+  const sp = await searchParams;
+  const status = sp?.status || "";
+  const species = sp?.species || "";
+  const morph = sp?.morph || "";
+  const category = sp?.category || "";
+  const subcategory = sp?.subcategory || "";
+  const min_price = sp?.min_price || "";
+  const max_price = sp?.max_price || "";
 
   let products: StudioProduct[] = [];
   let subcategories: Subcategory[] = [];
