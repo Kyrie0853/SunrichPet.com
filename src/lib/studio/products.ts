@@ -46,7 +46,6 @@ export async function getProductsByStatus(
   subcategory?: string
 ) {
   const supabase = await createClient();
-  console.log("[getProductsByStatus] called with:", { status, species, morph, minPrice, maxPrice, category, subcategory });
 
   try {
     let query = supabase.from("studio_products").select("*");
@@ -69,34 +68,24 @@ export async function getProductsByStatus(
 
   // 两级分类筛选
   if (category || subcategory) {
-    console.log("[getProductsByStatus] category filter active, targetSlug:", subcategory || category);
     const targetSlug = subcategory || category;
-    const { data: catData, error: catErr } = await supabase
+    const { data: catData } = await supabase
       .from("product_categories")
       .select("id, parent_id")
       .eq("slug", targetSlug)
       .maybeSingle();
 
-    console.log("[getProductsByStatus] catData:", catData, "catErr:", catErr);
-
     if (catData) {
       let categoryIds: string[] = [catData.id];
-
       if (category && !subcategory) {
-        const { data: children, error: childErr } = await supabase
+        const { data: children } = await supabase
           .from("product_categories")
           .select("id")
           .eq("parent_id", catData.id);
-        console.log("[getProductsByStatus] children:", children?.length, "childErr:", childErr);
-        if (children) {
-          categoryIds = [catData.id, ...children.map(c => c.id)];
-        }
+        if (children) categoryIds = [catData.id, ...children.map(c => c.id)];
       }
-
-      console.log("[getProductsByStatus] filtering by categoryIds:", categoryIds);
       query = query.in("category_id", categoryIds);
     } else {
-      console.log("[getProductsByStatus] category not found, returning empty");
       query = query.eq("category_id", "nonexistent");
     }
   }
@@ -107,9 +96,8 @@ export async function getProductsByStatus(
     const active = products.filter(p => p.status !== "sold");
     const sold = products.filter(p => p.status === "sold");
     return [...active, ...sold];
-  } catch (err: any) {
-    console.error("[getProductsByStatus] ERROR:", err?.message, err?.code, err?.stack);
-    throw new Error(`getProductsByStatus failed: ${err?.message || err}`);
+  } catch {
+    return [];
   }
 }
 
@@ -122,46 +110,29 @@ export interface Subcategory {
 
 export async function getSubcategories(parentSlug: string): Promise<Subcategory[]> {
   const supabase = await createClient();
-  console.log("[getSubcategories] called with parentSlug:", parentSlug);
-  try {
-    const { data: parent } = await supabase
-      .from("product_categories")
-      .select("id")
-      .eq("slug", parentSlug)
-      .maybeSingle();
-
-    if (!parent) { console.log("[getSubcategories] parent not found for slug:", parentSlug); return []; }
-
-    const { data } = await supabase
-      .from("product_categories")
-      .select("id, name, slug")
-      .eq("parent_id", parent.id)
-      .order("name");
-
-    console.log("[getSubcategories] found", data?.length || 0, "subcategories");
-    return (data || []) as Subcategory[];
-  } catch (err: any) {
-    console.error("[getSubcategories] ERROR:", err?.message, err?.code);
-    throw new Error(`getSubcategories failed: ${err?.message || err}`);
-  }
+  const { data: parent } = await supabase
+    .from("product_categories")
+    .select("id")
+    .eq("slug", parentSlug)
+    .maybeSingle();
+  if (!parent) return [];
+  const { data } = await supabase
+    .from("product_categories")
+    .select("id, name, slug")
+    .eq("parent_id", parent.id)
+    .order("name");
+  return (data || []) as Subcategory[];
 }
 
 // 根据 slug 获取分类名称
 export async function getCategoryName(slug: string): Promise<string> {
-  console.log("[getCategoryName] called with slug:", slug);
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from("product_categories")
-      .select("name")
-      .eq("slug", slug)
-      .maybeSingle();
-    console.log("[getCategoryName] result:", data?.name, "error:", error);
-    return data?.name || slug;
-  } catch (err: any) {
-    console.error("[getCategoryName] ERROR:", err?.message);
-    return slug;
-  }
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("product_categories")
+    .select("name")
+    .eq("slug", slug)
+    .maybeSingle();
+  return data?.name || slug;
 }
 
 export async function getAllSpecies() {

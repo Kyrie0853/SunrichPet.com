@@ -46,7 +46,6 @@ export default async function ShopPage({ searchParams }: Props) {
   } catch { /* ignore */ }
 
   const sp = await searchParams;
-  console.log("[ShopPage] searchParams:", JSON.stringify(sp));
   const status = sp?.status || "";
   const species = sp?.species || "";
   const morph = sp?.morph || "";
@@ -54,7 +53,6 @@ export default async function ShopPage({ searchParams }: Props) {
   const subcategory = sp?.subcategory || "";
   const min_price = sp?.min_price || "";
   const max_price = sp?.max_price || "";
-  console.log("[ShopPage] parsed:", { status, category, subcategory });
 
   let products: StudioProduct[] = [];
   let subcategories: Subcategory[] = [];
@@ -62,18 +60,14 @@ export default async function ShopPage({ searchParams }: Props) {
   let shopError: { code: string; message: string; detail: string } | null = null;
 
   try {
-    console.log("[ShopPage] fetching products with category:", category, "subcategory:", subcategory);
     if (category) {
       products = await getProductsByStatus(status || undefined, species || undefined, morph || undefined, min_price || undefined, max_price || undefined, category, subcategory || undefined);
-      console.log("[ShopPage] products count:", products.length);
       subcategories = await getSubcategories(category);
       categoryName = await getCategoryName(category);
     } else {
       products = await getProductsByStatus(status || undefined, species || undefined, morph || undefined, min_price || undefined, max_price || undefined);
-      console.log("[ShopPage] products count (no category):", products.length);
     }
   } catch (err: any) {
-    console.error("[ShopPage] FATAL ERROR:", err?.message, err?.code, err?.stack?.split("\n")?.[0]);
     shopError = {
       code: err?.code || "UNKNOWN",
       message: err?.message || String(err),
@@ -244,11 +238,11 @@ export default async function ShopPage({ searchParams }: Props) {
                     </p>
                   </div>
                 </Link>
-                {/* 管理员控制按钮 */}
+                {/* 管理按钮（仅后台可见） */}
                 {isAdmin && (
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity z-10">
                     <Link
-                      href={`/studio/dashboard?id=${product.id}`}
+                      href={`/studio/dashboard/products/${product.id}/edit`}
                       className="rounded-lg bg-white/90 backdrop-blur-sm border border-[#e5e7eb] p-1.5 text-[#6b7280] hover:text-[#1a7f5a] hover:border-[#1a7f5a] shadow-sm transition-colors"
                       title="编辑"
                     >
@@ -256,27 +250,6 @@ export default async function ShopPage({ searchParams }: Props) {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </Link>
-                    <form>
-                      <button
-                        type="submit"
-                        formAction={async () => {
-                          "use server";
-                          const supabase = await createClient();
-                          const { data: { user } } = await supabase.auth.getUser();
-                          if (!user) return;
-                          const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-                          if (p?.role !== "admin" && p?.role !== "super_admin") return;
-                          await supabase.from("studio_products").delete().eq("id", product.id);
-                        }}
-                        className="rounded-lg bg-white/90 backdrop-blur-sm border border-[#e5e7eb] p-1.5 text-[#6b7280] hover:text-[#dc3545] hover:border-[#dc3545] shadow-sm transition-colors"
-                        title="删除"
-                        onClick={(e) => { if (!confirm("确定要删除这个个体吗？此操作不可撤销。")) e.preventDefault(); }}
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </form>
                   </div>
                 )}
               </div>
