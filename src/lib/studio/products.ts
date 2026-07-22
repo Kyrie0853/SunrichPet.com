@@ -69,31 +69,34 @@ export async function getProductsByStatus(
 
   // 两级分类筛选
   if (category || subcategory) {
-    // 先查出目标分类的 ID
+    console.log("[getProductsByStatus] category filter active, targetSlug:", subcategory || category);
     const targetSlug = subcategory || category;
-    const { data: catData } = await supabase
+    const { data: catData, error: catErr } = await supabase
       .from("product_categories")
       .select("id, parent_id")
       .eq("slug", targetSlug)
       .maybeSingle();
 
+    console.log("[getProductsByStatus] catData:", catData, "catErr:", catErr);
+
     if (catData) {
       let categoryIds: string[] = [catData.id];
 
-      // 如果选的是顶级分类，包含所有子分类
       if (category && !subcategory) {
-        const { data: children } = await supabase
+        const { data: children, error: childErr } = await supabase
           .from("product_categories")
           .select("id")
           .eq("parent_id", catData.id);
+        console.log("[getProductsByStatus] children:", children?.length, "childErr:", childErr);
         if (children) {
           categoryIds = [catData.id, ...children.map(c => c.id)];
         }
       }
 
+      console.log("[getProductsByStatus] filtering by categoryIds:", categoryIds);
       query = query.in("category_id", categoryIds);
     } else {
-      // 分类不存在，返回空
+      console.log("[getProductsByStatus] category not found, returning empty");
       query = query.eq("category_id", "nonexistent");
     }
   }
@@ -145,13 +148,20 @@ export async function getSubcategories(parentSlug: string): Promise<Subcategory[
 
 // 根据 slug 获取分类名称
 export async function getCategoryName(slug: string): Promise<string> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("product_categories")
-    .select("name")
-    .eq("slug", slug)
-    .maybeSingle();
-  return data?.name || slug;
+  console.log("[getCategoryName] called with slug:", slug);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("product_categories")
+      .select("name")
+      .eq("slug", slug)
+      .maybeSingle();
+    console.log("[getCategoryName] result:", data?.name, "error:", error);
+    return data?.name || slug;
+  } catch (err: any) {
+    console.error("[getCategoryName] ERROR:", err?.message);
+    return slug;
+  }
 }
 
 export async function getAllSpecies() {
