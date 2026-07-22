@@ -71,7 +71,7 @@ export default async function HomePage() {
             {categories.map((cat) => (
               <Link
                 key={cat.species}
-                href={`/shop?species=${encodeURIComponent(cat.species)}`}
+                href={`/shop?category=${encodeURIComponent(cat.slug)}`}
                 className="group bg-white rounded-2xl border border-[#f3f4f6] overflow-hidden hover:shadow-lg hover:border-[#1a7f5a]/30 transition-all duration-300"
               >
                 {/* 分类图片 */}

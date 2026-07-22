@@ -41,7 +41,9 @@ export async function getProductsByStatus(
   species?: string,
   morph?: string,
   minPrice?: string,
-  maxPrice?: string
+  maxPrice?: string,
+  category?: string,
+  subcategory?: string
 ) {
   const supabase = await createClient();
   let query = supabase.from("studio_products").select("*");
@@ -62,14 +64,80 @@ export async function getProductsByStatus(
     query = query.lte("price", parseFloat(maxPrice));
   }
 
-  // 排序：非已售出的在前，按创建时间倒序
+  // 两级分类筛选
+  if (category || subcategory) {
+    // 先查出目标分类的 ID
+    const targetSlug = subcategory || category;
+    const { data: catData } = await supabase
+      .from("product_categories")
+      .select("id, parent_id")
+      .eq("slug", targetSlug)
+      .maybeSingle();
+
+    if (catData) {
+      let categoryIds: string[] = [catData.id];
+
+      // 如果选的是顶级分类，包含所有子分类
+      if (category && !subcategory) {
+        const { data: children } = await supabase
+          .from("product_categories")
+          .select("id")
+          .eq("parent_id", catData.id);
+        if (children) {
+          categoryIds = [catData.id, ...children.map(c => c.id)];
+        }
+      }
+
+      query = query.in("category_id", categoryIds);
+    } else {
+      // 分类不存在，返回空
+      query = query.eq("category_id", "nonexistent");
+    }
+  }
+
   const { data } = await query.order("created_at", { ascending: false });
 
-  // 把已售出的排到最后
   const products = (data || []) as StudioProduct[];
   const active = products.filter(p => p.status !== "sold");
   const sold = products.filter(p => p.status === "sold");
   return [...active, ...sold];
+}
+
+// 获取子分类列表
+export interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export async function getSubcategories(parentSlug: string): Promise<Subcategory[]> {
+  const supabase = await createClient();
+  const { data: parent } = await supabase
+    .from("product_categories")
+    .select("id")
+    .eq("slug", parentSlug)
+    .maybeSingle();
+
+  if (!parent) return [];
+
+  const { data } = await supabase
+    .from("product_categories")
+    .select("id, name, slug")
+    .eq("parent_id", parent.id)
+    .order("name");
+
+  return (data || []) as Subcategory[];
+}
+
+// 根据 slug 获取分类名称
+export async function getCategoryName(slug: string): Promise<string> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("product_categories")
+    .select("name")
+    .eq("slug", slug)
+    .maybeSingle();
+  return data?.name || slug;
 }
 
 export async function getAllSpecies() {
@@ -84,6 +152,7 @@ export async function getAllSpecies() {
 
 export interface SpeciesCategory {
   species: string;
+  slug: string;
   count: number;
   firstImage: string | null;
 }
@@ -127,7 +196,7 @@ export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
         const active = (products || []).filter((p: any) => allIds.includes(p.category_id));
         const firstImg = active.find((p: any) => p.images?.length > 0)?.images?.[0] || null;
 
-        result.push({ species: cat.name, count: active.length, firstImage: firstImg });
+        result.push({ species: cat.name, slug: cat.slug, count: active.length, firstImage: firstImg });
       }
       if (result.some(c => c.count > 0)) return result;
     }
@@ -150,7 +219,7 @@ export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
     });
 
     const fallbackResult = Array.from(speciesMap.entries()).map(([species, info]) => ({
-      species, count: info.count, firstImage: info.firstImage,
+      species, slug: species.toLowerCase().replace(/\s+/g, '-'), count: info.count, firstImage: info.firstImage,
     }));
     if (fallbackResult.length > 0) return fallbackResult;
   } catch (err) {
@@ -160,8 +229,8 @@ export async function getSpeciesCategories(): Promise<SpeciesCategory[]> {
 
   // 最终兜底：返回硬编码的占位分类（数据库无数据时保证首页不空白）
   return [
-    { species: "守宫", count: 0, firstImage: null },
-    { species: "蛇类", count: 0, firstImage: null },
+    { species: "守宫", slug: "gecko", count: 0, firstImage: null },
+    { species: "蛇类", slug: "snake", count: 0, firstImage: null },
   ];
 }
 
