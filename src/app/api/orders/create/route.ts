@@ -16,6 +16,7 @@ export async function POST(req: Request) {
     const recipientName = body.recipient_name || "";
     const recipientPhone = body.recipient_phone || "";
     const recipientAddress = body.recipient_address || "";
+    const paymentMethod = body.payment_method || "alipay";
     const shippingAddress = body.shipping_address
       || [recipientName, recipientPhone, recipientAddress].filter(Boolean).join(" · ");
 
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
       status: "pending",
       total_amount: product.price,
       shipping_address: shippingAddress,
-      payment_method: "alipay",
+      payment_method: paymentMethod,
     }).select("id").single();
 
     if (orderErr || !order) {
@@ -57,15 +58,17 @@ export async function POST(req: Request) {
     });
 
     let payUrl: string | null = null;
-    try {
-      payUrl = await createAlipayOrder({
-        orderId: order.id,
-        productName: product.name,
-        totalAmount: product.price,
-        buyerMessage: buyer_message || "",
-      });
-    } catch (e) {
-      console.error("Alipay order creation failed:", e);
+    if (paymentMethod === "alipay") {
+      try {
+        payUrl = await createAlipayOrder({
+          orderId: order.id,
+          productName: product.name,
+          totalAmount: product.price,
+          buyerMessage: buyer_message || "",
+        });
+      } catch (e) {
+        console.error("Alipay order creation failed:", e);
+      }
     }
 
     return NextResponse.json({ success: true, orderId: order.id, payUrl });
