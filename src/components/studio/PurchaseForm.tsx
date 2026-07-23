@@ -93,6 +93,9 @@ export default function PurchaseForm({
       if (data.error) { setError(data.error); setLoading(false); return; }
       setOrderId(data.orderId);
       if (paymentMethod === "alipay" && data.payUrl) {
+        console.log("[PurchaseForm] ✅ 获取到支付宝支付URL");
+        console.log("[PurchaseForm] 订单ID:", data.orderId);
+        console.log("[PurchaseForm] 即将跳转到支付宝...");
         window.location.href = data.payUrl;
       } else {
         setOrderCreated(true);

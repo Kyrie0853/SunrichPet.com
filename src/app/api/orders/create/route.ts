@@ -57,8 +57,13 @@ export async function POST(req: Request) {
       },
     });
 
+    // ═══════════════════════════════════════════
+    // 支付宝支付：生成支付页面 URL
+    // ═══════════════════════════════════════════
     let payUrl: string | null = null;
     if (paymentMethod === "alipay") {
+      console.log("[Order Create] 支付方式: 支付宝担保交易");
+      console.log("[Order Create] 开始生成支付宝支付URL...");
       try {
         payUrl = await createAlipayOrder({
           orderId: order.id,
@@ -66,14 +71,23 @@ export async function POST(req: Request) {
           totalAmount: product.price,
           buyerMessage: buyer_message || "",
         });
-      } catch (e) {
-        console.error("Alipay order creation failed:", e);
+        console.log("[Order Create] ✅ 支付宝支付URL生成成功");
+        console.log("[Order Create] payUrl长度:", payUrl?.length || 0);
+      } catch (e: any) {
+        console.error("[Order Create] ❌ 支付宝订单创建失败:", e.message);
+        console.error("[Order Create] 错误堆栈:", e.stack);
+        // 不中断请求 — 仍然返回订单信息，前端可以降级处理
       }
+    } else {
+      console.log("[Order Create] 支付方式: 微信转账（将显示收款码）");
     }
+
+    console.log("[Order Create] ✅ 订单创建完成, orderId:", order.id);
 
     return NextResponse.json({ success: true, orderId: order.id, payUrl });
   } catch (err: any) {
-    console.error("Create order error:", err);
+    console.error("[Order Create] ❌ 创建订单失败:", err.message);
+    console.error("[Order Create] 错误堆栈:", err.stack);
     return NextResponse.json({ error: "创建订单失败" }, { status: 500 });
   }
 }
