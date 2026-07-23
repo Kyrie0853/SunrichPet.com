@@ -129,14 +129,77 @@ export async function createAlipayOrder(params: {
 }
 
 // ──────────────────────────────────────────────
+// 规范化 PEM 密钥（处理环境变量的常见格式问题）
+// ──────────────────────────────────────────────
+function normalizePemKey(raw: string, label: string): string {
+  if (!raw || typeof raw !== "string") {
+    throw new Error(`${label} 为空或不是字符串`);
+  }
+
+  // 1. 替换字面量 \n 为实际换行符（Vercel 环境变量不会自动转换）
+  let key = raw.replace(/\\n/g, "\n");
+
+  // 2. 去除 \r 和首尾空白
+  key = key.replace(/\r/g, "").trim();
+
+  // 3. 确保 PEM 头尾各占一行（处理粘贴时丢失换行的情况）
+  //    例如 "-----BEGIN RSA PRIVATE KEY-----MIIE..." → 补换行
+  key = key.replace(
+    /(-----BEGIN [A-Z ]+-----)([^\n])/,
+    "$1\n$2"
+  );
+  key = key.replace(
+    /([^\n])(-----END [A-Z ]+-----)/,
+    "$1\n$2"
+  );
+
+  // 4. 确保末尾有换行
+  if (!key.endsWith("\n")) {
+    key += "\n";
+  }
+
+  // 诊断日志
+  const firstLine = key.split("\n")[0] || "(空)";
+  const lines = key.split("\n").length;
+  console.log(`[Alipay] PEM诊断 [${label}]: 首行=${firstLine}, 总行数=${lines}, 总长度=${key.length}`);
+
+  // 5. 检查是否是有效的 PEM 格式
+  if (!firstLine.startsWith("-----BEGIN ")) {
+    console.error(`[Alipay] ❌ ${label} 格式异常，首行:`, firstLine.slice(0, 80));
+    throw new Error(
+      `${label} 格式不正确。期望以 "-----BEGIN ..." 开头，实际首行: "${firstLine.slice(0, 50)}"。\n` +
+      "请在 Vercel 环境变量中确保密钥值包含完整的 PEM 格式，换行处使用 \\n 表示。"
+    );
+  }
+
+  return key;
+}
+
+// ──────────────────────────────────────────────
 // RSA-SHA256 签名（Node.js crypto）
 // ──────────────────────────────────────────────
 async function rsaSign(data: string, privateKeyPem: string): Promise<string> {
-  const { createSign } = await import("crypto");
-  const sign = createSign("RSA-SHA256");
-  sign.update(data, "utf8");
-  sign.end();
-  return sign.sign(privateKeyPem, "base64");
+  const key = normalizePemKey(privateKeyPem, "私钥(PRIVATE_KEY)");
+
+  try {
+    const { createSign } = await import("crypto");
+    const sign = createSign("RSA-SHA256");
+    sign.update(data, "utf8");
+    sign.end();
+    return sign.sign(key, "base64");
+  } catch (err: any) {
+    // 诊断更详细的错误
+    console.error("[Alipay] ❌ 签名失败:", err.message);
+    console.error("[Alipay] 密钥首行:", key.split("\n")[0]);
+    console.error("[Alipay] 密钥长度:", key.length, "字节");
+    throw new Error(
+      `支付宝签名失败：${err.message}。\n` +
+      "请检查 Vercel 中 ALIPAY_PRIVATE_KEY 的值：\n" +
+      "1. 确保换行符使用 \\n 表示（例如 KEY-----\\nMIIE...\\n-----END）\n" +
+      "2. 确保密钥以 -----BEGIN RSA PRIVATE KEY----- 开头\n" +
+      "3. 如果使用支付宝密钥生成器，选择 PKCS1（非JAVA适用）格式"
+    );
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -162,11 +225,13 @@ export async function verifyAlipayNotify(params: Record<string, string>): Promis
       return true;
     }
 
-    const publicKey = process.env.ALIPAY_PUBLIC_KEY;
-    if (!publicKey) {
+    const publicKeyRaw = process.env.ALIPAY_PUBLIC_KEY;
+    if (!publicKeyRaw) {
       console.error("[Alipay Notify] ❌ 缺少 ALIPAY_PUBLIC_KEY，无法验签");
       return false;
     }
+
+    const publicKey = normalizePemKey(publicKeyRaw, "支付宝公钥(PUBLIC_KEY)");
 
     const { createVerify } = await import("crypto");
     const verify = createVerify("RSA-SHA256");
