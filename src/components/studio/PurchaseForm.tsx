@@ -52,6 +52,12 @@ export default function PurchaseForm({
   const [pasteText, setPasteText] = useState("");
   const [pasteDone, setPasteDone] = useState(false);
 
+  // ── 防护：price 不是数字时页面不应崩溃 ──
+  const safePrice = typeof price === "number" && !isNaN(price) ? price : 0;
+  if (safePrice === 0 && price !== 0) {
+    console.error("[PurchaseForm] ⚠️ price 不是有效数字:", price);
+  }
+
   function handlePasteChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
     setPasteText(val);
@@ -68,41 +74,90 @@ export default function PurchaseForm({
   }
 
   async function handleSubmit() {
-    if (!recipientName.trim()) { setError("请填写收货人姓名"); return; }
+    console.log("[PurchaseForm] 🔘 handleSubmit 被触发");
+    console.log("[PurchaseForm] 当前状态:", {
+      recipientName, recipientPhone, recipientAddress,
+      paymentMethod, loading
+    });
+    console.log("[PurchaseForm] Props:", { productId, productName, price: safePrice });
+
+    // ── 表单验证 ──
+    if (!recipientName.trim()) {
+      console.warn("[PurchaseForm] ❌ 验证失败: 收货人姓名为空");
+      setError("请填写收货人姓名"); return;
+    }
     if (!recipientPhone.trim() || !/^1[3-9]\d{9}$/.test(recipientPhone.trim())) {
+      console.warn("[PurchaseForm] ❌ 验证失败: 手机号不合法", recipientPhone);
       setError("请填写正确的手机号（11位）"); return;
     }
-    if (!recipientAddress.trim()) { setError("请填写详细地址"); return; }
+    if (!recipientAddress.trim()) {
+      console.warn("[PurchaseForm] ❌ 验证失败: 地址为空");
+      setError("请填写详细地址"); return;
+    }
+    console.log("[PurchaseForm] ✅ 表单验证通过");
 
     setLoading(true);
     setError("");
     try {
+      console.log("[PurchaseForm] 📡 发起 POST /api/orders/create ...");
+      const requestBody = {
+        product_id: productId,
+        recipient_name: recipientName.trim(),
+        recipient_phone: recipientPhone.trim(),
+        recipient_address: recipientAddress.trim(),
+        buyer_message: buyerMessage.trim(),
+        payment_method: paymentMethod,
+      };
+      console.log("[PurchaseForm] 请求体:", JSON.stringify(requestBody));
+
       const res = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: productId,
-          recipient_name: recipientName.trim(),
-          recipient_phone: recipientPhone.trim(),
-          recipient_address: recipientAddress.trim(),
-          buyer_message: buyerMessage.trim(),
-          payment_method: paymentMethod,
-        }),
+        body: JSON.stringify(requestBody),
       });
+      console.log("[PurchaseForm] 📡 响应状态:", res.status, res.statusText);
+
       const data = await res.json();
-      if (data.error) { setError(data.error); setLoading(false); return; }
-      setOrderId(data.orderId);
-      if (paymentMethod === "alipay" && data.payUrl) {
+      console.log("[PurchaseForm] 📡 响应数据:", JSON.stringify(data));
+
+      // 检查错误
+      if (data.error) {
+        console.error("[PurchaseForm] ❌ API 返回错误:", data.error);
+        setError(data.error); setLoading(false);
+        return;
+      }
+
+      // ── 支付宝支付：必须有 payUrl 才能跳转 ──
+      if (paymentMethod === "alipay") {
+        if (!data.payUrl) {
+          console.error("[PurchaseForm] ❌ 支付宝 payUrl 为 null — 可能是后端环境变量未配置");
+          setError("支付宝支付通道暂时不可用，请稍后重试或联系客服（错误码：PAYURL_NULL）");
+          setLoading(false);
+          return;
+        }
+        setOrderId(data.orderId);
         console.log("[PurchaseForm] ✅ 获取到支付宝支付URL");
         console.log("[PurchaseForm] 订单ID:", data.orderId);
         console.log("[PurchaseForm] 即将跳转到支付宝...");
         window.location.href = data.payUrl;
-      } else {
+        // 跳转后不需要 setLoading(false)，页面将离开
+        return;
+      }
+
+      // ── 微信支付：显示收款码 ──
+      if (paymentMethod === "wechat") {
+        setOrderId(data.orderId);
         setOrderCreated(true);
         setLoading(false);
         return;
       }
-    } catch {
+
+      // 未知支付方式
+      console.error("[PurchaseForm] ❌ 未知支付方式:", paymentMethod);
+      setError("不支持的支付方式");
+      setLoading(false);
+    } catch (err: any) {
+      console.error("[PurchaseForm] ❌ 网络异常:", err.message || err);
       setError("网络错误，请重试");
       setLoading(false);
     }
@@ -127,7 +182,7 @@ export default function PurchaseForm({
           </div>
           <div className="rounded-xl bg-white border p-3 text-left space-y-2 text-[13px]">
             <div className="flex justify-between"><span className="text-gray-500">订单编号</span><span className="font-mono font-bold">{shortId}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">应付金额</span><span className="font-bold text-[#1a7f5a] text-[18px]">¥{price.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">应付金额</span><span className="font-bold text-[#1a7f5a] text-[18px]">¥{safePrice.toFixed(2)}</span></div>
           </div>
           <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3 text-[12px] text-amber-700 text-left">
             <p className="font-bold mb-1">⚠️ 转账备注</p>

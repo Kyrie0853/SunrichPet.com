@@ -61,6 +61,7 @@ export async function POST(req: Request) {
     // 支付宝支付：生成支付页面 URL
     // ═══════════════════════════════════════════
     let payUrl: string | null = null;
+    let alipayError: string | null = null;
     if (paymentMethod === "alipay") {
       console.log("[Order Create] 支付方式: 支付宝担保交易");
       console.log("[Order Create] 开始生成支付宝支付URL...");
@@ -76,10 +77,21 @@ export async function POST(req: Request) {
       } catch (e: any) {
         console.error("[Order Create] ❌ 支付宝订单创建失败:", e.message);
         console.error("[Order Create] 错误堆栈:", e.stack);
-        // 不中断请求 — 仍然返回订单信息，前端可以降级处理
+        alipayError = e.message || "支付宝支付配置错误";
+        // 订单已创建但支付URL生成失败 — 返回错误给前端展示
       }
     } else {
       console.log("[Order Create] 支付方式: 微信转账（将显示收款码）");
+    }
+
+    if (alipayError) {
+      console.log("[Order Create] ⚠️ 订单已创建但支付URL生成失败:", alipayError);
+      return NextResponse.json({
+        success: true,
+        orderId: order.id,
+        payUrl: null,
+        warning: "订单已创建，但支付宝支付通道暂时不可用：" + alipayError,
+      });
     }
 
     console.log("[Order Create] ✅ 订单创建完成, orderId:", order.id);
