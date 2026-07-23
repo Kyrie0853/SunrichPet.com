@@ -94,7 +94,7 @@ export async function createAlipayOrder(params: {
     sign_type: "RSA2",
     timestamp: formatAlipayTimestamp(),
     version: "1.0",
-    notify_url: notifyUrl,
+    notify_url: notifyUrl || "",
     return_url: process.env.ALIPAY_RETURN_URL || "",
     biz_content: bizContent,
   };
