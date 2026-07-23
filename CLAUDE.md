@@ -1,121 +1,240 @@
-# CLAUDE.md（升级版：阶段化迭代开发）
+# CLAUDE.md — 给我爬 个人爬宠工作室直营商城
 
-## 项目终极目标
-打造一个**安全、可自主管理的宠物活体及用品多商家购物平台**，类似淘宝/京东模式，但专注小众宠物（守宫、蛇、龟、观赏鱼等）。
-- 当前阶段：个人单店运营（MVP）。
-- 未来阶段：开放商家入驻（多卖家）、真实支付、订单管理、物流跟踪等。
-- 网站首页为导购导航，支持搜索、按分类筛选商品。
-
-## 开发总策略：从小而美到强而全
-我们采用**分阶段迭代**的开发方式，每个阶段交付一个可用的产品增量，绝不跳过安全基础去堆功能。
-Claude Code 必须在任何阶段都严格遵守以下阶段定义和核心宗旨，不擅自超前实现后续阶段的功能，以免引入不必要的复杂度。
-
-### 🟢 阶段1：最小可行产品（MVP）—— 当前阶段
-**目标**：快速上线一个"能看、能搜、能下单（模拟）"的个人宠物店铺，验证核心流程。
-**包含功能**：
-- 首页：导航栏、搜索框、宠物分类展示（守宫/蛇/龟/鱼等）
-- 商品列表页：按分类筛选、搜索结果展示
-- 商品详情页：图片、描述、价格、加入购物车
-- 购物车页面：修改数量、删除、模拟结算（生成一个订单记录，但不支付）
-- 用户系统：注册、登录、登出（Supabase Auth）
-- 简单后台：仅限管理员角色的用户可访问，能添加/编辑/下架商品（初期可做一个简易的表单页面，或直接使用Supabase管理面板，但必须配置权限）
-**不做**：真实支付、多商家、物流、评价、退款等。
-**数据模型预留**：在商品表中加入 `seller_id`（默认指向自己），用户表使用 Supabase Auth 的元数据记录 `role`（`customer` 或 `admin`，未来增加 `seller`），为将来扩展打好地基。
-
-### 🟡 阶段2：安全支付与订单管理
-- 集成 Stripe/PayPal 官方支付组件，实现真钱支付
-- 订单状态流转（待支付/已支付/已发货/已完成）
-- 用户订单中心查看历史订单
-- 后台可以查看订单、修改状态
-- 邮件通知（下单成功、发货等，使用 Supabase Edge Functions 或第三方服务）
-
-### 🟠 阶段3：多商家入驻
-- 商家注册/登录，申请成为卖家
-- 后台审批商家入驻
-- 商品与商家关联，卖家只能管理自己的商品
-- 首页可能展示商家信息
-- 基于 `seller_id` 严格使用 RLS 隔离数据
-
-### 🔴 后续阶段（按需扩展）
-- 评价系统、物流跟踪、优惠券、秒杀、IM沟通、移动端适配优化等
+> 最后更新：2026-07-23
+> 当前分支：dev/v2-platform
+> 部署状态：Vercel 生产环境 (sunrich-pet.top)
 
 ---
 
-## 不可妥协的核心宗旨（全阶段通用）
-**以下原则高于一切功能需求，Claude Code 在生成任何代码、建议、修改时，必须无条件遵守。**
+## 一、项目定位（当前最终状态）
 
-1. **安全压倒一切**
-   - 密码使用 bcrypt/argon2 哈希（Supabase Auth 内置安全处理）。
-   - 防范 SQL 注入、XSS、CSRF、越权。所有用户输入严格净化校验。
-   - 后端 API 必须有鉴权；管理员接口必须检查用户角色。
-   - **行级安全（RLS）是数据库安全的核心**：任何表的读写都必须通过 RLS 策略限制，特别是商品、订单、用户资料。阶段1就应启用 RLS。
-   - 支付绝不接触裸卡信息，必须用官方支付渠道的预构建 UI 组件。
-   - 全站 HTTPS（Vercel 默认提供），环境变量存放所有密钥，绝不硬编码。
-   - 文件上传限制类型、大小，存储到 Supabase Storage 并使用安全规则。
+| 项目 | 内容 |
+|------|------|
+| 网站名称 | 给我爬 |
+| 定位 | 个人爬宠工作室直营商城（单店模式） |
+| 域名 | sunrich-pet.top（Cloudflare DNS → Vercel 部署） |
+| 技术栈 | Next.js 16 + TypeScript + Tailwind CSS v4 + Supabase + Vercel |
+| 支付方式 | 支付宝担保交易（主）+ 微信转账确认（备用） |
+| 当前阶段 | 个人工作室直营（已完成战略转型，移除社区/论坛/博客） |
 
-2. **完全自主可管理**
-   - 项目结构清晰，代码注释充分，确保用户通过 Claude Code 能理解并修改任何部分。
-   - 后台管理功能（即使阶段1只有基础版）必须能让非技术人员操作商品上下架。
-   - 使用 Git 做版本控制，采用"每个小功能一个分支"的方式，提交信息规范。
-   - 提供一份 `docs/ARCHITECTURE.md`，记录技术选型理由、数据库表结构、API 设计，随功能更新。
+### 核心功能
 
-3. **可扩展但不过度设计**
-   - 数据建模时自然地为多商家、多角色留出字段（`seller_id`, `role`），但阶段1不实现复杂的多租户逻辑。
-   - 分类体系使用数据库存储，支持动态管理，拒绝硬编码。
-   - 技术栈保持稳定：**Next.js + TypeScript + Tailwind CSS + Supabase**，不随意引入替代品。
+1. 首页分类入口 — 物种分类卡片（守宫、蛇等），点击进入该分类商品列表
+2. 商品列表页 — 支持按状态、物种、品系、价格筛选 + 两级分类
+3. 商品详情页 — 图片轮播、固定信息表、个体描述、包损条款、评价区
+4. 支付宝担保交易 — 用户下单 → 跳转支付宝支付 → 异步通知自动更新订单状态
+5. 微信转账 — 备用方案，用户提交订单后扫码转账，管理员手动确认
+6. 订单担保流程 — pending → paid → shipped → completed（48h 验货期）
+7. 管理员后台 — /studio/dashboard 商品管理、订单管理、发货
+8. 超级管理员 — 用户角色管理（/admin/users）
 
-4. **简单务实，适合学生开发者**
-   - 代码易读性 > 抽象优雅性。多用函数式组件和 React Hooks，避免高阶组件等复杂模式。
-   - 优先使用 Supabase 的客户端库和 Next.js API 路由，减少额外后端层。
-   - 错误处理覆盖加载态、空态、错误边界，增强用户体验和调试便利性。
+### 已删除的功能
+
+社区/论坛/吧/私信/繁育笔记/博客/积分系统/卖家入驻 — 战略转型为单店直营模式。
 
 ---
 
-## 技术栈（锁定）
-- **全栈框架**：Next.js 14+ (App Router) + TypeScript
-- **样式**：Tailwind CSS
-- **后端即服务**：Supabase (PostgreSQL, Auth, Storage, RLS)
-- **支付**：阶段2集成 Stripe/PayPal
-- **部署**：Vercel（关联 GitHub 仓库，自动部署）
-- **版本控制**：Git + GitHub
+## 二、完整路由结构
+
+### 前台公开页面
+
+| 路由 | 页面 | 说明 |
+|------|------|------|
+| / | 首页 | 物种分类卡片 + 搜索入口 |
+| /shop | 商品列表 | 支持多条件筛选（Server Component） |
+| /shop/product/[id] | 商品详情 | 图片画廊、信息表、包损条款、评价 |
+| /search | 搜索结果 | |
+| /encyclopedia | 品种百科 | |
+| /encyclopedia/[slug] | 百科详情 | 守宫/蛇/龟等品种介绍 |
+| /guide | 新手养宠指南 | |
+| /guide/[slug] | 指南文章 | |
+| /help | 帮助中心 | |
+| /help/faq | 常见问题 | |
+| /help/newbie | 新手指南 | |
+| /help/trade | 交易须知 | |
+| /help/after-sale | 售后政策 | |
+| /rules | 平台规则 | |
+| /rules/prohibited | 违禁品规则 | |
+| /rules/after-sale | 售后规则 | |
+| /about | 关于我们 | |
+| /offline | 离线页面 | PWA 离线支持 |
+
+### 需登录
+
+| 路由 | 页面 | 说明 |
+|------|------|------|
+| /auth | 登录/注册 | Supabase Auth |
+| /auth/callback | OAuth 回调 | |
+| /profile | 个人信息 | |
+| /profile/edit | 编辑资料 | |
+| /cart | 购物车 | |
+| /checkout | 确认订单 | 选择支付方式 + 填写收货信息 |
+| /orders | 我的订单 | |
+| /orders/[id] | 订单详情 | 含时间线、操作按钮 |
+| /reviews | 我的评价 | |
+
+### 管理员 (admin)
+
+| 路由 | 页面 | 说明 |
+|------|------|------|
+| /admin/orders | 订单管理 | 列表 + 确认收款 + 发货弹窗 |
+| /admin/products | 商品管理 | |
+| /admin/users | 用户管理 | 搜索用户、封禁/解封 |
+| /admin/settings | 系统设置 | |
+| /studio/dashboard | 管理后台首页 | |
+| /studio/dashboard/products | 商品管理 | 列表、上下架 |
+| /studio/dashboard/products/new | 添加商品 | |
+| /studio/dashboard/products/[id]/edit | 编辑商品 | |
+| /studio/dashboard/orders | 订单管理 | |
+
+### 超管专属 (super_admin)
+
+| 路由 | 页面 | 说明 |
+|------|------|------|
+| /admin/settings | 用户角色设置 | 任命/撤销管理员 |
+
+### API 路由
+
+| 路由 | 方法 | 鉴权 | 说明 |
+|------|------|------|------|
+| /api/orders/create | POST | 需登录 | 创建订单 + 生成支付宝支付 URL |
+| /api/orders/notify | POST | 公开 | 支付宝异步通知回调 |
+| /api/orders/[id]/confirm | POST | 需登录 | 买家确认收货 |
+| /api/orders/[id]/refund | POST | 需登录 | 买家申请退款 |
+| /api/orders/[id]/ship | POST | admin | 管理员发货 |
+| /api/orders/confirm-wechat | POST | admin | 管理员确认微信收款 |
+| /api/checkout | POST | 需登录 | 通用下单（手动模式） |
+| /api/admin/orders/[id]/confirm-payment | POST | admin | 管理员确认收款 |
+| /api/admin/orders/[id]/status | PATCH | admin | 修改订单状态 |
+| /api/admin/refunds/[id] | POST | admin | 处理退款申请 |
+| /api/studio/categories | GET | 公开 | 获取商品分类 |
+| /api/studio/products | GET/POST | 公开/admin | 商品 CRUD |
+| /api/studio/products/[id] | PUT/DELETE | admin | 商品编辑/删除 |
+| /api/health | GET | 公开 | 健康检查 |
 
 ---
 
-## Claude Code 行为准则（升级版）
-- **阶段意识**：在提出任何建议或编写代码前，必须判断其属于哪个阶段。非当前阶段的功能可以提醒用户"这属于阶段X，是否现在规划？"，但不得擅自实现。
-- **解释先行，确认后动手**：新增依赖、架构修改、涉及安全配置的操作，必须先用通俗语言说明，获得用户同意。
-- **安全自检清单**（每次功能完成需主动报告）：
-  - [ ] 所有 Supabase 查询是否经过 RLS 过滤/使用服务端鉴权？
-  - [ ] 用户输入是否有前端校验+后端校验/数据库约束？
-  - [ ] 是否存在 IDOR（不安全的直接对象引用）？比如用户A通过修改URL参数访问用户B的订单？
-  - [ ] 管理员 API 是否检查了用户 `role`？
-  - [ ] 文件上传是否限制类型、大小、存储规则？
-- **文档同步**：数据模型变更、新增 API、权限规则变更，必须同步更新 `docs/ARCHITECTURE.md`。
-- **增量开发，小步提交**：每个小功能（如"添加商品详情页"）完成后做一次 Git 提交，提交信息格式：`feat: 添加商品详情页及图片画廊`。
-- **测试不妥协**：至少为核心流程编写测试：用户注册登录、商品搜索、加入购物车、管理员增删商品。使用 Vitest 和 Playwright（或 React Testing Library）均可。
+## 三、数据库核心表
+
+### 活跃表（生产环境在用）
+
+| 表名 | 用途 | 关键字段 |
+|------|------|---------|
+| profiles | 用户信息 | id, username, role, phone, shipping_address |
+| studio_products | 工作室商品 | product_id, name, species, morph, price, status, images, category_id |
+| product_categories | 两级分类 | id, name, slug, parent_id |
+| orders | 订单 | user_id, product_id, product_name, status, total_amount, shipping_address, payment_method, paid_at, alipay_trade_no, tracking_number, inspection_deadline |
+| order_logs | 订单操作日志 | order_id, action, operator_id, details |
+| studio_reviews | 商品评价 | product_id, user_id, rating, content |
+| seller_balances | 商家余额 | seller_id, available_balance, pending_balance |
+| refund_requests | 退款申请 | order_id, user_id, reason, refund_amount, status |
+| admin_logs | 管理操作日志 | admin_id, action, target_type, target_id, details |
+| carts / cart_items | 购物车 | （保留但可能未使用） |
+
+### 已废弃但未删除的表
+
+不要误操作这些表。如果未来需要清理，应先在测试环境验证。
+
+- community_posts — 社区帖子
+- community_comments — 社区评论
+- bars / bar_members / bar_admins — 社区吧/区主管辖
+- conversations / messages — 私信
+- notifications — 通知
+- reports — 举报
+- blog_posts — 繁育笔记
+- products — 传统商品表（已被 studio_products 替代）
+- points_transactions — 积分
+- tags — 标签
+- seller_documents — 卖家认证
+- featured_posts — 精选帖子
 
 ---
 
-## 当前 MVP 阶段即刻启动的步骤（供 Claude Code 参考）
-当用户说"开始搭建项目"时，Claude Code 应按以下顺序引导：
-1. 初始化 Next.js 项目，配置 Tailwind CSS 和 Supabase 客户端。
-2. 在 Supabase 创建必要的表并设置 RLS 策略（商品表、分类表、购物车表/或本地存储方案*、订单记录表）。
-3. 实现 Supabase Auth 注册/登录页面。
-4. 搭建首页导航和分类展示（数据从 Supabase 查询）。
-5. 构建商品详情页路由（动态路由 `[id]`）。
-6. 实现购物车逻辑（阶段1可先用本地状态或数据库临时购物车表）。
-7. 创建简单后台页面（仅 `role=admin` 可访问），能够通过表单添加商品。
-8. 编写核心测试，部署到 Vercel。
+## 四、重大 Bug 历史与教训
 
-> *注：购物车早期使用本地状态 + localStroage 更简单，但需注意安全性和跨设备同步问题，Claude Code 需向用户解释利弊，获得确认后实施。
+### 架构级
+
+| 日期 | 问题 | 根因 | 教训 |
+|------|------|------|------|
+| 2026-07 | RLS 策略无限递归 (42P17) | profiles 表 RLS 策略中直接引用了自身表，Supabase 展开策略时形成循环 | RLS 策略禁止直接查询同表，必须用 SECURITY DEFINER 函数包裹 |
+| 2026-07 | profiles 表被清空 | 某次迁移意外清空数据 | 数据库迁移前必须备份；触发器必须健壮 |
+| 2026-07 | 首页显示暂无在售爬宠 | getSpeciesCategories() 用 result.length > 0 而非 result.some(c => c.count > 0) | 聚合查询必须检查聚合后的业务指标 |
+| 2026-07 | 27 条策略名残留致递归 | DROP POLICY 使用构造名而非实际名 | 删策略前用 pg_policies 查真实名 |
+
+### 功能级
+
+| 日期 | 问题 | 根因 | 教训 |
+|------|------|------|------|
+| 2026-07-23 | 支付宝提交订单无任何反应 | payUrl 为 null → 落入 else 分支 → WeChat UI 检查失败 → 渲染回表单，loading 未重置 | 异步操作三态（成功/失败/null）必须全部处理 |
+| 2026-07 | Tailwind v4 构建 CSS 丢失 | @source 指令未配置 | 升级主版本依赖后必须验证生产构建 |
+| 2026-07-23 | Vercel 构建 Node.js 20.x deprecated | Vercel 弃用旧版本 | engines.node 必须保持最新 |
+| 2026-07 | admin 后台看不到用户 | profiles 缺记录 + RLS 错误 | 触发器健壮 + 服务端 client |
+| 2026-07 | shop 页面崩溃 | Server Component 中使用 onClick | Server Component 不能有交互事件 |
+| 2026-07 | 个人信息页反复空白 | profiles 被清空 + RLS 递归 | 每次修改后必验该页面 |
+| 2026-07 | 首页繁育笔记残留 | 删除功能时未全站搜索 | 删除必 grep -r 全站 |
+
+### 环境/配置
+
+| 日期 | 问题 | 根因 | 教训 |
+|------|------|------|------|
+| 2026-07 | 支付宝签名失败 | 时间戳格式不对 + 私钥未转义 | 第三方 API 严格对照文档 |
+| 2026-07 | CSP 阻止支付宝跳转 | 未放行支付宝域名 | 集成第三方时 CSP 同步更新 |
 
 ---
 
-## 对用户的额外提醒
-- 该 CLAUDE.md 是你的项目"宪法"，每次和 Claude Code 开始新会话，它都会自动加载。你也可以随时要求 CC"重新阅读 CLAUDE.md"以校准行为。
-- 阶段推进由你决定，当你认为 MVP 稳定后，只需说"现在开始阶段2"，CC 就会按照文档准备支付集成等内容。
-- 不要害怕提小白问题，要求 CC "用更简单的方式解释"是它的职责。
-- 所有的密钥（Supabase URL/Anon Key, 支付秘钥等）务必存在环境变量中，不要传入代码库。CC 会指导你。
+## 五、开发禁忌（绝对不允许做的事）
+
+以下每条铁律都源于血泪教训，违反必出事故。
+
+1. 永远不要在生产环境直接修改数据库表结构。所有 DDL 必须先在本地/测试环境验证。
+2. 删除任何功能/路由/组件时，必须 grep -r 全局搜索相关引用，确保零残留。
+3. RLS 策略中禁止直接查询同表。必须使用 SECURITY DEFINER 函数，并在函数内 SET search_path = ''。
+4. 所有第三方 API 密钥/私钥必须存放在 Vercel 环境变量中，禁止硬编码或出现在代码中。
+5. 不得在 Server Component 中使用 onClick、useState、useEffect 等客户端特性。Next.js 16 会直接构建失败。
+6. 升级主版本依赖（Tailwind、Next.js 等）后，必须先本地 npm run build 验证生产构建，再推送。
+7. 管理员功能按钮/入口绝对不能出现在面向普通用户的页面中。
+8. 前端数据获取必须有 try-catch 和 error.tsx 边界，不能因为某个查询失败导致整个页面白屏。
+9. 异步操作的返回值必须处理三态：成功、失败、null/undefined。特别是 payUrl 这类可能为 null 的关键字段。
+10. Next.js 16 中 searchParams 和 params 都是 Promise，必须 await 后才能访问。
 
 ---
-*此文档将随项目一同成长，是"安全构建、自主管理、逐步迭代"的行动纲领。*
+
+## 六、每次修改后必验的 3 个核心页面
+
+这些页面是最容易崩溃的，每次代码变更后必须确认正常：
+
+1. 首页 / — 分类卡片正常展示，点击可跳转
+2. 个人信息 /profile — 页面不空白，数据显示正确
+3. 商品列表 /shop — 商品列表正常加载，筛选功能正常
+
+---
+
+## 七、关键环境变量
+
+| 变量名 | 用途 | 状态 |
+|--------|------|------|
+| NEXT_PUBLIC_SUPABASE_URL | Supabase 项目 URL | 已配置 |
+| NEXT_PUBLIC_SUPABASE_ANON_KEY | Supabase 匿名密钥 | 已配置 |
+| ALIPAY_APP_ID | 支付宝应用 ID | 已配置 |
+| ALIPAY_PRIVATE_KEY | 应用私钥（PEM 格式，
+ 换行） | 已配置 |
+| ALIPAY_PUBLIC_KEY | 支付宝公钥（PEM 格式） | 已配置 |
+| ALIPAY_NOTIFY_URL | 异步通知回调 | 已配置 |
+| ALIPAY_RETURN_URL | 支付完成跳回 | 已配置 |
+| ALIPAY_SANDBOX | 沙箱模式开关（生产改为 false） | 当前为 true |
+
+---
+
+## 八、当前待解决问题
+
+| 优先级 | 问题 | 状态 |
+|--------|------|------|
+| 高 | 支付宝沙箱测试 — 验证完整支付流程 | 进行中 |
+| 中 | ALIPAY_SANDBOX 切为 false 后正式上线 | 测试通过后执行 |
+| 中 | 微信支付目前是手动确认模式，需后续升级 | 待排期 |
+| 低 | 旧数据库表（社区相关）评估是否删除 | 低优先级 |
+| 低 | seller_id 写入订单但当前无商家端后台 | 单店模式暂不需要 |
+
+---
+
+> 本文档是项目宪法，每次和 Claude Code 开始新会话时自动加载。任何违反本文档原则的操作都应被拒绝。
