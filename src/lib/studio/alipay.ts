@@ -163,13 +163,13 @@ function normalizePemKey(raw: string, label: string): string {
   const lines = key.split("\n").length;
   console.log(`[Alipay] PEM诊断 [${label}]: 首行=${firstLine}, 总行数=${lines}, 总长度=${key.length}`);
 
-  // 5. 检查是否是有效的 PEM 格式
+  // 5. 检查是否是有效的 PEM 格式，缺失头尾则自动补全
   if (!firstLine.startsWith("-----BEGIN ")) {
-    console.error(`[Alipay] ❌ ${label} 格式异常，首行:`, firstLine.slice(0, 80));
-    throw new Error(
-      `${label} 格式不正确。期望以 "-----BEGIN ..." 开头，实际首行: "${firstLine.slice(0, 50)}"。\n` +
-      "请在 Vercel 环境变量中确保密钥值包含完整的 PEM 格式，换行处使用 \\n 表示。"
-    );
+    console.warn(`[Alipay] ⚠️ ${label} 缺少PEM头尾 — 自动包装为 PKCS#1 格式`);
+    console.warn(`[Alipay] 原始首行(前50字符):`, raw.slice(0, 50));
+    // 尝试 PKCS#1 包装
+    key = "-----BEGIN RSA PRIVATE KEY-----\n" + key + "\n-----END RSA PRIVATE KEY-----\n";
+    console.log(`[Alipay] 🔧 ${label} 已自动补全PEM头尾，新长度:`, key.length);
   }
 
   return key;
