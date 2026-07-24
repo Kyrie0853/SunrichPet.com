@@ -134,152 +134,145 @@ export async function createAlipayOrder(params: {
 // 将 base64 内容按 64 字符分行（OpenSSL 3.x 严格要求）
 // ──────────────────────────────────────────────
 function wrapBase64Lines(content: string): string {
-  // 只处理纯 base64 行（不包括 PEM 头尾行）
-  return content.replace(/([A-Za-z0-9+/=]{64})/g, "$1\n");
+  const out: string[] = [];
+  for (let i = 0; i < content.length; i += 64) {
+    out.push(content.slice(i, i + 64));
+  }
+  return out.join("\n");
 }
 
 // ──────────────────────────────────────────────
-// 规范化 PEM 密钥（处理环境变量的常见格式问题）
+// 密钥诊断：打印安全的格式信息
 // ──────────────────────────────────────────────
-function normalizePemKey(raw: string, label: string, pemType?: "auto" | "pkcs1" | "pkcs8"): string {
-  if (!raw || typeof raw !== "string") {
-    throw new Error(`${label} 为空或不是字符串`);
-  }
+function logKeyDiagnostics(raw: string, label: string) {
+  const hasLiteralBackslashN = raw.includes("\\n");
+  const hasRealNewline = raw.includes("\n");
+  const hasCarriageReturn = raw.includes("\r");
+  const startsWithBegin = raw.trimStart().startsWith("-----BEGIN");
+  const endsWithEnd = raw.trimEnd().endsWith("-----");
+  const strippedLen = raw.replace(/[\s\r\n-]+/g, "").length;
+  // 安全前缀（不暴露完整密钥）
+  const first80 = raw.slice(0, 80).replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+  const last30  = raw.slice(-30).replace(/\n/g, "\\n").replace(/\r/g, "\\r");
 
-  // 1. 替换字面量 \n 为实际换行符（Vercel 环境变量不会自动转换）
-  let key = raw.replace(/\\n/g, "\n");
-
-  // 2. 去除 \r 和首尾空白
-  key = key.replace(/\r/g, "").trim();
-
-  // 3. 确保 PEM 头尾各占一行（处理粘贴时丢失换行的情况）
-  //    例如 "-----BEGIN RSA PRIVATE KEY-----MIIE..." → 补换行
-  key = key.replace(
-    /(-----BEGIN [A-Z ]+-----)([^\n])/,
-    "$1\n$2"
-  );
-  key = key.replace(
-    /([^\n])(-----END [A-Z ]+-----)/,
-    "$1\n$2"
-  );
-
-  // 4. 确保末尾有换行
-  if (!key.endsWith("\n")) {
-    key += "\n";
-  }
-
-  // 5. 检查是否是有效的 PEM 格式，缺失头尾则自动补全
-  const firstLine = key.split("\n")[0] || "(空)";
-
-  // 诊断日志 —— 只打印前缀，不泄露完整密钥
-  const lines = key.split("\n").length;
-  const prefix = key.slice(0, 30).replace(/\n/g, "\\n");
-  console.log(`[Alipay] PEM原始 [${label}]: 前30字符="${prefix}" 总行数=${lines} 总长度=${key.length}`);
-
-  if (!firstLine.startsWith("-----BEGIN ")) {
-    console.warn(`[Alipay] ⚠️ ${label} 缺少PEM头尾 — 自动检测格式并补全`);
-
-    // 提取纯 base64（去掉所有空白）
-    const stripped = key.replace(/\s/g, "");
-
-    // 检测 PKCS#8：base64 中包含 OID 1.2.840.113549.1.1.1 的 DER 编码
-    const isPkcs8 = stripped.includes("BgkqhkiG9w0BAQEF");
-
-    // 如果调用者指定了类型，使用指定类型
-    const headerType = pemType === "pkcs8" ? "pkcs8"
-      : pemType === "pkcs1" ? "pkcs1"
-      : isPkcs8 ? "pkcs8" : "pkcs1";
-
-    // 将 base64 按 64 字符分行（OpenSSL 3.x 要求）
-    const wrappedB64 = wrapBase64Lines(stripped);
-
-    if (headerType === "pkcs8") {
-      console.log(`[Alipay] 🔧 ${label} 使用 PKCS#8 格式 → PRIVATE KEY`);
-      key = "-----BEGIN PRIVATE KEY-----\n" + wrappedB64 + "\n-----END PRIVATE KEY-----\n";
-    } else {
-      console.log(`[Alipay] 🔧 ${label} 使用 PKCS#1 格式 → RSA PRIVATE KEY`);
-      key = "-----BEGIN RSA PRIVATE KEY-----\n" + wrappedB64 + "\n-----END RSA PRIVATE KEY-----\n";
-    }
-
-    console.log(`[Alipay] PEM生成 [${label}]: 首行=${key.split("\n")[0]}, 总行数=${key.split("\n").length}, 总长度=${key.length}`);
-  } else {
-    // 已有 PEM 头 → 仍需对 base64 行做 64 字符分行
-    const match = key.match(/-----BEGIN [A-Z ]+-----\n([\s\S]*)\n-----END [A-Z ]+-----/);
-    if (match) {
-      const header = match[0].split("\n")[0];
-      const footer = match[0].split("\n").slice(-1)[0];
-      const b64Content = match[1].replace(/\s/g, "");
-      const wrappedB64 = wrapBase64Lines(b64Content);
-      key = header + "\n" + wrappedB64 + "\n" + footer + "\n";
-      console.log(`[Alipay] PEM重排 [${label}]: 已按64字符分行，总行数=${key.split("\n").length}`);
-    }
-    console.log(`[Alipay] PEM保留 [${label}]: 首行=${firstLine}, 总长度=${key.length}`);
-  }
-
-  return key;
+  const lineCount = raw.split("\n").length;
+  console.log(`[Alipay] ═══ 密钥诊断 [${label}] ═══`);
+  console.log(`[Alipay] 原始长度        : ${raw.length} 字符`);
+  console.log(`[Alipay] 纯base64长度    : ${strippedLen} 字符`);
+  console.log(`[Alipay] 含字面量 \\n     : ${hasLiteralBackslashN ? "是 ✅" : "否"}`);
+  console.log(`[Alipay] 含真实换行(0x0A) : ${hasRealNewline ? `是 (${lineCount}行)` : "否 — 单行"}`);
+  console.log(`[Alipay] 含 \\r (0x0D)     : ${hasCarriageReturn ? "是 ⚠️" : "否"}`);
+  console.log(`[Alipay] 以 BEGIN 开头    : ${startsWithBegin ? "是" : "否 — 裸base64"}`);
+  console.log(`[Alipay] 以 ----- 结尾    : ${endsWithEnd ? "是" : "否"}`);
+  console.log(`[Alipay] 原文前80字符     : "${first80}"`);
+  console.log(`[Alipay] 原文末30字符     : "${last30}"`);
+  console.log(`[Alipay] ═══════════════════════════`);
 }
 
 // ──────────────────────────────────────────────
-// RSA-SHA256 签名（Node.js crypto）
-// 支持 PKCS#8 + PKCS#1 自动回退
+// 构造标准 PEM — 纯 base64 + 指定类型 + 64字符分行
+// ──────────────────────────────────────────────
+function buildPem(cleanB64: string, type: "pkcs1" | "pkcs8"): string {
+  const header = type === "pkcs8"
+    ? "-----BEGIN PRIVATE KEY-----"
+    : "-----BEGIN RSA PRIVATE KEY-----";
+  const footer = type === "pkcs8"
+    ? "-----END PRIVATE KEY-----"
+    : "-----END RSA PRIVATE KEY-----";
+  const wrapped = wrapBase64Lines(cleanB64);
+  return header + "\n" + wrapped + "\n" + footer + "\n";
+}
+
+// ──────────────────────────────────────────────
+// RSA-SHA256 签名 — 激进重写，多重回退
 // ──────────────────────────────────────────────
 async function rsaSign(data: string, privateKeyPem: string): Promise<string> {
   const { createSign, createPrivateKey } = await import("crypto");
 
-  // 尝试多种密钥格式
-  const attempts: Array<{ label: string; pemType?: "pkcs1" | "pkcs8" }> = [
-    { label: "自动检测(PKCS#8优先)", pemType: undefined },
-    { label: "强制PKCS#1", pemType: "pkcs1" },
-    { label: "强制PKCS#8", pemType: "pkcs8" },
-  ];
+  // ── 0. 深度诊断 ──
+  logKeyDiagnostics(privateKeyPem, "私钥(PRIVATE_KEY)");
 
-  let lastError: Error | null = null;
+  // ── 提取纯 base64（去掉所有非 base64 字符）──
+  const cleanB64 = privateKeyPem
+    .replace(/\\n/g, "\n")       // 字面量 \n → 真实换行
+    .replace(/\r/g, "")          // 去掉 \r
+    .replace(/-----.*?-----/g, "") // 去掉现存的 PEM 头尾
+    .replace(/[\s]/g, "");        // 去掉所有空白（换行、空格等）
 
-  for (const attempt of attempts) {
-    let key: string;
+  console.log(`[Alipay] 纯base64长度: ${cleanB64.length}, 前60字符: ${cleanB64.slice(0, 60)}`);
+  console.log(`[Alipay] 纯base64末30字符: ${cleanB64.slice(-30)}`);
+
+  if (!cleanB64 || cleanB64.length < 100) {
+    throw new Error(`密钥太短 (${cleanB64.length} 字符)，请检查 Vercel 中 ALIPAY_PRIVATE_KEY 是否完整粘贴`);
+  }
+
+  // ── 多策略尝试 ──
+  const strategies: Array<{ label: string; pem: string }> = [];
+
+  // 策略 1-2: 自动检测 + 显式指定
+  const isPkcs8 = cleanB64.includes("BgkqhkiG9w0BAQEF");
+  if (isPkcs8) {
+    strategies.push({ label: "PKCS#8 (检测)", pem: buildPem(cleanB64, "pkcs8") });
+    strategies.push({ label: "PKCS#1 (强制)", pem: buildPem(cleanB64, "pkcs1") });
+  } else {
+    strategies.push({ label: "PKCS#1 (检测)", pem: buildPem(cleanB64, "pkcs1") });
+    strategies.push({ label: "PKCS#8 (强制)", pem: buildPem(cleanB64, "pkcs8") });
+  }
+
+  // 策略 3-4: 不换行版本（某些 OpenSSL 构建可能接受长行）
+  strategies.push({
+    label: "PKCS#8 不换行",
+    pem: `-----BEGIN PRIVATE KEY-----\n${cleanB64}\n-----END PRIVATE KEY-----\n`,
+  });
+  strategies.push({
+    label: "PKCS#1 不换行",
+    pem: `-----BEGIN RSA PRIVATE KEY-----\n${cleanB64}\n-----END RSA PRIVATE KEY-----\n`,
+  });
+
+  let lastError: any = null;
+
+  for (const strategy of strategies) {
     try {
-      key = normalizePemKey(privateKeyPem, "私钥(PRIVATE_KEY)", attempt.pemType as "auto" | "pkcs1" | "pkcs8" | undefined);
-    } catch (e: any) {
-      console.warn(`[Alipay] ⚠️ ${attempt.label} — normalizePemKey 失败:`, e.message);
-      lastError = e;
-      continue;
-    }
+      // 打印 PEM 摘要（安全）
+      const pemLines = strategy.pem.split("\n");
+      console.log(`[Alipay] 🔑 尝试策略: ${strategy.label} (${pemLines.length}行, ${strategy.pem.length}字节)`);
+      console.log(`[Alipay]    PEM首行: ${pemLines[0]}`);
+      console.log(`[Alipay]    PEM末行: ${pemLines[pemLines.length - 1]}`);
+      console.log(`[Alipay]    首行base64长度: ${pemLines[1]?.length || 0}`);
 
-    try {
-      // 先用 createPrivateKey 验证密钥是否可解析
-      const keyObj = createPrivateKey(key);
-      console.log(`[Alipay] ✅ ${attempt.label} — createPrivateKey 解析成功 (type:${keyObj.type}, asymmetricKeyType:${keyObj.asymmetricKeyType})`);
+      // 尝试解析
+      const keyObj = createPrivateKey({
+        key: strategy.pem,
+        format: "pem",
+        type: "pkcs8",  // Node.js 会自适配，这里给个提示
+      } as any);
+      console.log(`[Alipay] ✅ ${strategy.label} — 解析成功 (type:${keyObj.type}, keyType:${keyObj.asymmetricKeyType})`);
 
       // 签名
       const sign = createSign("RSA-SHA256");
       sign.update(data, "utf8");
       sign.end();
       const signature = sign.sign(keyObj, "base64");
-      console.log(`[Alipay] ✅ ${attempt.label} — 签名成功 (长度:${signature.length})`);
+      console.log(`[Alipay] ✅ ${strategy.label} — 签名成功 (长度:${signature.length})`);
       return signature;
     } catch (err: any) {
-      console.warn(`[Alipay] ⚠️ ${attempt.label} 失败: ${err.message}`);
+      console.warn(`[Alipay] ❌ ${strategy.label} 失败: ${err.code || ""} ${err.message}`);
       lastError = err;
-      // 继续尝试下一种格式
     }
   }
 
-  // 所有尝试都失败
-  const rawPreview = privateKeyPem.slice(0, 60).replace(/\n/g, "\\n");
-  console.error("[Alipay] ❌ 所有格式均失败");
-  console.error("[Alipay] 原始密钥前60字符:", rawPreview);
-  console.error("[Alipay] 原始密钥总长度:", privateKeyPem.length);
-  console.error("[Alipay] 是否包含\\n:", privateKeyPem.includes("\\n") ? "是" : "否");
-  console.error("[Alipay] 是否包含真实换行:", privateKeyPem.includes("\n") ? "是" : "否");
-
+  // ── 全部失败 ──
+  console.error(`[Alipay] ❌ 全部 ${strategies.length} 种策略均失败`);
+  console.error(`[Alipay] 最后错误: ${lastError?.code || ""} ${lastError?.message}`);
   throw new Error(
-    `支付宝签名失败（已尝试 PKCS#8/PKCS#1 均失败）：${lastError?.message}。\n` +
-    "请检查 Vercel 中 ALIPAY_PRIVATE_KEY：\n" +
-    "1. 从支付宝开放平台下载密钥文件后，用文本编辑器打开\n" +
-    "2. 删除首行 -----BEGIN ...----- 和末行 -----END ...-----\n" +
-    "3. 将所有真实换行替换为 \\n（反斜杠+n）\n" +
-    "4. 将单行文本粘贴到 Vercel 环境变量中\n" +
-    `当前密钥前60字符: ${rawPreview}`
+    `支付宝签名失败：已尝试 ${strategies.length} 种密钥格式均无法解析。\n` +
+    `最后错误：${lastError?.message}\n` +
+    "请确认 Vercel 中 ALIPAY_PRIVATE_KEY 的值：\n" +
+    "1. 从支付宝开放平台 → 开发设置 → 接口加签方式 → 下载「应用私钥」\n" +
+    "2. 用文本编辑器打开下载的文件，删除 -----BEGIN... 和 -----END... 行\n" +
+    "3. 将所有真实换行替换为 \\n（两个字面量字符：反斜杠 + 字母n）\n" +
+    "4. 将得到的单行文本粘贴到 Vercel 环境变量\n" +
+    `当前纯base64长度: ${cleanB64.length}`
   );
 }
 
@@ -312,7 +305,14 @@ export async function verifyAlipayNotify(params: Record<string, string>): Promis
       return false;
     }
 
-    const publicKey = normalizePemKey(publicKeyRaw, "支付宝公钥(PUBLIC_KEY)");
+    // 规范化公钥 PEM
+    const cleanPubB64 = publicKeyRaw
+      .replace(/\\n/g, "\n")
+      .replace(/\r/g, "")
+      .replace(/-----.*?-----/g, "")
+      .replace(/[\s]/g, "");
+    const wrappedPubB64 = wrapBase64Lines(cleanPubB64);
+    const publicKey = `-----BEGIN PUBLIC KEY-----\n${wrappedPubB64}\n-----END PUBLIC KEY-----\n`;
 
     const { createVerify } = await import("crypto");
     const verify = createVerify("RSA-SHA256");
