@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.alipay.com https://*.alipaydev.com",
+      "img-src 'self' data: blob: https:",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://openapi.alipay.com https://openapi-sandbox.dl.alipaydev.com",
       "font-src 'self'",
       "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://openapi.alipay.com https://openapi-sandbox.dl.alipaydev.com",
