@@ -168,11 +168,22 @@ function normalizePemKey(raw: string, label: string): string {
   console.log(`[Alipay] PEM诊断 [${label}]: 首行=${firstLine}, 总行数=${lines}, 总长度=${key.length}`);
 
   // 5. 检查是否是有效的 PEM 格式，缺失头尾则自动补全
+  //    关键：区分 PKCS#1 (RSA PRIVATE KEY) vs PKCS#8 (PRIVATE KEY)
   if (!firstLine.startsWith("-----BEGIN ")) {
-    console.warn(`[Alipay] ⚠️ ${label} 缺少PEM头尾 — 自动包装为 PKCS#1 格式`);
+    console.warn(`[Alipay] ⚠️ ${label} 缺少PEM头尾 — 自动检测格式并补全`);
     console.warn(`[Alipay] 原始首行(前50字符):`, raw.slice(0, 50));
-    // 尝试 PKCS#1 包装
-    key = "-----BEGIN RSA PRIVATE KEY-----\n" + key + "\n-----END RSA PRIVATE KEY-----\n";
+
+    // 检测 PKCS#8：base64 中包含 OID 1.2.840.113549.1.1.1 的 DER 编码
+    const stripped = key.replace(/\s/g, "");
+    const isPkcs8 = stripped.includes("BgkqhkiG9w0BAQEF");
+
+    if (isPkcs8) {
+      console.log(`[Alipay] 🔧 ${label} 检测到 PKCS#8 格式 → 使用 PRIVATE KEY 头`);
+      key = "-----BEGIN PRIVATE KEY-----\n" + key + "\n-----END PRIVATE KEY-----\n";
+    } else {
+      console.log(`[Alipay] 🔧 ${label} 未检测到 PKCS#8 特征 → 使用 RSA PRIVATE KEY 头`);
+      key = "-----BEGIN RSA PRIVATE KEY-----\n" + key + "\n-----END RSA PRIVATE KEY-----\n";
+    }
     console.log(`[Alipay] 🔧 ${label} 已自动补全PEM头尾，新长度:`, key.length);
   }
 
@@ -201,9 +212,9 @@ async function rsaSign(data: string, privateKeyPem: string): Promise<string> {
     throw new Error(
       `支付宝签名失败：${err.message}。\n` +
       "请检查 Vercel 中 ALIPAY_PRIVATE_KEY 的值：\n" +
-      "1. 确保换行符使用 \\n 表示（例如 KEY-----\\nMIIE...\\n-----END）\n" +
-      "2. 确保密钥以 -----BEGIN RSA PRIVATE KEY----- 开头\n" +
-      "3. 如果使用支付宝密钥生成器，选择 PKCS1（非JAVA适用）格式"
+      "1. 如果密钥从支付宝开放平台下载，请将文件内容中的换行替换为 \\n 后粘贴\n" +
+      "2. 代码会自动检测 PKCS#1/PKCS#8 格式并补全 PEM 头，无需手动添加\n" +
+      "3. 如果手动添加了 PEM 头，请确认头尾格式正确（PRIVATE KEY 或 RSA PRIVATE KEY）"
     );
   }
 }
