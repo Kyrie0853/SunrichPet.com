@@ -52,10 +52,17 @@ export default function PurchaseForm({
   const [pasteText, setPasteText] = useState("");
   const [pasteDone, setPasteDone] = useState(false);
 
-  // ── 防护：price 不是数字时页面不应崩溃 ──
-  const safePrice = typeof price === "number" && !isNaN(price) ? price : 0;
-  if (safePrice === 0 && price !== 0) {
-    console.error("[PurchaseForm] ⚠️ price 不是有效数字:", price);
+  // ── 防护：price 不是数字时页面不应崩溃（防止 React Error #418）──
+  const safePrice = (() => {
+    if (typeof price === "number" && !isNaN(price)) return price;
+    if (typeof price === "string") {
+      const n = Number(price);
+      if (!isNaN(n)) return n;
+    }
+    return 0;
+  })();
+  if (safePrice === 0 && price != null && price !== 0) {
+    console.error("[PurchaseForm] ⚠️ price 不是有效数字:", typeof price, JSON.stringify(price));
   }
 
   function handlePasteChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -325,7 +332,7 @@ export default function PurchaseForm({
         disabled={loading}
         className="w-full rounded-xl bg-[#1a7f5a] py-4 text-[15px] font-bold text-white hover:bg-[#166b4b] transition-colors disabled:opacity-50 active:scale-[0.98] min-h-[48px]"
       >
-        {loading ? "提交中..." : `提交订单 · ¥${price.toFixed(2)}` + (paymentMethod === "wechat" ? " (微信)" : "")}
+        {loading ? "提交中..." : `提交订单 · ¥${safePrice.toFixed(2)}` + (paymentMethod === "wechat" ? " (微信)" : "")}
       </button>
 
       <p className="text-center text-[12px] text-[#9ca3af]">

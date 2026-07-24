@@ -12,6 +12,16 @@ export default async function CheckoutPage({ searchParams }: Props) {
 
   const { product_id } = await searchParams;
 
+  // ── 安全的价格格式化（防止 React Error #418）──
+  function safeDisplayPrice(p: unknown): string {
+    if (typeof p === "number" && !isNaN(p)) return `¥${p.toFixed(2)}`;
+    if (typeof p === "string") {
+      const n = Number(p);
+      if (!isNaN(n)) return `¥${n.toFixed(2)}`;
+    }
+    return "¥--";
+  }
+
   if (!product_id) {
     return (
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
@@ -55,7 +65,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
             <p className="text-[12px] text-[#9ca3af] font-mono">#{product.product_id}</p>
             <p className="text-[15px] font-semibold text-[#1f2937] line-clamp-1">{product.name}</p>
             {product.morph && <p className="text-[12px] text-[#6b7280]">{product.morph}</p>}
-            <p className="mt-1 text-[20px] font-bold text-[#1a7f5a]">¥{product.price}</p>
+            <p className="mt-1 text-[20px] font-bold text-[#1a7f5a]">{safeDisplayPrice(product.price)}</p>
           </div>
         </div>
       </div>

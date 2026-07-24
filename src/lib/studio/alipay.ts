@@ -33,7 +33,9 @@ function buildSignString(params: Record<string, string>) {
 function logEnvDiagnostics() {
   console.log("[Alipay] ── 环境变量诊断 ──");
   console.log("[Alipay] ALIPAY_APP_ID      :", process.env.ALIPAY_APP_ID ? "✅ " + process.env.ALIPAY_APP_ID.slice(0, 6) + "***" : "❌ 未设置");
-  console.log("[Alipay] ALIPAY_PRIVATE_KEY :", process.env.ALIPAY_PRIVATE_KEY ? "✅ 已设置(" + process.env.ALIPAY_PRIVATE_KEY.length + "字符)" : "❌ 未设置");
+  console.log("[Alipay] ALIPAY_PRIVATE_KEY :", process.env.ALIPAY_PRIVATE_KEY
+    ? `✅ 已设置(${process.env.ALIPAY_PRIVATE_KEY.length}字符) 前30字符="${process.env.ALIPAY_PRIVATE_KEY.slice(0, 30).replace(/\n/g, '\\n')}"`
+    : "❌ 未设置");
   console.log("[Alipay] ALIPAY_PUBLIC_KEY  :", process.env.ALIPAY_PUBLIC_KEY ? "✅ 已设置(" + process.env.ALIPAY_PUBLIC_KEY.length + "字符)" : "❌ 未设置");
   console.log("[Alipay] ALIPAY_NOTIFY_URL  :", process.env.ALIPAY_NOTIFY_URL || "❌ 未设置");
   console.log("[Alipay] ALIPAY_RETURN_URL  :", process.env.ALIPAY_RETURN_URL || "❌ 未设置");
@@ -158,9 +160,11 @@ function normalizePemKey(raw: string, label: string): string {
     key += "\n";
   }
 
-  // 诊断日志
+  // 诊断日志 —— 只打印前缀，不泄露完整密钥
   const firstLine = key.split("\n")[0] || "(空)";
   const lines = key.split("\n").length;
+  const prefix = key.slice(0, 30).replace(/\n/g, "\\n");
+  console.log(`[Alipay] PEM诊断 [${label}]: 前30字符="${prefix}"`);
   console.log(`[Alipay] PEM诊断 [${label}]: 首行=${firstLine}, 总行数=${lines}, 总长度=${key.length}`);
 
   // 5. 检查是否是有效的 PEM 格式，缺失头尾则自动补全
@@ -189,7 +193,9 @@ async function rsaSign(data: string, privateKeyPem: string): Promise<string> {
     return sign.sign(key, "base64");
   } catch (err: any) {
     // 诊断更详细的错误
+    const keyPreview = key.slice(0, 30).replace(/\n/g, "\\n");
     console.error("[Alipay] ❌ 签名失败:", err.message);
+    console.error("[Alipay] 密钥前30字符:", keyPreview);
     console.error("[Alipay] 密钥首行:", key.split("\n")[0]);
     console.error("[Alipay] 密钥长度:", key.length, "字节");
     throw new Error(
