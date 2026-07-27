@@ -47,6 +47,7 @@ export default function PurchaseForm({
   const [paymentMethod, setPaymentMethod] = useState<"alipay" | "wechat">("alipay");
   const [orderId, setOrderId] = useState("");
   const [orderCreated, setOrderCreated] = useState(false);
+  const [qrError, setQrError] = useState(false);
 
   // 智能粘贴
   const [pasteText, setPasteText] = useState("");
@@ -170,7 +171,6 @@ export default function PurchaseForm({
     }
   }
 
-  // 微信支付已创建订单界面
   if (orderCreated && paymentMethod === "wechat") {
     const shortId = orderId.slice(-8).toUpperCase();
     return (
@@ -178,15 +178,30 @@ export default function PurchaseForm({
         <div className="rounded-2xl bg-gradient-to-b from-green-50 to-white border border-green-200 p-6 text-center">
           <p className="text-4xl mb-3">💚</p>
           <h2 className="text-[16px] font-bold text-[#1f2937] mb-1">订单已创建</h2>
-          <p className="text-[13px] text-[#6b7280]">请保存以下信息，使用微信扫码支付</p>
+          <p className="text-[13px] text-[#6b7280]">请使用微信扫描下方二维码支付</p>
+
+          {/* 微信收款码 */}
           <div className="my-5 flex justify-center">
-            <div className="w-48 h-48 bg-white rounded-xl border-2 border-dashed border-[#1a7f5a]/30 flex items-center justify-center relative overflow-hidden">
-              <img src="/images/wechat-qr.png" alt="微信收款码"
-                className="w-44 h-44 object-contain"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <span className="text-[10px] text-gray-400 text-center px-2">请将微信收款码<br/>放至 /public/images/wechat-qr.png</span>
+            <div className="relative w-60 h-60 sm:w-72 sm:h-72 bg-white rounded-2xl border-2 border-[#1a7f5a]/20 shadow-sm flex items-center justify-center overflow-hidden">
+              {!qrError && (
+                <img
+                  src="/images/wechat-qr.png"
+                  alt="微信收款码"
+                  className="w-full h-full object-contain p-1"
+                  onError={() => setQrError(true)}
+                />
+              )}
+              {qrError && (
+                <div className="flex flex-col items-center justify-center gap-2 p-4">
+                  <span className="text-3xl">📷</span>
+                  <span className="text-[12px] text-gray-400 text-center">
+                    请将微信收款码图片<br />放至 public/images/wechat-qr.png
+                  </span>
+                </div>
+              )}
             </div>
           </div>
+
           <div className="rounded-xl bg-white border p-3 text-left space-y-2 text-[13px]">
             <div className="flex justify-between"><span className="text-gray-500">订单编号</span><span className="font-mono font-bold">{shortId}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">应付金额</span><span className="font-bold text-[#1a7f5a] text-[18px]">¥{safePrice.toFixed(2)}</span></div>
