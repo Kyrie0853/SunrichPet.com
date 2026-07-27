@@ -30,7 +30,7 @@ export default function EditProfileForm({ profile }: { profile: any }) {
     if (updateErr) { setError("保存失败: " + updateErr.message); setSubmitting(false); return; }
     setSuccess(true);
     setSubmitting(false);
-    setTimeout(() => router.push("/community/user/" + profile.id), 800);
+    setTimeout(() => router.push("/profile"), 800);
     router.refresh();
   }
 

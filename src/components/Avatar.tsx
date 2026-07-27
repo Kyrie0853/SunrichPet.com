@@ -80,7 +80,7 @@ export default function Avatar({ userId, avatarUrl, displayName, size = 40, edit
   return (
     <div className="relative inline-block" style={{ width: size, height: size }}>
       {safeClickable ? (
-        <Link href={"/community/user/" + userId} className="block h-full w-full">
+        <Link href="/profile" className="block h-full w-full">
           {avatarEl}
         </Link>
       ) : clickable ? (
