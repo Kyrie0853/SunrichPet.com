@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   // 尝试2: 不含 email（兼容未执行 fix-profiles-email.sql 的情况）
   if (!data && error) {
     console.warn("[admin/users] 含email查询失败，回退不含email:", error.message);
-    const query2 = supabase.from("profiles").select("id,display_name,avatar_url,role,created_at,points,banned", { count: "estimated" }).order("created_at", { ascending: false });
+    const query2 = supabase.from("profiles").select("id,display_name,role,created_at", { count: "estimated" }).order("created_at", { ascending: false });
     if (q) query2.ilike("display_name", `%${q}%`);
     if (role) query2.eq("role", role);
     const r2 = await query2.range((page - 1) * 20, page * 20 - 1);

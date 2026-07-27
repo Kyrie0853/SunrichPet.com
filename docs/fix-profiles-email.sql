@@ -1,23 +1,40 @@
 -- ================================================
--- 修复: profiles 表缺少 email 列
--- 根因: schema.sql 未定义 email 列
---       但 API 代码查询了 profiles.email
+-- 修复: profiles 表缺少多个列
+-- 根因: schema.sql 只定义了 id,role,display_name,created_at
+--       后续功能添加了 email,avatar_url,points,banned
+--       但未写对应的 DDL 迁移
 -- 请在 Supabase SQL Editor 中执行此脚本
 -- ================================================
 
--- 1. 添加 email 列（如果不存在）
+-- 1. 补全所有缺失列
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'public'
-      AND table_name = 'profiles'
-      AND column_name = 'email'
-  ) THEN
+  -- email（从 auth.users 同步）
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='email') THEN
     ALTER TABLE public.profiles ADD COLUMN email TEXT;
     RAISE NOTICE '✅ email 列已添加';
-  ELSE
-    RAISE NOTICE '📌 email 列已存在，跳过添加';
+  ELSE RAISE NOTICE '📌 email 列已存在';
+  END IF;
+
+  -- avatar_url（头像）
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='avatar_url') THEN
+    ALTER TABLE public.profiles ADD COLUMN avatar_url TEXT;
+    RAISE NOTICE '✅ avatar_url 列已添加';
+  ELSE RAISE NOTICE '📌 avatar_url 列已存在';
+  END IF;
+
+  -- points（积分）
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='points') THEN
+    ALTER TABLE public.profiles ADD COLUMN points INTEGER DEFAULT 0;
+    RAISE NOTICE '✅ points 列已添加';
+  ELSE RAISE NOTICE '📌 points 列已存在';
+  END IF;
+
+  -- banned（封禁状态）
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='banned') THEN
+    ALTER TABLE public.profiles ADD COLUMN banned BOOLEAN DEFAULT false;
+    RAISE NOTICE '✅ banned 列已添加';
+  ELSE RAISE NOTICE '📌 banned 列已存在';
   END IF;
 END $$;
 
@@ -46,15 +63,19 @@ SET email = u.email
 FROM auth.users u
 WHERE p.id = u.id AND p.email IS NULL;
 
--- 4. 验证
+-- 4. 验证所有列
 DO $$
 DECLARE
-  total INT; null_email INT;
+  col RECORD;
 BEGIN
-  SELECT count(*) INTO total FROM public.profiles;
-  SELECT count(*) INTO null_email FROM public.profiles WHERE email IS NULL;
   RAISE NOTICE '========================================';
-  RAISE NOTICE 'profiles 总数   : %', total;
-  RAISE NOTICE 'email 为空的行  : %', null_email;
+  RAISE NOTICE 'profiles 表现有列:';
+  FOR col IN
+    SELECT column_name, data_type FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='profiles'
+    ORDER BY ordinal_position
+  LOOP
+    RAISE NOTICE '  %  →  %', col.column_name, col.data_type;
+  END LOOP;
   RAISE NOTICE '========================================';
 END $$;
