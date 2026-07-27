@@ -22,7 +22,7 @@ function formatAlipayTimestamp(): string {
 // ──────────────────────────────────────────────
 function buildSignString(params: Record<string, string>) {
   const sorted = Object.keys(params)
-    .filter(k => params[k] && k !== "sign" && k !== "sign_type")
+    .filter(k => params[k] && k !== "sign")
     .sort();
   return sorted.map(k => `${k}=${params[k]}`).join("&");
 }
