@@ -25,14 +25,25 @@ function parsePastedText(text: string): { name: string; phone: string; address: 
   return { name, phone, address };
 }
 
+interface CartProductInfo {
+  product_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export default function PurchaseForm({
   productId,
   productName,
   price,
+  cartItems,
+  onOrderCreated,
 }: {
   productId: string;
   productName: string;
   price: number;
+  cartItems?: CartProductInfo[];
+  onOrderCreated?: () => void;
 }) {
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
@@ -88,17 +99,29 @@ export default function PurchaseForm({
     setLoading(true);
     setError("");
     try {
+      const body: Record<string, unknown> = {
+        product_id: productId,
+        recipient_name: recipientName.trim(),
+        recipient_phone: recipientPhone.trim(),
+        recipient_address: recipientAddress.trim(),
+        buyer_message: buyerMessage.trim(),
+        payment_method: "wechat",
+      };
+
+      // 如果是购物车结算，传递所有商品
+      if (cartItems && cartItems.length > 0) {
+        body.items = cartItems.map(item => ({
+          product_id: item.product_id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        }));
+      }
+
       const res = await fetch("/api/orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: productId,
-          recipient_name: recipientName.trim(),
-          recipient_phone: recipientPhone.trim(),
-          recipient_address: recipientAddress.trim(),
-          buyer_message: buyerMessage.trim(),
-          payment_method: "wechat",
-        }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -107,6 +130,9 @@ export default function PurchaseForm({
         setError(data.error); setLoading(false);
         return;
       }
+
+      // 下单成功，清空购物车
+      if (onOrderCreated) onOrderCreated();
 
       setOrderId(data.orderId);
       setOrderCreated(true);

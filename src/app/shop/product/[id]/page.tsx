@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProductById, STATUS_LABELS } from "@/lib/studio/products";
 import ProductReviewSection from "@/components/ProductReviewSection";
 import ProductGallery from "@/components/studio/ProductGallery";
+import AddToCartButton from "@/components/AddToCartButton";
 import { getProductReviews, getProductRating } from "@/app/actions/reviews";
 import type { Metadata } from "next";
 
@@ -106,11 +107,17 @@ export default async function ProductDetailPage({ params }: Props) {
             </ul>
           </div>
           {product.status !== "sold" ? (
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
               <Link href={`/checkout?product_id=${product.product_id}`}
                 className="block w-full rounded-xl bg-[#1a7f5a] py-4 text-center text-[15px] font-bold text-white hover:bg-[#166b4b] transition-colors active:scale-[0.98] min-h-[48px] flex items-center justify-center">
                 立即购买 · ¥{product.price}
               </Link>
+              <AddToCartButton
+                productId={product.product_id}
+                name={product.name}
+                price={product.price}
+                image={product.images?.[0] || ""}
+              />
             </div>
           ) : (
             <div className="mt-6 rounded-xl bg-gray-50 border border-gray-200 py-4 text-center text-[14px] text-[#9ca3af]">该个体已售出，看看其他在售个体吧</div>

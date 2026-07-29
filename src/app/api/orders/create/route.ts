@@ -14,17 +14,73 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser();
 
     const body = await req.json();
-    const { product_id } = body;
+    const { product_id, items } = body;
+
+    // 支持购物车多商品结算
+    if (items && Array.isArray(items) && items.length > 0) {
+      // 多商品订单
+      const totalAmount = items.reduce(
+        (sum: number, item: any) => sum + (Number(item.price) || 0) * (item.quantity || 1),
+        0
+      );
+      const productNames = items.map((item: any) => item.name).join(" · ");
+
+      const shippingAddress = [
+        body.recipient_name || "",
+        body.recipient_phone || "",
+        body.recipient_address || "",
+      ].filter(Boolean).join(" · ");
+
+      const orderPayload: Record<string, unknown> = {
+        product_id: items[0].product_id,
+        product_name: productNames,
+        status: "pending",
+        total_amount: totalAmount,
+        shipping_address: shippingAddress,
+        payment_method: "wechat",
+      };
+      if (user) orderPayload.user_id = user.id;
+
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .insert(orderPayload)
+        .select("id")
+        .single();
+
+      if (orderErr || !order) {
+        console.error("[Order Create] 创建多商品订单失败:", orderErr);
+        return NextResponse.json({ error: "创建订单失败" }, { status: 500 });
+      }
+
+      await supabase.from("order_logs").insert({
+        order_id: order.id,
+        action: "created",
+        operator_id: user?.id || null,
+        details: {
+          items: items.map((item: any) => ({
+            productId: item.product_id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity || 1,
+          })),
+          totalAmount,
+          method: "wechat",
+          recipient: { name: body.recipient_name, phone: body.recipient_phone, address: body.recipient_address },
+        },
+      });
+
+      return NextResponse.json({ success: true, orderId: order.id });
+    }
+
+    // ===== 原有单品下单逻辑 =====
     if (!product_id) return NextResponse.json({ error: "缺少商品ID" }, { status: 400 });
 
-    // 收货信息
     const recipientName = body.recipient_name || "";
     const recipientPhone = body.recipient_phone || "";
     const recipientAddress = body.recipient_address || "";
     const paymentMethod = body.payment_method || "wechat";
     const shippingAddress = [recipientName, recipientPhone, recipientAddress].filter(Boolean).join(" · ");
 
-    // 查询商品
     const { data: product } = await supabase
       .from("studio_products")
       .select("*")
@@ -36,7 +92,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "商品不存在或已售出" }, { status: 400 });
     }
 
-    // 创建订单 — user_id 可为空（匿名买家）
     const orderPayload: Record<string, unknown> = {
       product_id: product.product_id,
       product_name: product.name,
@@ -45,11 +100,7 @@ export async function POST(req: Request) {
       shipping_address: shippingAddress,
       payment_method: paymentMethod,
     };
-
-    // 如果已登录，关联用户 ID
-    if (user) {
-      orderPayload.user_id = user.id;
-    }
+    if (user) orderPayload.user_id = user.id;
 
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -62,7 +113,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "创建订单失败" }, { status: 500 });
     }
 
-    // 记录订单日志
     await supabase.from("order_logs").insert({
       order_id: order.id,
       action: "created",

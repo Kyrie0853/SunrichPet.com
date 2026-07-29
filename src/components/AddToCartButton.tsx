@@ -1,74 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { addToCart } from "@/app/actions/cart";
+import { useGuestCart } from "@/hooks/useGuestCart";
 
-export function AddToCartButton({
+export default function AddToCartButton({
   productId,
-  stock,
+  name,
+  price,
+  image,
 }: {
   productId: string;
-  stock: number;
+  name: string;
+  price: number;
+  image: string;
 }) {
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
-  const router = useRouter();
+  const { addItem, totalCount } = useGuestCart();
+  const [added, setAdded] = useState(false);
 
-  async function handleAddToCart() {
-    setLoading(true);
-    setMessage(null);
-
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      router.push("/auth");
-      return;
-    }
-
-    const result = await addToCart(productId, 1);
-    setMessage({
-      type: result.success ? "success" : "error",
-      text: result.message,
+  function handleAdd() {
+    addItem({
+      product_id: productId,
+      name,
+      price: typeof price === "number" ? price : Number(price) || 0,
+      image: image || "",
     });
-    setLoading(false);
-  }
-
-  if (stock === 0) {
-    return (
-      <button
-        disabled
-        className="w-full rounded-xl bg-gray-200 py-3.5 text-sm font-semibold text-gray-400 cursor-not-allowed"
-      >
-        已售罄
-      </button>
-    );
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   }
 
   return (
-    <div>
-      <button
-        onClick={handleAddToCart}
-        disabled={loading}
-        className="w-full rounded-xl bg-emerald-600 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {loading ? "处理中..." : "加入购物车"}
-      </button>
-      {message && (
-        <p
-          className={`mt-3 text-center text-sm ${
-            message.type === "success" ? "text-emerald-600" : "text-red-500"
-          }`}
-        >
-          {message.text}
-        </p>
+    <button
+      onClick={handleAdd}
+      className={`w-full rounded-xl py-4 text-center text-[15px] font-bold transition-all active:scale-[0.98] min-h-[48px] flex items-center justify-center gap-2 ${
+        added
+          ? "bg-[#166b4b] text-white"
+          : "border-2 border-[#1a7f5a] text-[#1a7f5a] hover:bg-[#e8f5ef]"
+      }`}
+    >
+      {added ? (
+        <>✅ 已加入购物车</>
+      ) : (
+        <>
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 003 3h4.5a3 3 0 003-3H7.5zM6.75 14.25l-1.5-6h13.5l-1.5 6H6.75zM9 17.25a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM19.5 17.25a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+          </svg>
+          加入购物车
+        </>
       )}
-    </div>
+    </button>
   );
 }
