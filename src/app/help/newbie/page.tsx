@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = { title: '新手指南 | 给我爬', description: '给我爬新手指南：注册、发帖、关注、社区规则入门。' };
+export const metadata: Metadata = { title: '新手指南 | 给我爬', description: '给我爬新手指南：如何浏览、下单、支付、收货。' };
 
 const NAV = [
   { href: '/help/newbie', label: '新手指南' }, { href: '/help/trade', label: '交易指南' },
-  { href: '/help/after-sale', label: '售后指南' }, { href: '/help/seller', label: '商家指南' }, { href: '/help/faq', label: '常见问题' },
+  { href: '/help/after-sale', label: '售后指南' }, { href: '/help/faq', label: '常见问题' },
 ];
 
 export default function NewbiePage() {
@@ -19,13 +19,13 @@ export default function NewbiePage() {
         </aside>
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold text-[#1f2937] mb-2">新手指南</h1>
-          <p className="text-[#6b7280] mb-8">快速上手给我爬，成为社区活跃成员</p>
+          <p className="text-[#6b7280] mb-8">快速上手给我爬商城，选购心仪的爬宠</p>
           <div className="prose max-w-none space-y-8 text-[15px] leading-relaxed text-[#4b5563]">
-            <section><h3 className="text-lg font-bold text-[#1f2937]">1. 如何注册账号</h3><p>点击页面右上角的「登录」按钮，输入您的邮箱地址，系统会发送验证码到您的邮箱。输入验证码即可完成注册。您也可以使用密码登录方式注册。</p></section>
-            <section><h3 className="text-lg font-bold text-[#1f2937]">2. 如何完善个人资料</h3><p>登录后，点击右上角头像 →「个人中心」→「编辑资料」。您可以设置头像、昵称和个人签名。头像建议使用清晰的正面照片或宠物照片。</p></section>
-            <section><h3 className="text-lg font-bold text-[#1f2937]">3. 如何发帖和评论</h3><p>在首页或社区页面，点击「发布帖子」按钮。填写标题、选择分类、撰写内容后即可发布。在帖子详情页底部可直接发表评论。首次发帖前需要阅读并同意社区规则。</p></section>
-            <section><h3 className="text-lg font-bold text-[#1f2937]">4. 如何关注其他用户</h3><p>在帖子详情页或用户主页，点击「+ 关注」按钮即可关注感兴趣的用户。关注后，您可以在「动态流」中看到他们的最新帖子。</p></section>
-            <section><h3 className="text-lg font-bold text-[#1f2937]">5. 社区规则简介</h3><p>请遵守以下社区规则：禁止发布保护动物交易信息、禁止留联系方式引导私下交易、禁止发布违法或不当内容。详细规则请查看 <Link href="/rules" className="text-[#1a7f5a]">平台规则</Link>。</p></section>
+            <section><h3 className="text-lg font-bold text-[#1f2937]">1. 浏览商品</h3><p>打开给我爬网站，在首页可以看到所有爬宠分类卡片。点击分类进入商品列表，可通过状态、价格、品系等条件筛选。也可以直接在搜索框输入品种名称查找。</p></section>
+            <section><h3 className="text-lg font-bold text-[#1f2937]">2. 查看详情</h3><p>点击商品卡片进入详情页，可以查看高清图片、基因品系、出生日期、体重、性格特点等完整信息。每个商品下方都有包损条款说明。</p></section>
+            <section><h3 className="text-lg font-bold text-[#1f2937]">3. 提交订单</h3><p>点击「立即购买」或「加入购物车」后统一结算。填写收货人姓名、手机号、详细地址即可提交订单，<strong>无需注册登录</strong>。支持智能粘贴：直接复制姓名+电话+地址粘贴到识别框。</p></section>
+            <section><h3 className="text-lg font-bold text-[#1f2937]">4. 完成支付</h3><p>提交订单后扫描微信收款码支付。添加客服微信 <strong>geiwopa112</strong>，转账时在备注中填写订单编号。客服核对后确认收款并安排发货。</p></section>
+            <section><h3 className="text-lg font-bold text-[#1f2937]">5. 收货验货</h3><p>收到包裹后，请在6小时内凭完整无剪辑开箱视频验货。开箱死亡无条件退款或重发。详细规则请查看 <Link href="/rules/after-sale" className="text-[#1a7f5a]">售后规则</Link>。</p></section>
           </div>
         </div>
       </div>

@@ -102,12 +102,12 @@ export default function AboutPage() {
             <span>邮箱：<a href="mailto:553043978@qq.com" className="text-[#1a7f5a] hover:underline">553043978@qq.com</a></span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
-            <span className="text-lg">🕐</span>
-            <span>工作时间：9:00 - 21:00</span>
+            <span className="text-lg">💚</span>
+            <span>客服微信：<strong className="text-[#1a7f5a]">geiwopa112</strong></span>
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
-            <span className="text-lg">🛡️</span>
-            <span>下单后通过微信扫码支付，联系客服确认即可</span>
+            <span className="text-lg">🕐</span>
+            <span>工作时间：9:00 - 21:00</span>
           </div>
         </div>
       </section>

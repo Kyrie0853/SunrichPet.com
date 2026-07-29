@@ -9,12 +9,12 @@ export default function AfterSalePage() {
       <p className="text-[#6b7280] mb-8">保障买卖双方权益的完整售后流程</p>
 
       <section className="mb-6 bg-white rounded-xl p-6 shadow-sm border border-[#f3f4f6]">
-        <h2 className="text-xl font-semibold text-[#1f2937] mb-4">🛡️ 担保交易流程</h2>
+        <h2 className="text-xl font-semibold text-[#1f2937] mb-4">💚 交易流程</h2>
         <div className="space-y-3 text-[15px] text-[#4b5563] leading-relaxed">
-          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">1.</span><div><strong>下单支付</strong><p className="text-[#6b7280] text-[13px]">买家下单并完成支付，款项由平台暂存保管</p></div></div>
-          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">2.</span><div><strong>商家发货</strong><p className="text-[#6b7280] text-[13px]">商家48小时内发货，填写物流单号，买家可追踪物流</p></div></div>
-          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">3.</span><div><strong>验货期（48小时）</strong><p className="text-[#6b7280] text-[13px]">买家收货后有48小时验货期，可检查商品状况</p></div></div>
-          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">4.</span><div><strong>确认收货</strong><p className="text-[#6b7280] text-[13px]">48小时无异议自动确认收货，款项转入商家账户</p></div></div>
+          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">1.</span><div><strong>下单</strong><p className="text-[#6b7280] text-[13px]">买家下单并填写收货信息，获得订单编号</p></div></div>
+          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">2.</span><div><strong>扫码支付</strong><p className="text-[#6b7280] text-[13px]">添加客服微信 geiwopa112，转账备注订单编号</p></div></div>
+          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">3.</span><div><strong>确认发货</strong><p className="text-[#6b7280] text-[13px]">客服核对收款后24-48小时内发货，填写物流单号</p></div></div>
+          <div className="flex gap-3"><span className="text-[#1a7f5a] font-bold shrink-0">4.</span><div><strong>验货签收</strong><p className="text-[#6b7280] text-[13px]">签收后6小时内凭完整开箱视频验货，确认无误</p></div></div>
         </div>
       </section>
 

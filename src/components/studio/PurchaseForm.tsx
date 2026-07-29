@@ -194,7 +194,7 @@ export default function PurchaseForm({
 
           <div className="mt-4 rounded-lg bg-blue-50 border border-blue-200 p-3 text-[12px] text-blue-700 text-left">
             <p className="font-bold mb-1">📞 客服微信</p>
-            <p>如有疑问，请添加客服微信：<strong>xxxxxx</strong></p>
+            <p>如有疑问，请添加客服微信：<strong>geiwopa112</strong></p>
           </div>
         </div>
         <a href={"/orders/" + orderId}

@@ -4,16 +4,21 @@ import Link from 'next/link';
 export const metadata: Metadata = { title: '帮助中心 — 给我爬' };
 
 const faqs = [
-  { q: '如何注册账号？', a: '点击右上角登录按钮，输入邮箱地址，获取验证码即可注册。也可以使用手机号验证码注册。' },
-  { q: '如何发布帖子？', a: '登录后，在首页或社区页面点击发布帖子按钮，填写标题、内容、选择社区即可发布。首次发帖需阅读并同意发帖规则。' },
-  { q: '如何购买商品？', a: '在商城浏览商品，加入购物车，进入结算页面完成支付。付款后款项由平台暂存，收到商品确认无误后款项转入商家。' },
-  { q: '什么是担保交易？', a: '担保交易是平台为保护买家而设计的交易流程：买家付款→平台暂存→商家发货→买家验货→确认收货→款项转给商家。全程有平台保障。' },
-  { q: '如何申请退款？', a: '在我的订单中找到对应订单，点击申请退款，填写退款原因并上传凭证，平台客服会在24小时内处理。' },
-  { q: '如何成为商家？', a: '点击底部商家入驻，填写入驻申请表单，上传相关证件，提交后等待平台审核。审核通过后即可上架商品。' },
-  { q: '平台禁止交易哪些动物？', a: '请查看禁卖动物名单。所有CITES附录I/II物种、国家保护动物、陆龟、蟒蛇、巨蜥、鳄鱼、鹦鹉等禁止交易。' },
-  { q: '忘记密码怎么办？', a: '在登录页面点击忘记密码？，输入注册邮箱，系统会发送重置密码链接到您的邮箱。' },
-  { q: '如何举报违规内容？', a: '在帖子或商品详情页，点击举报按钮，选择举报原因并提交。平台管理员会及时处理。' },
-  { q: '如何联系平台？', a: '如有其他问题，可通过平台内联系客服功能与管理员取得联系。' },
+  { q: '如何下单？', a: '浏览商品 → 点击「立即购买」或加入购物车 → 填写收货信息（姓名、手机号、地址）→ 提交订单。无需注册登录。' },
+  { q: '如何支付？', a: '提交订单后扫描微信收款码，添加客服微信 geiwopa112，转账时在备注中填写订单编号。客服核对后确认收款。' },
+  { q: '需要注册账号吗？', a: '不需要。买家可以直接浏览商品并下单，无需注册或登录。' },
+  { q: '多久发货？', a: '客服确认收款后，通常在24-48小时内安排发货。具体时效受天气和运输条件影响。' },
+  { q: '包损规则是什么？', a: '签收后6小时内凭完整无剪辑开箱视频验货。开箱死亡无条件退款或重发。超时或无开箱视频恕不受理。' },
+  { q: '如何联系客服？', a: '添加客服微信：geiwopa112。工作时间：9:00-21:00。非工作时间请留言，客服看到后会尽快回复。' },
+  { q: '可以上门自提吗？', a: '目前暂不支持上门自提，所有订单通过快递发货。如有特殊情况请联系客服微信沟通。' },
+  { q: '支持哪些支付方式？', a: '目前支持微信扫码支付。转账时请在备注中填写订单编号，方便客服核对。' },
+  { q: '"预售中"和"可发货"有什么区别？', a: '可发货：商品已达标，可立即发货。预售中：商品还在成长阶段，需要等待一段时间才能发货，详情页会标注预计发货日期。' },
+  { q: '下单后可以取消吗？', a: '未付款的订单可联系客服取消。已付款的订单如需取消，请联系客服协商处理。' },
+  { q: '如何查看订单状态？', a: '在订单页面输入订单编号即可查询。订单状态包括：待付款 → 已付款 → 已发货 → 已完成。' },
+  { q: '快递用什么物流？', a: '根据地区和活体运输要求，我们会选择顺丰或其他专业活体运输渠道。发货后订单详情页会显示物流单号。' },
+  { q: '商品价格可以议价吗？', a: '商品价格已在详情页标明，不接受议价。偶尔有优惠活动会在首页公告中通知，请关注。' },
+  { q: '购物车数据会丢失吗？', a: '购物车数据保存在您的浏览器本地存储中。清除浏览器数据或使用不同设备/浏览器，购物车数据不会同步。' },
+  { q: '收货地址填写错误怎么办？', a: '请在下单前仔细核对收货信息。如已提交但未发货，立即联系客服微信 geiwopa112 修改地址。' },
 ];
 
 export default function HelpPage() {
@@ -25,11 +30,10 @@ export default function HelpPage() {
       <section className="mb-8 bg-white rounded-xl p-6 shadow-sm border border-[#f3f4f6]">
         <h2 className="text-xl font-semibold text-[#1f2937] mb-4">🐣 新手指南</h2>
         <div className="space-y-3 text-[15px] text-[#4b5563] leading-relaxed">
-          <div className="flex gap-3"><span className="text-xl">1️⃣</span><div><strong>注册账号</strong><p className="text-[#6b7280] text-[13px]">使用邮箱或手机号注册，设置头像和昵称</p></div></div>
-          <div className="flex gap-3"><span className="text-xl">2️⃣</span><div><strong>浏览社区</strong><p className="text-[#6b7280] text-[13px]">选择感兴趣的宠物社区，浏览帖子、参与讨论</p></div></div>
-          <div className="flex gap-3"><span className="text-xl">3️⃣</span><div><strong>发布内容</strong><p className="text-[#6b7280] text-[13px]">分享你的养宠经验，上传照片，与其他宠友互动</p></div></div>
-          <div className="flex gap-3"><span className="text-xl">4️⃣</span><div><strong>购买宠物</strong><p className="text-[#6b7280] text-[13px]">在商城选购心仪的宠物，通过平台担保交易安全购买</p></div></div>
-          <div className="flex gap-3"><span className="text-xl">5️⃣</span><div><strong>成为商家</strong><p className="text-[#6b7280] text-[13px]">申请入驻，上架商品，在平台开店经营</p></div></div>
+          <div className="flex gap-3"><span className="text-xl">1️⃣</span><div><strong>浏览商品</strong><p className="text-[#6b7280] text-[13px]">在商城通过分类卡片和筛选功能查找心仪爬宠</p></div></div>
+          <div className="flex gap-3"><span className="text-xl">2️⃣</span><div><strong>提交订单</strong><p className="text-[#6b7280] text-[13px]">填写收货信息，无需注册即可下单</p></div></div>
+          <div className="flex gap-3"><span className="text-xl">3️⃣</span><div><strong>扫码支付</strong><p className="text-[#6b7280] text-[13px]">添加客服微信 geiwopa112，转账备注订单编号</p></div></div>
+          <div className="flex gap-3"><span className="text-xl">4️⃣</span><div><strong>等待收货</strong><p className="text-[#6b7280] text-[13px]">客服确认收款后安排发货，凭开箱视频验货</p></div></div>
         </div>
       </section>
 
@@ -49,10 +53,12 @@ export default function HelpPage() {
       </section>
 
       <section className="bg-white rounded-xl p-6 shadow-sm border border-[#f3f4f6]">
-        <h2 className="text-xl font-semibold text-[#1f2937] mb-4">📞 联系平台</h2>
+        <h2 className="text-xl font-semibold text-[#1f2937] mb-4">📞 联系我们</h2>
         <div className="text-[15px] text-[#4b5563] space-y-2">
           <p>如以上内容未能解决您的问题，可通过以下方式联系：</p>
-          <p>• 平台内私信管理员</p>
+          <p>• 客服微信：<strong className="text-[#1a7f5a]">geiwopa112</strong></p>
+          <p>• 邮箱：<a href="mailto:553043978@qq.com" className="text-[#1a7f5a] hover:underline">553043978@qq.com</a></p>
+          <p>• 工作时间：9:00 - 21:00</p>
           <p>• 查看 <Link href="/rules" className="text-[#1a7f5a] hover:underline">平台规则</Link> 了解更多</p>
         </div>
       </section>
