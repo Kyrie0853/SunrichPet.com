@@ -12,7 +12,7 @@ const sections = [
   {
     title: '交易保障',
     links: [
-      { href: '/help/trade', label: '担保交易说明' },
+      { href: '/help/trade', label: '交易流程说明' },
       { href: '/rules/after-sale', label: '包损条款' },
       { href: '/help/faq', label: '常见问题' },
     ],
@@ -30,7 +30,7 @@ const sections = [
     links: [
       { href: '#', label: '工作时间：9:00-21:00' },
       { href: '#', label: '邮箱：553043978@qq.com' },
-      { href: '#', label: '支付宝担保交易' },
+      { href: '#', label: '微信扫码支付' },
     ],
   },
 ];
@@ -44,7 +44,7 @@ export default function Footer() {
             <Link href="/" className="text-xl font-bold text-white tracking-tight">给我爬</Link>
             <p className="mt-3 text-[13px] leading-relaxed">个人爬宠工作室直营商城。专注高品质爬宠繁育，每一只都是亲手养大的宝贝。</p>
             <div className="mt-3 rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-[11px] text-emerald-300">
-              🛡️ 全站支付宝担保交易 · 杜绝私下转账
+              💚 微信扫码支付 · 联系客服确认订单
             </div>
           </div>
           {sections.map(sec => (
@@ -63,7 +63,9 @@ export default function Footer() {
           ))}
         </div>
         <div className="mt-10 pt-6 border-t border-white/10 text-center text-[11px] text-[#718096]">
-          © 2026 给我爬 · 个人繁育者实名经营 · 支付宝担保交易保障 · 保留所有权利
+          © 2026 给我爬 · 个人繁育者实名经营 · 微信扫码支付保障 · 保留所有权利
+          <span className="mx-2">·</span>
+          <Link href="/auth" className="text-[#4a5568] hover:text-[#a0aec0] transition-colors">管理员登录</Link>
         </div>
       </div>
     </footer>

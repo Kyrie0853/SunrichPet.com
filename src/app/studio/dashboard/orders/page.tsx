@@ -55,12 +55,13 @@ export default function StudioOrdersPage() {
         orders.length === 0 ? <p className="py-12 text-center text-[#9ca3af]">暂无订单</p> : (
           <div className="table-responsive">
             <table className="w-full text-[13px]">
-              <thead><tr className="border-b bg-[#f9fafb]"><th className="text-left px-3 py-3">订单号</th><th className="text-left px-3 py-3 hidden sm:table-cell">商品</th><th className="text-left px-3 py-3">金额</th><th className="text-left px-3 py-3">状态</th><th className="text-left px-3 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 py-3">操作</th></tr></thead>
+              <thead><tr className="border-b bg-[#f9fafb]"><th className="text-left px-3 py-3">订单号</th><th className="text-left px-3 py-3 hidden sm:table-cell">商品</th><th className="text-left px-3 py-3">金额</th><th className="text-left px-3 py-3 hidden lg:table-cell">收货信息</th><th className="text-left px-3 py-3">状态</th><th className="text-left px-3 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 py-3">操作</th></tr></thead>
               <tbody>{orders.map(o => (
                 <tr key={o.id} className="border-b hover:bg-[#f9fafb]">
                   <td className="px-3 py-3 font-mono text-[11px]">{o.id.slice(0, 10)}...</td>
                   <td className="px-3 py-3 hidden sm:table-cell">{o.product_name || "-"}</td>
                   <td className="px-3 py-3 font-medium">¥{Number(o.total_amount).toFixed(2)}</td>
+                  <td className="px-3 py-3 text-[11px] text-[#6b7280] hidden lg:table-cell max-w-[160px] truncate" title={o.shipping_address}>{o.shipping_address || "-"}</td>
                   <td className="px-3 py-3">
                     <span className={"rounded-full px-2 py-0.5 text-[11px] font-medium " + (SC[o.status] || "")}>{SL[o.status] || o.status}</span>
                     {o.tracking_number && <p className="text-[10px] text-[#9ca3af] mt-0.5">📦 {o.tracking_number}</p>}
@@ -69,7 +70,7 @@ export default function StudioOrdersPage() {
                   <td className="px-3 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       {o.status === "pending" && (
-                        <button onClick={() => { if (confirm("确认收款？")) confirmPayment(o.id); }}
+                        <button onClick={() => { if (confirm("确认收到微信转账 ¥" + Number(o.total_amount).toFixed(2) + "？")) confirmPayment(o.id); }}
                           className="rounded-full bg-[#f0a04b] px-2.5 py-1.5 text-[11px] text-white hover:bg-[#d98a3b] min-w-[44px] min-h-[44px] flex items-center">确认收款</button>
                       )}
                       {o.status === "paid" && (

@@ -1,81 +1,18 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { CartContent } from "@/components/CartContent";
 
-export default async function CartPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/auth");
-  }
-
-  // 获取购物车
-  const { data: cart } = await supabase
-    .from("carts")
-    .select("id")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!cart) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center">
-        <p className="text-lg text-gray-400">购物车是空的</p>
-        <Link href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
-          去逛逛
-        </Link>
-      </div>
-    );
-  }
-
-  // 获取购物车明细 + 商品信息
-  const { data: items } = await supabase
-    .from("cart_items")
-    .select(
-      `
-      id,
-      quantity,
-      product:product_id(id, slug, name, price, image_url, stock, status)
-    `
-    )
-    .eq("cart_id", cart.id)
-    .order("created_at", { ascending: true });
-
-  // 标准化 Supabase join 返回格式（many-to-one 返回对象）
-  const cartItems = (items || []).map((item) => ({
-    id: item.id,
-    quantity: item.quantity,
-    product: Array.isArray(item.product) ? item.product[0] : item.product,
-  }));
-
-  // 过滤已下架商品（已在购物车中但后被下架的）
-  const validItems = cartItems.filter(
-    (item) => item.product && item.product.status === "active"
-  );
-
-  if (validItems.length === 0) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-20 text-center">
-        <p className="text-lg text-gray-400">购物车是空的</p>
-        <Link href="/products" className="mt-4 inline-block text-emerald-600 hover:underline">
-          去逛逛
-        </Link>
-      </div>
-    );
-  }
-
+/**
+ * 轻量化改造：买家无需登录，购物车仅供浏览参考
+ * 实际下单请通过商品详情页"立即购买"按钮
+ */
+export default function CartPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-8 text-2xl font-bold text-gray-800">购物车</h1>
-      <CartContent items={cartItems} />
-      <div className="mt-8">
-        <Link href="/checkout" className="block w-full rounded-xl bg-emerald-600 py-3 text-center text-sm font-semibold text-white transition hover:bg-emerald-700">
-          去结算
-        </Link>
-      </div>
+    <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+      <p className="text-5xl mb-4">🛒</p>
+      <p className="text-[16px] text-[#1f2937] font-medium mb-2">购物车功能已简化</p>
+      <p className="text-[14px] text-[#9ca3af] mb-6">请直接在商品详情页点击"立即购买"提交订单</p>
+      <Link href="/shop" prefetch={true} className="inline-block rounded-full bg-[#1a7f5a] px-6 py-2.5 text-[14px] font-medium text-white hover:bg-[#166b4b] transition-colors">
+        去逛逛
+      </Link>
     </div>
   );
 }

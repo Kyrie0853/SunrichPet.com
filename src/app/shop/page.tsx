@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "商城 — 给我爬",
-  description: "浏览所有在售爬宠个体。支付宝担保交易，安心购买。",
+  description: "浏览所有在售爬宠个体。微信扫码支付，安心购买。",
 };
 
 type Props = {
@@ -101,12 +101,12 @@ export default async function ShopPage({ searchParams }: Props) {
           <h1 className="text-2xl md:text-3xl font-bold text-[#1f2937]">
             {categoryName || "全部个体"}
           </h1>
-          <p className="text-[14px] text-[#6b7280] mt-0.5">每一只个体都经过精心养护，支付宝担保交易保障您的权益</p>
+          <p className="text-[14px] text-[#6b7280] mt-0.5">每一只个体都经过精心养护，微信扫码支付保障您的权益</p>
         </div>
       </div>
 
       <div className="mb-6 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
-        🛡️ 支付宝担保交易 · 收货验货后付款
+        💚 微信扫码支付 · 下单后联系客服完成交易
       </div>
 
       {/* 状态筛选 */}

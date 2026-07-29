@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "给我爬 — 个人爬宠工作室直营商城",
-  description: "给我爬 · 个人爬宠工作室直营商城。专注高品质爬宠繁育，支付宝担保交易，每一只都是亲手养大的宝贝。",
+  description: "给我爬 · 个人爬宠工作室直营商城。专注高品质爬宠繁育，微信扫码支付，每一只都是亲手养大的宝贝。",
   openGraph: {
     title: "给我爬",
     description: "专注高品质爬宠繁育，每一只都是亲手养大的宝贝",
@@ -27,7 +27,7 @@ export default async function HomePage() {
             给我爬
           </h1>
           <p className="mt-3 text-emerald-100/90 text-[14px] md:text-[16px] leading-relaxed max-w-lg">
-            专注高品质爬宠繁育，每一只都是亲手养大的宝贝。支付宝担保交易，安心选购。
+            专注高品质爬宠繁育，每一只都是亲手养大的宝贝。微信扫码支付，安心选购。
           </p>
         </div>
         <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 hidden md:block">
@@ -39,10 +39,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== 担保交易标识 ===== */}
+      {/* ===== 支付方式标识 ===== */}
       <div className="mb-8">
         <div className="rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
-          🛡️ 支付宝担保交易 · 收货验货后付款
+          💚 微信扫码支付 · 下单后联系客服完成交易
         </div>
       </div>
 
@@ -72,6 +72,7 @@ export default async function HomePage() {
               <Link
                 key={cat.species}
                 href={`/shop?category=${encodeURIComponent(cat.slug)}`}
+                prefetch={true}
                 className="group bg-white rounded-2xl border border-[#f3f4f6] overflow-hidden hover:shadow-lg hover:border-[#1a7f5a]/30 transition-all duration-300"
               >
                 {/* 分类图片 */}
@@ -117,13 +118,13 @@ export default async function HomePage() {
           <div>
             <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">联系方式</h3>
             <p className="text-[13px] text-[#6b7280] leading-relaxed">
-              邮箱：553043978@qq.com<br />工作时间：9:00-21:00<br />所有交易请通过支付宝担保完成
+              邮箱：553043978@qq.com<br />工作时间：9:00-21:00<br />下单后扫码支付，联系客服确认
             </p>
           </div>
           <div>
-            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">担保交易说明</h3>
+            <h3 className="text-[14px] font-semibold text-[#1f2937] mb-2">支付方式说明</h3>
             <p className="text-[13px] text-[#6b7280] leading-relaxed">
-              本店所有交易通过支付宝担保交易<br />付款 → 发货 → 验货 → 确认收货<br />杜绝私下转账，保障双方权益
+              本店支持微信扫码支付<br />下单 → 扫码支付 → 客服确认 → 发货<br />简单快捷，保障双方权益
             </p>
           </div>
         </div>

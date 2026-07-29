@@ -75,7 +75,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </span>
           </div>
           <div className="mt-5 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-3 text-[13px] text-[#1a7f5a] font-medium">
-            🛡️ 支付宝担保交易 · 收货验货后付款
+            💚 微信扫码支付 · 联系客服完成交易
           </div>
           <div className="mt-6 bg-white rounded-xl border border-[#f3f4f6] overflow-hidden">
             <table className="w-full text-[13px]">

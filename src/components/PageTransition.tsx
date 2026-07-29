@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
+/**
+ * 轻量化页面过渡 — 最小延迟，感知为瞬间切换
+ * React.memo 包装的 children 避免不必要的重新渲染
+ */
 export default function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -11,11 +15,12 @@ export default function PageTransition({ children }: { children: React.ReactNode
   useEffect(() => {
     if (pathname !== prevPathname) {
       setIsVisible(false);
-      const timer = setTimeout(() => {
+      // 使用 requestAnimationFrame 代替 setTimeout，避免延迟
+      const raf = requestAnimationFrame(() => {
         setPrevPathname(pathname);
         setIsVisible(true);
-      }, 50); // 50ms 快速过渡，感知为"瞬间"
-      return () => clearTimeout(timer);
+      });
+      return () => cancelAnimationFrame(raf);
     }
   }, [pathname, prevPathname]);
 

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '关于我 — 给我爬',
-  description: '了解给我爬爬宠工作室的品牌故事、繁育理念和担保交易承诺。',
+  description: '了解给我爬爬宠工作室的品牌故事、繁育理念和交易保障承诺。',
 };
 
 export default function AboutPage() {
@@ -42,7 +42,7 @@ export default function AboutPage() {
           {[
             { icon: '🦎', title: '品质优先', desc: '严格筛选种源，确保基因健康。每只个体单独记录，建立完整的繁育谱系' },
             { icon: '🏠', title: '家庭式养护', desc: '小规模精细化管理，每一只都有充足的生长空间和个性化照料' },
-            { icon: '🛡️', title: '担保交易', desc: '全站交易通过支付宝担保完成，杜绝私下转账，保障买卖双方权益' },
+            { icon: '💚', title: '交易保障', desc: '微信扫码支付，人工确认收款后发货，保障买卖双方权益' },
             { icon: '📦', title: '安全包装', desc: '专业爬宠运输包装，恒温恒湿，确保活体安全抵达' },
           ].map(feature => (
             <div key={feature.title} className="bg-white rounded-xl border border-[#f3f4f6] p-5 hover:shadow-sm transition-shadow">
@@ -57,14 +57,14 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="text-xl font-bold text-[#1f2937] mb-4 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#1a7f5a] rounded-full inline-block"></span>
-          担保交易说明
+          交易流程
         </h2>
         <div className="bg-[#e8f5ef] rounded-xl border border-[#1a7f5a]/20 p-6 space-y-3">
           <div className="flex items-start gap-3">
             <span className="text-xl shrink-0">1️⃣</span>
             <div>
               <p className="font-semibold text-[#1f2937] text-[14px]">下单付款</p>
-              <p className="text-[13px] text-[#4b5563]">通过支付宝担保交易接口付款，款项由支付宝托管</p>
+              <p className="text-[13px] text-[#4b5563]">提交订单后扫码支付，联系客服确认收款</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -84,8 +84,8 @@ export default function AboutPage() {
           <div className="flex items-start gap-3">
             <span className="text-xl shrink-0">4️⃣</span>
             <div>
-              <p className="font-semibold text-[#1f2937] text-[14px]">结算完成</p>
-              <p className="text-[13px] text-[#4b5563]">买家确认收货后，款项自动结算。若有问题，依据开箱视频友好协商</p>
+              <p className="font-semibold text-[#1f2937] text-[14px]">交易完成</p>
+              <p className="text-[13px] text-[#4b5563]">买家确认收货后交易完成。若有问题，依据开箱视频友好协商</p>
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function AboutPage() {
           </div>
           <div className="flex items-center gap-3 text-[14px] text-[#4b5563]">
             <span className="text-lg">🛡️</span>
-            <span>所有交易请通过本站支付宝担保完成，杜绝私下转账</span>
+            <span>下单后通过微信扫码支付，联系客服确认即可</span>
           </div>
         </div>
       </section>

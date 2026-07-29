@@ -1,15 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { getProductByProductId } from "@/lib/studio/products";
 import PurchaseForm from "@/components/studio/PurchaseForm";
 
 type Props = { searchParams: Promise<{ product_id?: string }> };
 
 export default async function CheckoutPage({ searchParams }: Props) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth");
-
   const { product_id } = await searchParams;
 
   // ── 安全的价格格式化（防止 React Error #418）──
@@ -48,7 +42,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
       <h1 className="text-xl md:text-2xl font-bold text-[#1f2937] mb-2">确认订单</h1>
 
       <div className="mb-5 rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-3 text-[13px] text-[#1a7f5a] font-medium">
-        🛡️ 支付宝担保交易 · 付款到担保账户 → 验货后确认收货
+        💚 微信扫码支付 · 提交订单后联系客服完成支付
       </div>
 
       {/* 商品信息 */}
@@ -56,7 +50,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
         <div className="flex gap-3">
           <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden shrink-0">
             {product.images && product.images.length > 0 ? (
-              <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+              <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-2xl text-gray-300">🦎</div>
             )}
@@ -70,7 +64,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* 购买表单 */}
+      {/* 购买表单（免登录下单） */}
       <PurchaseForm productId={product.product_id} productName={product.name} price={product.price} />
     </div>
   );

@@ -28,12 +28,12 @@ const nextConfig: NextConfig = {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://static.cloudflareinsights.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://*.alipay.com https://*.alipaydev.com https://*.alipayobjects.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
       "font-src 'self'",
-      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.alipay.com https://*.alipaydev.com https://*.alipayobjects.com",
+      "frame-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self' https://*.alipay.com https://*.alipaydev.com",
+      "form-action 'self'",
       "frame-ancestors 'none'",
     ].join("; ");
 
@@ -61,6 +61,11 @@ const nextConfig: NextConfig = {
       {
         source: "/sw.js",
         headers: [{ key: "Cache-Control", value: "public, max-age=86400" }],
+      },
+      // 静态页面短期缓存 + 后台重新验证
+      {
+        source: "/(shop|about|help|guide|encyclopedia|rules|search)",
+        headers: [{ key: "Cache-Control", value: "public, max-age=30, stale-while-revalidate=300" }],
       },
     ];
   },
