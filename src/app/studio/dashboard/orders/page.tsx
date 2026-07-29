@@ -12,6 +12,9 @@ export default function StudioOrdersPage() {
   const [shipModal, setShipModal] = useState<{ orderId: string; tracking: string; company: string } | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ orderId: string; shortId: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBatchConfirm, setShowBatchConfirm] = useState(false);
+  const [batchDeleting, setBatchDeleting] = useState(false);
   const supabase = createClient();
 
   const load = useCallback(async () => {
@@ -21,9 +24,46 @@ export default function StudioOrdersPage() {
     const { data } = await query;
     setOrders(data || []);
     setLoading(false);
+    setSelectedIds(new Set());
   }, [filter, supabase]);
 
   useEffect(() => { load(); }, [load]);
+
+  // 只允许选中 pending/cancelled 的订单
+  const deletableIds = orders.filter(o => o.status === "pending" || o.status === "cancelled").map(o => o.id);
+  const allDeletableSelected = deletableIds.length > 0 && deletableIds.every(id => selectedIds.has(id));
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (allDeletableSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(deletableIds));
+    }
+  }
+
+  async function handleBatchDelete() {
+    setBatchDeleting(true);
+    try {
+      const res = await fetch("/api/admin/orders/batch-delete", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "删除失败"); }
+      else if (data.rejected > 0) { alert(`已删除 ${data.deleted} 条，${data.rejected} 条因状态不符被跳过`); }
+    } catch { alert("网络错误"); }
+    setBatchDeleting(false);
+    setShowBatchConfirm(false);
+    load();
+  }
 
   async function confirmPayment(orderId: string) {
     await fetch("/api/admin/orders/" + orderId + "/confirm-payment", { method: "POST" });
@@ -69,14 +109,43 @@ export default function StudioOrdersPage() {
           </button>
         ))}
       </div>
+      {/* 批量操作栏 */}
+      {orders.length > 0 && (
+        <div className="flex items-center gap-3 mb-4 px-2">
+          <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+            <input type="checkbox" checked={allDeletableSelected} onChange={toggleSelectAll}
+              className="w-5 h-5 accent-[#1a7f5a]" />
+            <span className="text-[12px] text-[#6b7280]">全选可删除</span>
+          </label>
+          {selectedIds.size > 0 && (
+            <>
+              <span className="text-[12px] text-[#6b7280]">已选 {selectedIds.size} 项</span>
+              <button onClick={() => setShowBatchConfirm(true)}
+                className="rounded-full bg-red-500 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-red-600 min-h-[44px] flex items-center">
+                🗑 批量删除
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] overflow-hidden">
         {loading ? <p className="py-12 text-center text-[#9ca3af]">加载中...</p> :
         orders.length === 0 ? <p className="py-12 text-center text-[#9ca3af]">暂无订单</p> : (
           <div className="table-responsive">
             <table className="w-full text-[13px]">
-              <thead><tr className="border-b bg-[#f9fafb]"><th className="text-left px-3 py-3">订单号</th><th className="text-left px-3 py-3 hidden sm:table-cell">商品</th><th className="text-left px-3 py-3">金额</th><th className="text-left px-3 py-3 hidden lg:table-cell">收货信息</th><th className="text-left px-3 py-3">状态</th><th className="text-left px-3 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 py-3">操作</th></tr></thead>
-              <tbody>{orders.map(o => (
+              <thead><tr className="border-b bg-[#f9fafb]"><th className="text-left px-2 py-3 w-10"><input type="checkbox" checked={allDeletableSelected} onChange={toggleSelectAll} className="w-5 h-5 accent-[#1a7f5a]" /></th><th className="text-left px-3 py-3">订单号</th><th className="text-left px-3 py-3 hidden sm:table-cell">商品</th><th className="text-left px-3 py-3">金额</th><th className="text-left px-3 py-3 hidden lg:table-cell">收货信息</th><th className="text-left px-3 py-3">状态</th><th className="text-left px-3 py-3 hidden md:table-cell">时间</th><th className="text-right px-3 py-3">操作</th></tr></thead>
+              <tbody>{orders.map(o => {
+                const isDeletable = o.status === "pending" || o.status === "cancelled";
+                return (
                 <tr key={o.id} className="border-b hover:bg-[#f9fafb]">
+                  <td className="px-2 py-3">
+                    {isDeletable ? (
+                      <input type="checkbox" checked={selectedIds.has(o.id)} onChange={() => toggleSelect(o.id)} className="w-5 h-5 accent-[#1a7f5a]" />
+                    ) : (
+                      <span className="w-5 h-5 inline-block"></span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 font-mono text-[11px]">{o.id.slice(0, 10)}...</td>
                   <td className="px-3 py-3 hidden sm:table-cell">{o.product_name || "-"}</td>
                   <td className="px-3 py-3 font-medium">¥{Number(o.total_amount).toFixed(2)}</td>
@@ -121,7 +190,8 @@ export default function StudioOrdersPage() {
                     </div>
                   </td>
                 </tr>
-              ))}</tbody>
+                );
+              })}</tbody>
             </table>
           </div>
         )}
@@ -168,6 +238,28 @@ export default function StudioOrdersPage() {
                 className="flex-1 rounded-full bg-red-500 py-2.5 text-[13px] font-medium text-white hover:bg-red-600 disabled:opacity-50 min-h-[44px]"
               >
                 {deleteLoading ? "删除中..." : "确认删除"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量删除确认弹窗 */}
+      {showBatchConfirm && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 p-4" onClick={() => !batchDeleting && setShowBatchConfirm(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-4"><span className="text-4xl">🗑️</span></div>
+            <h3 className="text-lg font-bold text-[#1f2937] mb-2 text-center">确认批量删除订单</h3>
+            <p className="text-[14px] text-[#6b7280] text-center mb-6">
+              确定要删除选中的 <strong className="text-red-500">{selectedIds.size}</strong> 个订单吗？<br />
+              <span className="text-red-500 text-[12px]">此操作不可恢复。仅待付款/已取消的订单会被删除。</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowBatchConfirm(false)} disabled={batchDeleting}
+                className="flex-1 rounded-full border py-2.5 text-[13px] text-[#6b7280] hover:bg-[#f9fafb] min-h-[44px]">取消</button>
+              <button onClick={handleBatchDelete} disabled={batchDeleting}
+                className="flex-1 rounded-full bg-red-500 py-2.5 text-[13px] font-medium text-white hover:bg-red-600 disabled:opacity-50 min-h-[44px]">
+                {batchDeleting ? "删除中..." : "确认删除"}
               </button>
             </div>
           </div>

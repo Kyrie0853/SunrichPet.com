@@ -10,6 +10,9 @@ const STATUS_COLORS: Record<string, string> = { presale: "bg-orange-50 text-oran
 export default function StudioProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchDeleting, setBatchDeleting] = useState(false);
+  const [showBatchConfirm, setShowBatchConfirm] = useState(false);
   const supabase = createClient();
 
   const load = useCallback(async () => {
@@ -17,6 +20,7 @@ export default function StudioProductsPage() {
     const { data } = await supabase.from("studio_products").select("*").order("created_at", { ascending: false }).limit(50);
     setProducts(data || []);
     setLoading(false);
+    setSelectedIds(new Set());
   }, [supabase]);
 
   useEffect(() => { load(); }, [load]);
@@ -32,12 +36,63 @@ export default function StudioProductsPage() {
     load();
   }
 
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === products.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(products.map(p => p.id)));
+    }
+  }
+
+  async function handleBatchDelete() {
+    setBatchDeleting(true);
+    try {
+      const res = await fetch("/api/admin/products/batch-delete", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "删除失败"); }
+    } catch { alert("网络错误"); }
+    setBatchDeleting(false);
+    setShowBatchConfirm(false);
+    load();
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-lg md:text-xl font-semibold text-[#1f2937]">个体管理</h1>
-        <Link href="/studio/dashboard/products/new" className="rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] min-h-[44px] flex items-center">+ 添加新个体</Link>
+        <h1 className="text-lg md:text-xl font-semibold text-[#1f2937]">商品管理</h1>
+        <Link href="/studio/dashboard/products/new" className="rounded-full bg-[#1a7f5a] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#166b4b] min-h-[44px] flex items-center">+ 添加新商品</Link>
       </div>
+
+      {/* 批量操作栏 */}
+      {products.length > 0 && (
+        <div className="flex items-center gap-3 mb-4 px-2">
+          <label className="flex items-center gap-2 cursor-pointer min-h-[44px]">
+            <input type="checkbox" checked={selectedIds.size === products.length && products.length > 0}
+              onChange={toggleSelectAll} className="w-5 h-5 accent-[#1a7f5a]" />
+            <span className="text-[12px] text-[#6b7280]">全选</span>
+          </label>
+          {selectedIds.size > 0 && (
+            <>
+              <span className="text-[12px] text-[#6b7280]">已选 {selectedIds.size} 项</span>
+              <button onClick={() => setShowBatchConfirm(true)}
+                className="rounded-full bg-red-500 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-red-600 min-h-[44px] flex items-center">
+                🗑 批量删除
+              </button>
+            </>
+          )}
+        </div>
+      )}
       <div className="bg-white rounded-xl shadow-sm border border-[#f3f4f6] overflow-hidden">
         {loading ? (
           <p className="py-12 text-center text-[#9ca3af]">加载中...</p>
@@ -50,10 +105,11 @@ export default function StudioProductsPage() {
         ) : (
           <div className="table-responsive">
             <table className="w-full text-[13px]">
-              <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-3 md:px-4 py-3">编号</th><th className="text-left px-3 md:px-4 py-3">名称</th><th className="text-left px-3 md:px-4 py-3 hidden sm:table-cell">物种</th><th className="text-left px-3 md:px-4 py-3">价格</th><th className="text-left px-3 md:px-4 py-3">状态</th><th className="text-right px-3 md:px-4 py-3">操作</th></tr></thead>
+              <thead><tr className="border-b border-[#f3f4f6] bg-[#f9fafb]"><th className="text-left px-2 py-3 w-10"><input type="checkbox" checked={selectedIds.size === products.length && products.length > 0} onChange={toggleSelectAll} className="w-5 h-5 accent-[#1a7f5a]" /></th><th className="text-left px-3 md:px-4 py-3">编号</th><th className="text-left px-3 md:px-4 py-3">名称</th><th className="text-left px-3 md:px-4 py-3 hidden sm:table-cell">物种</th><th className="text-left px-3 md:px-4 py-3">价格</th><th className="text-left px-3 md:px-4 py-3">状态</th><th className="text-right px-3 md:px-4 py-3">操作</th></tr></thead>
               <tbody>
                 {products.map(p => (
                   <tr key={p.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                    <td className="px-2 py-3"><input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelect(p.id)} className="w-5 h-5 accent-[#1a7f5a]" /></td>
                     <td className="px-3 md:px-4 py-3 font-mono text-[11px]">{p.product_id}</td>
                     <td className="px-3 md:px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -85,6 +141,28 @@ export default function StudioProductsPage() {
           </div>
         )}
       </div>
+
+      {/* 批量删除确认弹窗 */}
+      {showBatchConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4" onClick={() => !batchDeleting && setShowBatchConfirm(false)}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-4"><span className="text-4xl">🗑️</span></div>
+            <h3 className="text-lg font-bold text-[#1f2937] mb-2 text-center">确认批量删除</h3>
+            <p className="text-[14px] text-[#6b7280] text-center mb-6">
+              确定要删除选中的 <strong className="text-red-500">{selectedIds.size}</strong> 个商品吗？<br />
+              <span className="text-red-500 text-[12px]">此操作不可恢复。</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setShowBatchConfirm(false)} disabled={batchDeleting}
+                className="flex-1 rounded-full border py-2.5 text-[13px] text-[#6b7280] hover:bg-[#f9fafb] min-h-[44px]">取消</button>
+              <button onClick={handleBatchDelete} disabled={batchDeleting}
+                className="flex-1 rounded-full bg-red-500 py-2.5 text-[13px] font-medium text-white hover:bg-red-600 disabled:opacity-50 min-h-[44px]">
+                {batchDeleting ? "删除中..." : "确认删除"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
