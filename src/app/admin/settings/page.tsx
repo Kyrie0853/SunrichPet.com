@@ -59,7 +59,7 @@ export default function AdminSettingsPage() {
       // 上传到 Supabase Storage
       const fileName = `wechat-qr-${Date.now()}.${file.name.split(".").pop()}`;
       const { error: uploadErr } = await supabase.storage
-        .from("public")
+        .from("product-images")
         .upload(`qr/${fileName}`, file, {
           cacheControl: "3600",
           upsert: true,
@@ -68,7 +68,7 @@ export default function AdminSettingsPage() {
       if (uploadErr) throw uploadErr;
 
       // 获取公开 URL
-      const { data: urlData } = supabase.storage.from("public").getPublicUrl(`qr/${fileName}`);
+      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(`qr/${fileName}`);
       const publicUrl = urlData.publicUrl;
 
       // 保存到 site_settings 表

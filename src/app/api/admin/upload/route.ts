@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const fileName = `products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
     const { error: uploadErr } = await supabase.storage
-      .from("public")
+      .from("product-images")
       .upload(fileName, buffer, {
         contentType: file.type,
         cacheControl: "31536000",
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "上传失败: " + uploadErr.message }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage.from("public").getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
     return NextResponse.json({ url: urlData.publicUrl });
   } catch (err: any) {
     console.error("[Upload] 错误:", err);

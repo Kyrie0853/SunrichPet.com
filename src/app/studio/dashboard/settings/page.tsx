@@ -47,7 +47,7 @@ export default function StudioSettingsPage() {
 
       // 尝试上传到 public bucket
       const { error: uploadErr } = await supabase.storage
-        .from("public")
+        .from("product-images")
         .upload(`qr/${fileName}`, file, {
           cacheControl: "3600",
           upsert: true,
@@ -56,7 +56,7 @@ export default function StudioSettingsPage() {
       let publicUrl = "";
 
       if (!uploadErr) {
-        const { data: urlData } = supabase.storage.from("public").getPublicUrl(`qr/${fileName}`);
+        const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(`qr/${fileName}`);
         publicUrl = urlData.publicUrl;
       } else {
         // 如果 storage 不可用，使用本地静态文件提示
