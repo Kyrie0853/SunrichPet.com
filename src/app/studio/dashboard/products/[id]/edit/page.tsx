@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import ImageUploader from "@/components/admin/ImageUploader";
 
 export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -150,8 +151,11 @@ export default function EditProductPage() {
           </div>
         </div>
         <div>
-          <label className="block text-[13px] font-medium text-[#4b5563] mb-1">图片URL（每行一个）</label>
-          <textarea value={form.images || ""} onChange={e => update("images", e.target.value)} rows={4} className="w-full rounded-lg border px-3 py-2 text-[16px] outline-none focus:border-[#1a7f5a] resize-none" />
+          <label className="block text-[13px] font-medium text-[#4b5563] mb-1">商品图片/视频</label>
+          <ImageUploader
+            existingUrls={form.images ? form.images.split("\n").filter(Boolean) : (form.images || [])}
+            onChange={(urls) => update("images", urls.join("\n"))}
+          />
         </div>
         <div>
           <label className="block text-[13px] font-medium text-[#4b5563] mb-1">视频URL（选填）</label>

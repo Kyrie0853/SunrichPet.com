@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SearchBar } from "./SearchBar";
 import CartIcon from "./CartIcon";
+import MobileSearchToggle from "./MobileSearchToggle";
 
 /**
  * 轻量化导航栏 — 买家无需登录，购物车使用 localStorage
@@ -37,11 +38,14 @@ export default async function Navbar() {
           给我爬
         </Link>
 
-        {/* 搜索框 */}
+        {/* 搜索框 - 桌面端 */}
         <SearchBar className="hidden flex-1 max-w-sm md:block" />
 
         {/* 右侧 */}
         <div className="flex items-center gap-1 ml-auto">
+          {/* 移动端搜索按钮 */}
+          <MobileSearchToggle />
+
           {/* 购物车（含数量角标） */}
           <CartIcon />
 

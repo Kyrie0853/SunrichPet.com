@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSpeciesCategories, type SpeciesCategory } from "@/lib/studio/products";
+import CopyWechatBadge from "@/components/CopyWechatBadge";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -39,11 +40,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== 支付方式标识 ===== */}
-      <div className="mb-8">
+      {/* ===== 客服微信 + 支付方式 ===== */}
+      <div className="mb-8 space-y-3">
         <div className="rounded-xl border border-[#1a7f5a]/20 bg-[#e8f5ef] px-4 py-2.5 text-[13px] text-[#1a7f5a] font-medium">
           💚 微信扫码支付 · 下单后联系客服完成交易
         </div>
+        <CopyWechatBadge />
       </div>
 
       {/* ===== 分类卡片 ===== */}
