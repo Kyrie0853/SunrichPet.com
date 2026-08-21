@@ -13,7 +13,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const { id } = await params;
   const body = await req.json();
-  const { error } = await supabase.from("studio_products").update(body).eq("id", id);
+  // 兜底：description 列有 NOT NULL 约束，若前端未传（或传 null）则补空字符串
+  const payload = { ...body, description: body.description == null ? "" : body.description };
+  const { error } = await supabase.from("studio_products").update(payload).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ success: true });
 }

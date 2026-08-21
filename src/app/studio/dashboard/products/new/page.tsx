@@ -73,7 +73,7 @@ export default function NewProductPage() {
           price: parseFloat(form.price),
           status: form.status,
           images,
-          description: form.description || null,
+          description: form.description?.trim() || "",
           category_id: form.category_id || null,
         }),
       });

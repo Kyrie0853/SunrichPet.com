@@ -263,9 +263,10 @@ export async function getProductByProductId(productId: string) {
 
 export async function createProduct(data: Partial<StudioProduct>) {
   const supabase = await createClient();
+  const payload = { ...data, description: data.description == null ? "" : data.description };
   const { data: result, error } = await supabase
     .from("studio_products")
-    .insert(data)
+    .insert(payload)
     .select("id")
     .single();
   if (error) throw new Error(error.message);

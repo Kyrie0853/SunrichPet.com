@@ -22,7 +22,9 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { data, error } = await supabase.from("studio_products").insert(body).select("id").single();
+  // 兜底：description 列有 NOT NULL 约束，若前端未传（或传 null）则补空字符串
+  const payload = { ...body, description: body.description == null ? "" : body.description };
+  const { data, error } = await supabase.from("studio_products").insert(payload).select("id").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json(data, { status: 201 });
 }
